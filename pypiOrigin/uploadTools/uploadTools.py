@@ -608,7 +608,7 @@ args = parser.parse_args()
 
 
 if __name__ == '__main__':
-    # pyinstaller -F uploadTools.py -n upload -i upload.ico
+    # pyinstaller -F uploadTools.py -n upload -i upload_1.ico
 
     # ins = upload(r"D:\xst_project_202212\codeSet\Python\test.py", debug=True, ignore=False, eliminate="文件名、目录名或卷标语法不正确。")
     # ins.build()
