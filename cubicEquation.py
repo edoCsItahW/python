@@ -13,13 +13,13 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
-from fractions import Fraction
-from math import e
 from IPython.display import display, Math
 from functools import cached_property
+from fractions import Fraction
 from warnings import warn
 from typing import overload
 from cmath import pi, log, cos, acos, sqrt
+from math import e
 
 
 class autoNumber:
@@ -243,8 +243,8 @@ class CEoperator:
         }
         return _
 
-    @cached_property
-    def constantDict(self): return {i: autoNumber(self._input(i)) for i in ['a', 'b', 'c', 'd']}
+    @cached_property  # autoNumber()
+    def constantDict(self): return {i: Fraction(self._input(i)) for i in ['a', 'b', 'c', 'd']}
 
     @cached_property
     def _constantFormat(self): return [
@@ -283,7 +283,8 @@ class CEoperator:
         return value in [*map(str, range(10)), "/", "-", "."] and otherCondition
 
     @staticmethod
-    def decimalsToFractions(num: float | int): return Fraction(num).limit_denominator()
+    def decimalsToFractions(num: float | int):
+        return Fraction(num.real).limit_denominator() + num.imag * 1j if isinstance(num, complex) else Fraction(num).limit_denominator()
 
     def show(self, order):
         display(Math(self.textDict[order]))
@@ -310,7 +311,7 @@ class CEoperator:
         for i in self.textDict:
             self.show(i)
         
-        res1, res2, res3 = self.calculate(0), self.calculate(pi / 3), self.calculate(-pi / 3)
+        res1, res2, res3 = [self.decimalsToFractions(i) for i in (self.calculate(0), self.calculate(pi / 3), self.calculate(-pi / 3))]
         
         try:
             print(''.join([f"\nx_{i}={r}" for i, r in enumerate([res1, res2, res3], start=1)]))
@@ -321,4 +322,5 @@ class CEoperator:
 
 if __name__ == '__main__':
     opt = CEoperator()
-    opt.execute()
+    # opt.execute()
+    print(Fraction(0.625539310792479).limit_denominator())
