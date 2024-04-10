@@ -14,14 +14,16 @@
 # 注释: 
 # -------------------------<Lenovo>----------------------------
 from subprocess import Popen, PIPE
-from functools import cached_property
+from functools import cached_property, partial
 from threading import Thread
 from argparse import ArgumentParser
 from warnings import warn
 from inspect import currentframe
 from typing import Literal, Callable
 from time import sleep
-from os import PathLike, path, listdir, mkdir, rename
+from sys import version
+from os import PathLike, path, listdir, mkdir, rename, remove
+from re import findall
 
 __vision__ = "0.1.3"
 
@@ -72,9 +74,32 @@ classifiers = [
 files = ["{}"]
 
 [project.urls]
-"Homepage" = "https://github.com/edoCsItahW/CodePackage"
-"Bug Tracker" = "https://github.com/pypa/sampleproject/issues"
+"Homepage" = "https://github.com/edoCsItahW/python"
+"Bug Tracker" = "https://github.com/edoCsItahW/python/issues"
 """
+
+CMakeLists = """cmake_policy(SET CMP0057 NEW)
+cmake_minimum_required(VERSION {} FATAL_ERROR)
+project({})
+
+find_package(Python {} COMPONENTS Interpreter Development REQUIRED)
+find_package(pybind11 CONFIG REQUIRED)
+pybind11_add_module({} {})
+"""
+
+setup = """from setuptools import setup, Extension  
+from Cython.Build import cythonize  
+
+extensions = [  
+    Extension("{}", ["{}"])  
+]  
+
+setup(  
+    name="{}",  
+    version="",  
+    description="",  
+    ext_modules=cythonize(extensions),  
+)"""
 
 
 def outputInfo(info: str, *, color: Literal["red", "green", "blue", "yellow"] | str | bool = "green", flag: bool = True):
@@ -308,6 +333,125 @@ class pathTools:
             errorHandle.raiseError(FileNotFoundError, f"没有检测到文件'{_path}'!", **kwargs)
 
             return False
+
+
+class pyd:
+    def __init__(self, absPath: str | PathLike[str], projectName: str = None):
+        self.compliantArg(absPath)
+
+        self._filePath = absPath
+
+        self._projectName = projectName if projectName else self.moudleName
+
+        self.executor = instruct(ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
+
+    @property
+    def filePath(self): return self._filePath
+
+    @cached_property
+    def dirPath(self): return path.dirname(self.filePath)
+
+    @cached_property
+    def fileName(self): return path.basename(self.filePath)
+
+    @cached_property
+    def moudleName(self): return path.splitext(self.fileName)[0]
+
+    @cached_property
+    def pythonVersion(self): return findall(r"^\d\.\d{1,2}", version)[0]
+
+    @cached_property
+    def cmakeVersion(self): return findall(r"\d\.\d{1,2}", self.executor("cmake --version", output=False))[0]
+
+    def _cmakeTxt(self): return partial(CMakeLists.format, self.cmakeVersion, self._projectName, self.pythonVersion, self._projectName)
+
+    @staticmethod
+    def compliantArg(_path: str | PathLike[str]):
+        if not path.exists(_path): raise FileNotFoundError(
+            f"没有找到文件'{_path}'")
+
+        if not path.isabs(_path): raise ValueError(
+            f"'{_path}'不是绝对路径,请输入绝对路径!")
+
+        if not _path.endswith(".c"): raise ValueError(
+            f"'{path.basename(_path)}'不是C后缀文件!")
+
+    def CMakeLists(self, fileName: str):
+        with open(path.join(self.dirPath, "CMakeLists.txt"), "w", encoding="utf-8") as file:
+
+            file.write(self._cmakeTxt()(fileName))
+
+    def build(self):
+        self.CMakeLists(self.fileName)
+
+        self.executor(r"cmake -B build -S . -Dpybind11_DIR=F:\ProgramFiles\Anaconda3\Lib\site-packages\pybind11\share\cmake\pybind11 -Wno-dev", cwd=self.dirPath)
+
+        rename(self.filePath, path.join(self.dirPath, (newName := f"{self.moudleName}.cpp")))
+
+        self.CMakeLists(newName)
+
+        self.executor(r"cmake --build build --config Release", cwd=self.dirPath)
+
+        rename(path.join(self.dirPath, "build", "Release", f"{self.moudleName}.cp311-win_amd64.pyd"), finPath := path.join(self.dirPath, f"{self.moudleName}.pyd"))
+
+        self.executor(rf"rd /s /q {path.join(self.dirPath, 'build')}")
+
+        rename(path.join(self.dirPath, newName), self.filePath)
+
+        remove(path.join(self.dirPath, "CMakeLists.txt"))
+
+        return finPath
+
+
+class pyToC:
+    def __init__(self, absPath: str | PathLike[str], projectName: str = None):
+        self.compliantArg(absPath)
+
+        self._filePath = absPath
+
+        self._projectName = projectName if projectName else self.moudleName
+
+        self.executor = instruct(ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
+
+    @property
+    def filePath(self): return self._filePath
+
+    @cached_property
+    def dirPath(self): return path.dirname(self.filePath)
+
+    @cached_property
+    def fileName(self): return path.basename(self.filePath)
+
+    @cached_property
+    def moudleName(self): return path.splitext(self.fileName)[0]
+
+    @staticmethod
+    def compliantArg(_path: str | PathLike[str]):
+        if not path.exists(_path): raise FileNotFoundError(
+            f"没有找到文件'{_path}'")
+
+        if not path.isabs(_path): raise ValueError(
+            f"'{_path}'不是绝对路径,请输入绝对路径!")
+
+        if not _path.endswith(".py"): raise ValueError(
+            f"'{path.basename(_path)}'不是py后缀文件!")
+
+    def setup(self):
+        if not path.exists(setupPath := path.join(self.dirPath, "setup.py")):
+
+            with open(setupPath, "w", encoding="utf-8") as file:
+
+                file.write(setup.format(self.moudleName, self.fileName, self.moudleName))
+
+    def build(self):
+        self.setup()
+
+        if input(f"请填写位于'{self.dirPath}'的setup.py文件,填写完成后保存并输入ok以继续: ").lower() == 'ok':
+
+            self.executor("python setup.py build_ext --inplace", cwd=self.dirPath)
+
+        else:
+            exit()
 
 
 class upload:

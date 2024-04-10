@@ -1,0 +1,2 @@
+recursive-include systemTools *.pyi
+recursive-include systemTools *.pyd

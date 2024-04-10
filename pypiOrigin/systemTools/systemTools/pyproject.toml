@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "systemTools"
-version = "0.0.10"
+version = "0.0.11"
 authors = [
   { name="Xiao Songtao", email="2257699870@qq.com" },
 ]

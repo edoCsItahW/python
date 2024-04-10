@@ -595,6 +595,11 @@ class instruct:
 
                 raise CMDError(error)
 
+            elif tempFunc(error) == tempFunc(self._eleiminate):
+
+                warn(
+                    f"你忽略了错误'{self._eleiminate}',而且没有将错误降级为警告,这导致一个错误被忽略了,带来的后果是返回了None而不是你期望的结果!")
+
     @staticmethod
     def _execute(instruction: str, *, cwd: PathLike | str = None, encoding: Literal["gbk", "utf-8"] = "gbk") -> tuple[str, str]:
         """

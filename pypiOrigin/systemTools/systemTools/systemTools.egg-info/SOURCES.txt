@@ -1,0 +1,11 @@
+LICENSE.txt
+MANIFEST.in
+README.md
+pyproject.toml
+systemTools/__init__.py
+systemTools/systemTools.pyd
+systemTools/systemTools.pyi
+systemTools.egg-info/PKG-INFO
+systemTools.egg-info/SOURCES.txt
+systemTools.egg-info/dependency_links.txt
+systemTools.egg-info/top_level.txt
