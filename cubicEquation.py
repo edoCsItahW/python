@@ -14,12 +14,11 @@
 # 注释: 
 # -------------------------<Lenovo>----------------------------
 from IPython.display import display, Math
-from functools import cached_property
+from functools import cached_property, singledispatchmethod
 from fractions import Fraction
 from warnings import warn
 from typing import overload
 from cmath import pi, log, cos, acos, sqrt
-from math import e
 
 
 class autoNumber:
@@ -282,9 +281,18 @@ class CEoperator:
     def _qualified(value: str | int | float, *, otherCondition: bool = True):
         return value in [*map(str, range(10)), "/", "-", "."] and otherCondition
 
-    @staticmethod
-    def decimalsToFractions(num: float | int):
-        return Fraction(num.real).limit_denominator() + num.imag * 1j if isinstance(num, complex) else Fraction(num).limit_denominator()
+    @singledispatchmethod
+    def decimalsToFractions(self, num: float | int | complex):
+        return num
+
+    @decimalsToFractions.register(int)
+    def _(self, num: int | float): return Fraction(num).limit_denominator()
+
+    @decimalsToFractions.register(float)
+    def _(self, num: int | float): return Fraction(num).limit_denominator()
+
+    @decimalsToFractions.register(complex)
+    def _(self, num: complex): return Fraction(num.real).limit_denominator() + num.imag * 1j
 
     def show(self, order):
         display(Math(self.textDict[order]))
@@ -322,5 +330,4 @@ class CEoperator:
 
 if __name__ == '__main__':
     opt = CEoperator()
-    # opt.execute()
-    print(Fraction(0.625539310792479).limit_denominator())
+    opt.execute()
