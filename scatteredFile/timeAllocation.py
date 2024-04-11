@@ -29,8 +29,9 @@ class visualize:
 
         for i, l in enumerate(reversed(args) if reverse else args):
 
-            bar(sequence(l, start=0), l, bottom=(bottom := bottom + array(l)) * (1 if i else 0), color="black")
-            print(l, bottom)
+            bar(sequence(l, start=0), l, bottom=bottom)
+
+            bottom += array(l)
 
         show()
 
@@ -45,7 +46,7 @@ if __name__ == '__main__':
         "Sat": [0, 0, 0, 0, 450],
         "Sun": [0, 0, 0, 0, 270]
     }
-    # visualize.stackedColumn(*DataFrame(freeTimeDict).values, reverse=True)
-    # import sys
-    # print(sys.version)
-
+    taskTimeDict = {
+        "A": 0
+    }
+    visualize.stackedColumn(*DataFrame(freeTimeDict).values, reverse=True)

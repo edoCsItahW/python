@@ -17,21 +17,23 @@ from subprocess import PIPE, Popen
 from traceback import format_exc
 from warnings import warn
 from inspect import signature, getmembers, getmodule, stack, isfunction, getdoc, isclass
-from typing import Literal, Callable, Annotated
+from typing import Literal, Callable, Annotated, Any
 from pandas import set_option, Series
+from types import TracebackType
 from types import ModuleType
+from json import load, dump
 from copy import copy
 from os import listdir, path, remove, rmdir, walk, PathLike
 from re import findall, sub
 
 
-__version__ = "0.0.9"
+__version__ = "0.0.12"
 
 
 try:
     from ANSIdefine.ansiDefine import ansiManger
 except Exception:
-    from ansiDefine.ansiDefine import ansiManger
+    from ansiDefine.ansiDefine import ansiManger  # type: ignore
 
 __all__ = [
     "FileTree",
@@ -45,7 +47,8 @@ __all__ = [
     "updateAllPackage",
     "varname",
     "CMDError",
-    "instruct"
+    "instruct",
+    "jsonOpen"
 ]
 
 color = ansiManger()
@@ -201,7 +204,7 @@ def to_EXE(pyPath: str, mutliPath: list = None, figPath: list[tuple] = None, con
     注意:如果该文件或多文件中的主文件运行后不执行任何交换,则不会正确的打包.
     pyinstaller --icon=path/to/icon.ico your_script.py
     """
-    from conFunc import waiter
+    from confunc import waiter
     from textTools import isChinese
     if any(isChinese(word) for word in pyPath):
         raise ValueError("不支持中文文件名")
@@ -625,6 +628,96 @@ class instruct:
             err.add_note("命令行执行器内核运行错误")
 
             raise err
+
+class jsonFile:
+    def __init__(self, jsonDict: dict):
+        self._json = jsonDict
+
+        if not isinstance(self._json, dict):
+            raise TypeError(f"参数`jsonDict`必须为字典(dict)类型,你的输入类型: '{type(self._json)}'")
+
+    @property
+    def jsonData(self):
+        return self._json
+
+    @jsonData.setter
+    def jsonData(self, value: dict):
+
+        if not isinstance(self._json, dict):
+            raise TypeError(f"参数`jsonDict`必须为字典(dict)类型,你的输入类型: '{type(value)}'")
+
+    def _pairParser(self, key: Any, value: Any):
+        if key in self.jsonData:
+
+            if isinstance(self.jsonData[key], list):
+
+                self.jsonData[key].append(value)
+
+            else:
+
+                self.jsonData[key] = value
+
+        else:
+
+            self.jsonData.update([(key, value)])
+
+    def update(self, __m: list[tuple[Any, Any]]):
+
+        if not isinstance(__m, list) or any([not isinstance(i, tuple) for i in __m]):
+            raise ValueError(
+                f"传入的位置参数`__m`必须形如'[('key': 'value')]',你的输入'{__m}'")
+
+        for t in __m:
+            self._pairParser(*t)
+
+    def read(self):
+        return self.jsonData
+
+    def write(self, __d: dict = None):
+
+        if __d is None:
+
+            __d = self.jsonData
+
+        else:
+
+            self.jsonData = __d
+
+
+class jsonOpen:
+    def __init__(self, file: str | bytes | PathLike[str] | PathLike[bytes],
+                 mode: Literal["r+", "+r", "w+", "+w", "a+", "+a", "w", "a", "r"]):  # type: ignore
+        self._filePath = path.abspath(file)
+        self._mode = mode
+        self._jsonfile: jsonFile = None
+
+        if not path.exists(self._filePath): raise FileNotFoundError(f"找不到文件: '{self._filePath}'")
+
+    @property
+    def _file(self):
+        return self._jsonfile
+
+    @_file.setter
+    def _file(self, value: Any):
+
+        self._jsonfile = value
+
+    def __enter__(self):
+
+        with open(self._filePath, "r") as File:
+            self._file = jsonFile(load(File))
+
+            return self._file
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+
+        if any([exc_type, exc_val, exc_tb]):
+            exc_tb: TracebackType
+            warn(f"一个错误被捕获了: {exc_type}({exc_val}), line {exc_tb.tb_lineno}")
+
+        if self._mode != "r":
+            with open(self._filePath, self._mode) as file:
+                dump(self._file.jsonData, file)
 
 
 if __name__ == '__main__':
