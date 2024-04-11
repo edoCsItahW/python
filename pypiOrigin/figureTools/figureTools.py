@@ -173,7 +173,7 @@ class baseImg:
     @staticmethod
     def plot(_seq: Sequence | list[int | tuple[int, int]] | dict[tuple, str], *,
              Title: str = None, Xlabel: tuple[str, tuple[Literal["f"], float], tuple[Literal["c"], str]] = None, Ylabel: tuple[str, tuple[Literal["f"], float], tuple[Literal["c"], str]] = None, Xtick: list = None):
-        from conFunc import sequence
+        from confunc import sequence
 
         if isinstance(_seq, list):
             if not isinstance(_seq[0], int):

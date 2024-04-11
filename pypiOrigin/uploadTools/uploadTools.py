@@ -26,6 +26,7 @@ from time import sleep
 from sys import version
 from os import PathLike, path, listdir, mkdir, rename, remove
 from re import findall
+from datetime import datetime
 
 __version__ = "1.1.3"
 
@@ -632,6 +633,16 @@ class actionSet:
 
             contentDict["version"] = ".".join(map(str, self.vsList))
 
+            if "uploadLog" in contentDict:
+                contentDict['uploadLog'].append({
+                    datetime.now().strftime("[%Y-%m-%d %H:%M:%S]"): {
+                        contentDict["version"]: True
+                    }
+                })
+
+            else:
+                contentDict.update([("uploadLog", [{datetime.now().strftime("[%Y-%m-%d %H:%M:%S]"): {contentDict["version"]: True}}])])
+
             file.write(contentDict)
 
     @singledispatchmethod
@@ -672,6 +683,10 @@ class actionSet:
             argsDict = file.read()
 
             argsDict["version"] = ".".join(map(str, self.vsList))
+
+            if "uploadLog" in argsDict:
+
+                (vDict := (timeDict := argsDict["uploadLog"][-1])[list(timeDict.keys())[0]])[list(vDict.keys())[0]] = False
 
             file.write(argsDict)
 
@@ -893,6 +908,12 @@ class actionSet:
         else:
             outputInfo(f"build -> 移动{self.args.fileName}")
 
+    @staticmethod
+    def checkRequestList(requestList: list):
+        for p in requestList:
+            if not path.exists(p): raise FileNotFoundError(
+                f"缺少预设需求文件结构中的'{p}'文件!")
+
 
 class upload:
     def __init__(self, fileAbsPath: str | PathLike[str], *, restore: bool = True, debug: bool = False, color: bool = True, **kwargs):
@@ -918,6 +939,34 @@ class upload:
         self._args = argSet(fileAbsPath, restore=restore, debug=debug, color=color, **kwargs)
         self._actionSet = actionSet(self._args)
 
+        self._common = [
+            path.join(self.args.dirPath, "MANIFEST.in"),
+            path.join(self.args.dirPath, "README.md"),
+            path.join(self.args.dirPath, "pyproject.toml"),
+            path.join(self.args.dirPath, "LICENSE.txt"),
+            path.join(self.args.projectPath, "__init__.py"),
+        ]
+
+        self._pyd = [
+            path.join(self.args.projectPath, f"{self.args.moduleName}.pyd"),
+            path.join(self.args.projectPath, f"{self.args.moduleName}.pyi")
+        ] + self._common
+
+        self._pyc = [
+            path.join(self.args.projectPath, f"{self.args.moduleName}.pyc"),
+            path.join(self.args.projectPath, f"{self.args.moduleName}.pyi")
+        ] + self._common
+
+        self._normal = [
+            path.join(self.args.projectPath, f"{self.args.moduleName}.py"),
+        ] + self._common
+
+        self.requestDict = {
+            self.pyd: self._pyd,
+            self.pyc: self._pyc,
+            self.normal: self._normal
+        }
+
     @property
     def args(self): return self._args
 
@@ -927,6 +976,8 @@ class upload:
     def tryDec(self, func: Callable, *, copy: bool = False):
         try:
             func()
+
+            # self.actionSet.checkRequestList(self.requestDict[func])
 
         except Exception as e:
             None if copy else rename(self.args.newPath, self.args.filePath)
@@ -1024,26 +1075,26 @@ class upload:
         self._successDo()
 
 
-parser = ArgumentParser(prog="PYPI软件包上传工具", description="一个用于上传python软件包的工具.", epilog="**\nfileAbsolutePath, *, restore = True, debug = False, color = True, **kwargs\n**")
-parser.add_argument("file", help="你需要上传的python文件的绝对路径。")
-parser.add_argument("-T", "--type", default="pyd", choices=['pyc', 'pyd', 'normal'], help="打包的模式,pyc: 通过pyc文件打包, pyd: 通过pyd文件打包, normal: 通过py文件打包.(默认值: pyd)")
-parser.add_argument("-R", "--restore", default="True", choices=["True", "False"], help="当出现错误时是否要还原初始状态。(默认值: True)")
-parser.add_argument("-C", "--color", default="True", choices=["True", "False"], help="是否运行输出信息带有色彩。(默认值: True)")
-parser.add_argument("-D", "--debug", default="False", choices=["True", "False"], help="是否开启debug模式。(默认值: False)")
-parser.add_argument("-I", "--ignore", default="True", choices=["True", "False"], help="是否将Error降级为warn以保证程序运行。(默认值: True)")
-parser.add_argument("-E", "--eliminate", default=(eDef := "文件名、目录名或卷标语法不正确。"), help="排除无关紧要的错误信息, 例如: '文件名、目录名或卷标语法不正确。'(默认值: '文件名、目录名或卷标语法不正确。')")
-parser.add_argument("-V", "--version", help="版本")
-args = parser.parse_args()
+# parser = ArgumentParser(prog="PYPI软件包上传工具", description="一个用于上传python软件包的工具.", epilog="**\nfileAbsolutePath, *, restore = True, debug = False, color = True, **kwargs\n**")
+# parser.add_argument("file", help="你需要上传的python文件的绝对路径。")
+# parser.add_argument("-T", "--type", default="pyd", choices=['pyc', 'pyd', 'normal'], help="打包的模式,pyc: 通过pyc文件打包, pyd: 通过pyd文件打包, normal: 通过py文件打包.(默认值: pyd)")
+# parser.add_argument("-R", "--restore", default="True", choices=["True", "False"], help="当出现错误时是否要还原初始状态。(默认值: True)")
+# parser.add_argument("-C", "--color", default="True", choices=["True", "False"], help="是否运行输出信息带有色彩。(默认值: True)")
+# parser.add_argument("-D", "--debug", default="False", choices=["True", "False"], help="是否开启debug模式。(默认值: False)")
+# parser.add_argument("-I", "--ignore", default="True", choices=["True", "False"], help="是否将Error降级为warn以保证程序运行。(默认值: True)")
+# parser.add_argument("-E", "--eliminate", default=(eDef := "文件名、目录名或卷标语法不正确。"), help="排除无关紧要的错误信息, 例如: '文件名、目录名或卷标语法不正确。'(默认值: '文件名、目录名或卷标语法不正确。')")
+# parser.add_argument("-V", "--version", help="版本")
+# args = parser.parse_args()
 
 
 if __name__ == '__main__':
     # pyinstaller -F uploadTools.py -n upload -i upload_1.ico
 
-    # ins = upload(r"D:\xst_project_202212\codeSet\Python\pypiOrigin\systemTools\systemTools.py", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
-    # ins.build("pyd")
+    ins = upload(r"D:\xst_project_202212\codeSet\Python\pypiOrigin\systemTools\systemTools.py", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
+    ins.build("normal")
 
-    if args.vision:
-        print(__version__)
-    else:
-        ins = upload(args.file, debug=strToBool(args.debug, default=False), ignore=strToBool(args.ignore, default=True), eliminate=args.eliminate, color=strToBool(args.color, default=True), restore=strToBool(args.restore, default=True))
-        ins.build(args.type)
+    # if args.version:
+    #     print(__version__)
+    # else:
+    #     ins = upload(args.file, debug=strToBool(args.debug, default=False), ignore=strToBool(args.ignore, default=True), eliminate=args.eliminate, color=strToBool(args.color, default=True), restore=strToBool(args.restore, default=True))
+    #     ins.build(args.type)

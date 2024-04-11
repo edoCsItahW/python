@@ -22,6 +22,7 @@ from textTools import getWidth
 from functools import cache
 from threading import Thread, Event
 from typing import Union, Iterable, Literal, TypeGuard, Callable, Sequence
+from types import EllipsisType
 from queue import Queue as tQueue
 from numpy import ndarray, array
 from math import floor, sqrt
@@ -357,7 +358,7 @@ def temPrint(text: ...) -> None:
 
 
 class Arrange:
-    def __init__(self, data: list, column: ..., *, Type: Literal["len", "wid"] = "wid"):
+    def __init__(self, data: list, column: EllipsisType, *, Type: Literal["len", "wid"] = "wid"):
         self._data = data
         self._column = column
         self._type = Type
@@ -403,7 +404,7 @@ class Table:
         self._title = title
         self._type = Type
 
-    def lenMethod(self, any: ...): return getWidth(any) if self._type == "wid" else len(any)
+    def lenMethod(self, any: EllipsisType): return getWidth(any) if self._type == "wid" else len(any)
 
     @property
     def data(self): return array(self._data) if isinstance(self._data, list) else self._data
