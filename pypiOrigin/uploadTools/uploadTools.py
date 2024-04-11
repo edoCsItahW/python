@@ -634,11 +634,8 @@ class actionSet:
             contentDict["version"] = ".".join(map(str, self.vsList))
 
             if "uploadLog" in contentDict:
-                contentDict['uploadLog'].append({
-                    datetime.now().strftime("[%Y-%m-%d %H:%M:%S]"): {
-                        contentDict["version"]: True
-                    }
-                })
+
+                contentDict['uploadLog'].append({datetime.now().strftime("[%Y-%m-%d %H:%M:%S]"): {contentDict["version"]: True}})
 
             else:
                 contentDict.update([("uploadLog", [{datetime.now().strftime("[%Y-%m-%d %H:%M:%S]"): {contentDict["version"]: True}}])])
@@ -1075,26 +1072,26 @@ class upload:
         self._successDo()
 
 
-# parser = ArgumentParser(prog="PYPI软件包上传工具", description="一个用于上传python软件包的工具.", epilog="**\nfileAbsolutePath, *, restore = True, debug = False, color = True, **kwargs\n**")
-# parser.add_argument("file", help="你需要上传的python文件的绝对路径。")
-# parser.add_argument("-T", "--type", default="pyd", choices=['pyc', 'pyd', 'normal'], help="打包的模式,pyc: 通过pyc文件打包, pyd: 通过pyd文件打包, normal: 通过py文件打包.(默认值: pyd)")
-# parser.add_argument("-R", "--restore", default="True", choices=["True", "False"], help="当出现错误时是否要还原初始状态。(默认值: True)")
-# parser.add_argument("-C", "--color", default="True", choices=["True", "False"], help="是否运行输出信息带有色彩。(默认值: True)")
-# parser.add_argument("-D", "--debug", default="False", choices=["True", "False"], help="是否开启debug模式。(默认值: False)")
-# parser.add_argument("-I", "--ignore", default="True", choices=["True", "False"], help="是否将Error降级为warn以保证程序运行。(默认值: True)")
-# parser.add_argument("-E", "--eliminate", default=(eDef := "文件名、目录名或卷标语法不正确。"), help="排除无关紧要的错误信息, 例如: '文件名、目录名或卷标语法不正确。'(默认值: '文件名、目录名或卷标语法不正确。')")
-# parser.add_argument("-V", "--version", help="版本")
-# args = parser.parse_args()
+parser = ArgumentParser(prog="PYPI软件包上传工具", description="一个用于上传python软件包的工具.", epilog="**\nfileAbsolutePath, *, restore = True, debug = False, color = True, **kwargs\n**")
+parser.add_argument("file", help="你需要上传的python文件的绝对路径。")
+parser.add_argument("-T", "--type", default="pyd", choices=['pyc', 'pyd', 'normal'], help="打包的模式,pyc: 通过pyc文件打包, pyd: 通过pyd文件打包, normal: 通过py文件打包.(默认值: pyd)")
+parser.add_argument("-R", "--restore", default="True", choices=["True", "False"], help="当出现错误时是否要还原初始状态。(默认值: True)")
+parser.add_argument("-C", "--color", default="True", choices=["True", "False"], help="是否运行输出信息带有色彩。(默认值: True)")
+parser.add_argument("-D", "--debug", default="False", choices=["True", "False"], help="是否开启debug模式。(默认值: False)")
+parser.add_argument("-I", "--ignore", default="True", choices=["True", "False"], help="是否将Error降级为warn以保证程序运行。(默认值: True)")
+parser.add_argument("-E", "--eliminate", default=(eDef := "文件名、目录名或卷标语法不正确。"), help="排除无关紧要的错误信息, 例如: '文件名、目录名或卷标语法不正确。'(默认值: '文件名、目录名或卷标语法不正确。')")
+parser.add_argument("-V", "--version", help="版本")
+args = parser.parse_args()
 
 
 if __name__ == '__main__':
     # pyinstaller -F uploadTools.py -n upload -i upload_1.ico
 
-    ins = upload(r"D:\xst_project_202212\codeSet\Python\pypiOrigin\systemTools\systemTools.py", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
-    ins.build("normal")
+    # ins = upload(r"D:\xst_project_202212\codeSet\Python\pypiOrigin\systemTools\systemTools.py", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
+    # ins.build("pyc")
 
-    # if args.version:
-    #     print(__version__)
-    # else:
-    #     ins = upload(args.file, debug=strToBool(args.debug, default=False), ignore=strToBool(args.ignore, default=True), eliminate=args.eliminate, color=strToBool(args.color, default=True), restore=strToBool(args.restore, default=True))
-    #     ins.build(args.type)
+    if args.version:
+        print(__version__)
+    else:
+        ins = upload(args.file, debug=strToBool(args.debug, default=False), ignore=strToBool(args.ignore, default=True), eliminate=args.eliminate, color=strToBool(args.color, default=True), restore=strToBool(args.restore, default=True))
+        ins.build(args.type)
