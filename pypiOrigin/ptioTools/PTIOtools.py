@@ -70,7 +70,7 @@ class IOmanger:
 
     @ignoreErrorAndWarning(False, ErrorType=(RuntimeError, AssertionError,), WarningType=(RuntimeWarning,))
     def createThread(self, messlist, arg):
-        from conFunc import splitList
+        from confunc import splitList
         times = self.part[1]
         before = splitList(self.cla.threadDo(messlist, arg), times) if len(messlist) >= times else messlist
         loop = self.createLoop()
@@ -82,7 +82,7 @@ class IOmanger:
 
     @ignoreErrorAndWarning(False, ErrorType=(RuntimeError, AssertionError,), WarningType=(RuntimeWarning,))
     def createProcess(self, messList, arg):
-        from conFunc import splitList
+        from confunc import splitList
         before = splitList(self.cla.processDo(messList, arg), self.part[0])
         with ProcessPoolExecutor(max_workers=10) as executor:
             processes = [executor.submit(self.createThread, partlist, self.cla.processarg, ) for partlist in before]

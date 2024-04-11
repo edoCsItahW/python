@@ -26,9 +26,7 @@ from copy import copy
 from os import listdir, path, remove, rmdir, walk, PathLike
 from re import findall, sub
 
-
 __version__ = "0.0.12"
-
 
 try:
     from ANSIdefine.ansiDefine import ansiManger
@@ -304,14 +302,14 @@ def get_function_docs_in_file(modeName: str | ModuleType = None, *, otherMagic: 
                                 f"{name}.{n}"] = f"(这个{'函数' if isfunction(m) else '变量'}没有简要提示.)" if (
                                                                                                                     docs := getdoc(
                                                                                                                         m)) is None else \
-                            docs.split("\n\n")[0]
+                                docs.split("\n\n")[0]
 
                         if otherMagic:
                             functions_dict[
                                 f"{name}.{n}"] = f"(这个{'函数' if isfunction(m) else '变量'}没有简要提示.)" if (
                                                                                                                     docs := getdoc(
                                                                                                                         m)) is None else \
-                            docs.split("\n\n")[0]
+                                docs.split("\n\n")[0]
 
     except AttributeError:
         warn(format_exc(), SyntaxWarning)
@@ -497,14 +495,15 @@ def docToMd(filePath: str, Class: object) -> None:
             print(attr)
 
 
-def outputInfo(info: str, *, color: Literal["red", "green", "blue", "yellow"] | str | bool = "green", flag: bool = True):
+def outputInfo(info: str, *, color: Literal["red", "green", "blue", "yellow"] | str | bool = "green",
+               flag: bool = True):
     if not flag: return
 
     colorDict = {
-        "red": '\033[41m',
-        "green": '\033[42m',
+        "red":    '\033[41m',
+        "green":  '\033[42m',
         "yellow": '\033[43m',
-        "blue": '\033[44m',
+        "blue":   '\033[44m',
     }
 
     if isinstance(color, str):
@@ -541,7 +540,8 @@ class instruct:
 
         return cls._instance
 
-    def __init__(self, *, output: bool = True, ignore: bool = False, color: bool | Literal["red", "yellow", "green", "blue"] = True, eliminate: str = None):
+    def __init__(self, *, output: bool = True, ignore: bool = False,
+                 color: bool | Literal["red", "yellow", "green", "blue"] = True, eliminate: str = None):
         """
         命令行初始器
 
@@ -558,7 +558,8 @@ class instruct:
         self._flagColor = color
         self._eleiminate = eliminate
 
-    def __call__(self, instruction: str, *, cwd: PathLike | str = None, output: bool = None, encoding: Literal["gbk", "utf-8"] = "gbk", note: str = ""):
+    def __call__(self, instruction: str, *, cwd: PathLike | str = None, output: bool = None,
+                 encoding: Literal["gbk", "utf-8"] = "gbk", note: str = ""):
         """
         执行器
 
@@ -579,14 +580,12 @@ class instruct:
         if self._flagIgnore:
 
             if flag := (self._flagOutput if output is None else output):
-
                 outputInfo(f"{cwd if cwd else 'cmd'}>{instruction}", color="green" if self._flagColor else False,
                            flag=flag)
 
                 print(correct) if correct else None
 
             if self._eleiminate is None or (tempFunc(error) != tempFunc(self._eleiminate)):
-
                 warn(
                     error + note, SyntaxWarning)
 
@@ -604,7 +603,8 @@ class instruct:
                     f"你忽略了错误'{self._eleiminate}',而且没有将错误降级为警告,这导致一个错误被忽略了,带来的后果是返回了None而不是你期望的结果!")
 
     @staticmethod
-    def _execute(instruction: str, *, cwd: PathLike | str = None, encoding: Literal["gbk", "utf-8"] = "gbk") -> tuple[str, str]:
+    def _execute(instruction: str, *, cwd: PathLike | str = None, encoding: Literal["gbk", "utf-8"] = "gbk") -> tuple[
+        str, str]:
         """
         执行器内核
 
@@ -628,6 +628,7 @@ class instruct:
             err.add_note("命令行执行器内核运行错误")
 
             raise err
+
 
 class jsonFile:
     def __init__(self, jsonDict: dict):
@@ -685,8 +686,18 @@ class jsonFile:
 
 
 class jsonOpen:
-    def __init__(self, file: str | bytes | PathLike[str] | PathLike[bytes],
-                 mode: Literal["r+", "+r", "w+", "+w", "a+", "+a", "w", "a", "r"]):  # type: ignore
+    def __init__(self, file: str | bytes | PathLike[str] | PathLike[bytes], mode: Literal["r+", "+r", "w+", "+w", "a+", "+a", "w", "a", "r"]):  # type: ignore
+        """
+        与open相同
+
+        >>> with jsonOpen(file, "r") as file:
+        >>>     file.read()  # type: dict
+
+        :param file:
+        :type file:
+        :param mode:
+        :type mode:
+        """
         self._filePath = path.abspath(file)
         self._mode = mode
         self._jsonfile: jsonFile = None

@@ -13,14 +13,15 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
-from pypiOrigin.systemTools.systemTools import instruct, jsonOpen
 from subprocess import Popen, PIPE
 from functools import cached_property, partial, singledispatchmethod
 from threading import Thread
 from argparse import ArgumentParser
 from warnings import warn
 from inspect import currentframe
-from typing import Literal, Callable
+from typing import Literal, Callable, Any
+from types import TracebackType
+from json import dump, load
 from time import sleep
 from sys import version
 from os import PathLike, path, listdir, mkdir, rename, remove
@@ -98,6 +99,215 @@ setup(
 class CMDError(Exception):
     def __init__(self, *args):
         self.args = args
+
+
+class instruct:
+    """
+    命令行运行器
+
+    使用方法::
+
+        >>> ins = instruct(output=True, ignore=False, color=True)
+        >>> ins("dir")
+    """
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+
+        return cls._instance
+
+    def __init__(self, *, output: bool = True, ignore: bool = False,
+                 color: bool | Literal["red", "yellow", "green", "blue"] = True, eliminate: str = None):
+        """
+        命令行初始器
+
+        :keyword output: 是否运行输出结果.
+        :type output: bool
+        :keyword ignore: 是否将所有(原本将会抛出错误)错误(Error)降级为警告(Warning)以保证程序不中断.
+        :type ignore: bool
+        :keyword color: 档为布尔类型(bool)是决定输出是否带有ANSI色彩,为字符串(str)时决定输出什么颜色.
+        :type color: bool
+        :keyword eliminate: 是否排除某些会被误认为错误的无关紧要的警告,例如: '文件名、目录名或卷标语法不正确。'
+        """
+        self._flagOutput = output
+        self._flagIgnore = ignore
+        self._flagColor = color
+        self._eleiminate = eliminate
+
+    def __call__(self, instruction: str, *, cwd: PathLike | str = None, output: bool = None,
+                 encoding: Literal["gbk", "utf-8"] = "gbk", note: str = ""):
+        """
+        执行器
+
+        :param instruction: 指令
+        :type instruction: str
+        :keyword cwd: 设定当前路径或执行路径
+        :type cwd: str
+        :keyword allowOUTPUT: 是否允许打印结果
+        :type allowOUTPUT: bool
+        :return: cmd执行结果
+        :rtype: str
+        """
+
+        correct, error = self._execute(instruction, cwd=cwd, encoding=encoding)
+
+        tempFunc = lambda x: x.replace("\n", "").replace("\r", "").replace(" ", "")
+
+        if self._flagIgnore:
+
+            if flag := (self._flagOutput if output is None else output):
+                outputInfo(f"{cwd if cwd else 'cmd'}>{instruction}", color="green" if self._flagColor else False,
+                           flag=flag)
+
+                print(correct) if correct else None
+
+            if self._eleiminate is None or (tempFunc(error) != tempFunc(self._eleiminate)):
+                warn(
+                    error + note, SyntaxWarning)
+
+            return correct
+
+        else:
+
+            if self._eleiminate is None or (tempFunc(error) != tempFunc(self._eleiminate)):
+
+                raise CMDError(error)
+
+            elif tempFunc(error) == tempFunc(self._eleiminate):
+
+                warn(
+                    f"你忽略了错误'{self._eleiminate}',而且没有将错误降级为警告,这导致一个错误被忽略了,带来的后果是返回了None而不是你期望的结果!")
+
+    @staticmethod
+    def _execute(instruction: str, *, cwd: PathLike | str = None, encoding: Literal["gbk", "utf-8"] = "gbk") -> tuple[
+        str, str]:
+        """
+        执行器内核
+
+        :param instruction: 指令
+        :type instruction: str
+        :param cwd: 执行环境路径
+        :type cwd: PathLike | str
+        :param encoding: 编码.(防止命令行输出乱码)
+        :type encoding: str
+        :return: 一个字典,键'C'对应正确信息,键'E'对应错误消息
+        :rtype: dict
+        """
+        try:
+
+            result = Popen(instruction, shell=True, stdout=PIPE, stderr=PIPE, cwd=cwd)
+
+            return tuple(getattr(result, i).read().decode(encoding, errors='ignore') for i in ["stdout", "stderr"])
+
+        except Exception as err:
+
+            err.add_note("命令行执行器内核运行错误")
+
+            raise err
+
+
+class jsonFile:
+    def __init__(self, jsonDict: dict):
+        self._json = jsonDict
+
+        if not isinstance(self._json, dict):
+            raise TypeError(f"参数`jsonDict`必须为字典(dict)类型,你的输入类型: '{type(self._json)}'")
+
+    @property
+    def jsonData(self):
+        return self._json
+
+    @jsonData.setter
+    def jsonData(self, value: dict):
+
+        if not isinstance(self._json, dict):
+            raise TypeError(f"参数`jsonDict`必须为字典(dict)类型,你的输入类型: '{type(value)}'")
+
+    def _pairParser(self, key: Any, value: Any):
+        if key in self.jsonData:
+
+            if isinstance(self.jsonData[key], list):
+
+                self.jsonData[key].append(value)
+
+            else:
+
+                self.jsonData[key] = value
+
+        else:
+
+            self.jsonData.update([(key, value)])
+
+    def update(self, __m: list[tuple[Any, Any]]):
+
+        if not isinstance(__m, list) or any([not isinstance(i, tuple) for i in __m]):
+            raise ValueError(
+                f"传入的位置参数`__m`必须形如'[('key': 'value')]',你的输入'{__m}'")
+
+        for t in __m:
+            self._pairParser(*t)
+
+    def read(self):
+        return self.jsonData
+
+    def write(self, __d: dict = None):
+
+        if __d is None:
+
+            __d = self.jsonData
+
+        else:
+
+            self.jsonData = __d
+
+
+class jsonOpen:
+    def __init__(self, file: str | bytes | PathLike[str] | PathLike[bytes], mode: Literal["r+", "+r", "w+", "+w", "a+", "+a", "w", "a", "r"]):  # type: ignore
+        """
+        与open相同
+
+        >>> with jsonOpen(file, "r") as file:
+        >>>     file.read()  # type: dict
+
+        :param file:
+        :type file:
+        :param mode:
+        :type mode:
+        """
+        self._filePath = path.abspath(file)
+        self._mode = mode
+        self._jsonfile: jsonFile = None
+
+        if not path.exists(self._filePath): raise FileNotFoundError(f"找不到文件: '{self._filePath}'")
+
+    @property
+    def _file(self):
+        return self._jsonfile
+
+    @_file.setter
+    def _file(self, value: Any):
+
+        self._jsonfile = value
+
+    def __enter__(self):
+
+        with open(self._filePath, "r") as File:
+            self._file = jsonFile(load(File))
+
+            return self._file
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+
+        if any([exc_type, exc_val, exc_tb]):
+            exc_tb: TracebackType
+            warn(f"一个错误被捕获了: {exc_type}({exc_val}), line {exc_tb.tb_lineno}")
+
+        if self._mode != "r":
+            with open(self._filePath, self._mode) as file:
+                dump(self._file.jsonData, file)
 
 
 class SpawnError(Exception):
@@ -232,7 +442,7 @@ class argSet:
     def jsonPath(self):
         return jsPath if path.exists(jsPath := path.join(self.rootPath, "args.json")) else None
 
-    @cached_property
+    @property
     def argsDict(self):
         if self.jsonPath:
             with jsonOpen(self.jsonPath, "r") as file:
@@ -829,7 +1039,7 @@ args = parser.parse_args()
 if __name__ == '__main__':
     # pyinstaller -F uploadTools.py -n upload -i upload_1.ico
 
-    # ins = upload(r"D:\xst_project_202212\codeSet\Python\pypiOrigin\ptioTools\PTIOtools.py", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
+    # ins = upload(r"D:\xst_project_202212\codeSet\Python\pypiOrigin\systemTools\systemTools.py", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
     # ins.build("pyd")
 
     if args.vision:
