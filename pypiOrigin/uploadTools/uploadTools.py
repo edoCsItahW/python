@@ -13,10 +13,13 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
+from threading import Thread
+from win32com.client import Dispatch, CDispatch
 from subprocess import Popen, PIPE
 from functools import cached_property, partial, singledispatchmethod
-from threading import Thread
+from win32gui import FindWindow, SetForegroundWindow, EnumWindows, GetWindowText, IsWindowVisible
 from argparse import ArgumentParser
+from win32api import ShellExecute
 from datetime import datetime
 from warnings import warn
 from inspect import currentframe
@@ -27,9 +30,8 @@ from time import sleep
 from sys import version
 from os import PathLike, path, listdir, mkdir, rename, remove
 from re import findall
-from scatteredFile.win32test import cmd
 
-__version__ = "1.1.3"
+__version__ = "1.2.3"
 
 errorLog = {}
 
@@ -99,8 +101,89 @@ setup(
 
 
 class CMDError(Exception):
+    """
+    CMD错误类
+    """
     def __init__(self, *args):
         self.args = args
+
+
+class winAuto:
+    def __init__(self, *args, cwd: str | PathLike[str] = r"C:\Window\System32", init: str = None, waitTime: int | float = 0.5):
+
+        self._args = args
+
+        self._cwd = cwd
+
+        self._init = init if init else ["color 80", "cls"]
+
+        self._shell = Dispatch("WScript.Shell")
+
+        self._waitTime = waitTime
+
+        self.windows = []
+
+    @property
+    def shell(self) -> CDispatch: return self._shell
+
+    @property
+    def args(self): return self._args
+
+    def findCmd(self, *, keyword: str = "cmd"):
+
+        self.getAllTitle()
+
+        return FindWindow(None, [i for i in self.windows if keyword in i][0])
+
+    def _codeBack(self, hwnd, _):
+        if IsWindowVisible(hwnd) and (text := GetWindowText(hwnd)):
+            self.windows.append(text)
+
+    def getAllTitle(self):
+        EnumWindows(self._codeBack, None)
+
+    def sendInstruct(self, instruct: str, *, waitTime: int = None, enter: bool = True):
+        sleep(waitTime if waitTime else self._waitTime)
+
+        self.shell.SendKeys(instruct + ("{ENTER}" if enter else ''))
+
+    def begin(self):
+        ShellExecute(0, 'open', 'cmd.exe', '', self._cwd, 1)
+
+        sleep(self._waitTime)
+
+        hwnd = self.findCmd()
+
+        try:
+            SetForegroundWindow(hwnd)
+
+            self.sendInstruct(fr"{' & '.join(self._init + list(self.args))}{{ENTER}}")
+
+        except Exception as e:
+            raise e from CMDError("没找到句柄?")
+
+
+class cmd:
+    """
+    用于弹出cmd窗口并进行按键模拟
+    """
+    def __new__(cls, *args: str, cwd: str | PathLike[str] = r"C:\Window\System32", init: list = None, waitTime: int | float = 0.5) -> winAuto:
+        """
+
+        :param args: 指令,这些指令将被用'&'连接并执行
+        :type args: str
+        :keyword cwd: 执行命令的当前路径
+        :type cwd: str
+        :keyword init: 初始化命令(默认为: ['color 80', 'cls'])
+        :type init: list
+        :keyword waitTime: 每条指令的等待时间(默认为: 0.5)
+        :type waitTime: int | float
+        :return: 返回一个winAuto类,你可以继续对这个类进行操作.
+        :retype: winAuto
+        """
+        ins = winAuto(*args, cwd=cwd, init=init, waitTime=waitTime)
+        ins.begin()
+        return ins
 
 
 class instruct:
@@ -184,8 +267,7 @@ class instruct:
                     f"你忽略了错误'{self._eleiminate}',而且没有将错误降级为警告,这导致一个错误被忽略了,带来的后果是返回了None而不是你期望的结果!")
 
     @staticmethod
-    def _execute(instruction: str, *, cwd: PathLike | str = None, encoding: Literal["gbk", "utf-8"] = "gbk") -> tuple[
-        str, str]:
+    def _execute(instruction: str, *, cwd: PathLike | str = None, encoding: Literal["gbk", "utf-8"] = "gbk") -> tuple[str, str]:
         """
         执行器内核
 
@@ -372,7 +454,7 @@ class pathTools:
 
 
 class argSet:
-    def __init__(self, fileAbsPath: str | PathLike[str], *, restore: bool = True, debug: bool = False, color: bool = True, **kwargs):
+    def __init__(self, fileAbsPath: str | PathLike[str], *, restore: bool = True, debug: bool = False, color: bool = True, auto: bool = True, increase: bool = True, **kwargs):
         """
         /rootPath
             /dirPath = rootPath(old)
@@ -401,6 +483,9 @@ class argSet:
         self._color = color
         self._flagRestore = restore
         self._flagDebug = debug
+        self._flagAuto = auto
+        self._flagIncrease = increase
+
         self._executor = instruct(color=color, output=debug, **kwargs)
 
     @property
@@ -469,6 +554,12 @@ class argSet:
     @property
     def flagDebug(self):
         return self._flagDebug
+
+    @property
+    def flagAuto(self): return self._flagAuto
+
+    @property
+    def flagIncrease(self): return self._flagIncrease
 
     @cached_property
     def pyVersion(self):
@@ -645,8 +736,9 @@ class actionSet:
 
     @singledispatchmethod
     def _jsonIncrease(self, increase: bool | Literal["major", "minor", "patch"] = "patch"):
-        raise TypeError(
-            f"位置参数'increase'必须为布尔(bool)或['major', 'minor', 'patch']中的字符串(str)类型,而你的输入'{increase}'!")
+        if increase is not None:
+            raise TypeError(
+                f"位置参数'increase'必须为布尔(bool)或['major', 'minor', 'patch']中的字符串(str)类型,而你的输入'{increase}'!")
 
     @_jsonIncrease.register(bool)
     def _(self, increase):
@@ -689,7 +781,9 @@ class actionSet:
             file.write(argsDict)
 
     def _kewargs(self, file: str):
-        self._jsonIncrease(self.args.argsDict["increase"])
+        if self.args.jsonPath and self.args.flagIncrease:
+
+            self._jsonIncrease(self.args.argsDict["increase"] if "increase" in self.args.argsDict else None)
 
         text = f"""[tool.poetry.scripts]
         files = ["{file}"]"""
@@ -914,7 +1008,7 @@ class actionSet:
 
 
 class upload:
-    def __init__(self, fileAbsPath: str | PathLike[str], *, restore: bool = True, debug: bool = False, color: bool = True, **kwargs):
+    def __init__(self, fileAbsPath: str | PathLike[str], *, restore: bool = True, debug: bool = False, color: bool = True, auto: bool = True, increase: bool = True, **kwargs):
         """
         --restore=bool       当出现错误时是否要还原初始状态。
         --debug=bool         是否开启Debug模式。
@@ -930,6 +1024,10 @@ class upload:
         :type debug: bool
         :keyword color: 是否运行输出信息带有色彩。
         :type color: bool
+        :keyword auto: 是否在打包并生成dist文件夹后弹出cmd调试框
+        :type auto: bool
+        :keyword increase: 是否启用版本自增(如果py文件所在文件夹中有args.json文件的情况下)
+        :type increase: bool
         :keyword kwargs: 其它关键字参数,包括: ignore, eleiminate
         :type kwargs: ...
         :raise ValueError: 如果传入的文件路径不是绝对路径。
@@ -985,7 +1083,7 @@ class upload:
 
                 errorHandle.raiseError(e.__class__, e.args[0], note=f"[ErrorWarning]tryDec执行函数'{func.__name__}'出现问题", willDo="log", group="构建")
 
-                if self.actionSet.vsList:
+                if self.actionSet.vsList and self.args.flagIncrease:  # vsList在self.args.jsonPath为假时就为None
                     self.actionSet.versionBack()
 
         else:
@@ -1002,17 +1100,20 @@ class upload:
 
         self.args.executor("python -m build", cwd=self.args.dirPath)
 
-        executor = cmd("", cwd=self.args.dirPath)
+        if self.args.flagAuto:
 
-        executor.sendInstruct("python -m twine upload --repository testpypi dist/*")
+            executor = cmd("", cwd=self.args.dirPath)
 
-        executor.sendInstruct("__token__", waitTime=2)
+            executor.sendInstruct("python -m twine upload --repository testpypi dist/*")
 
-        executor.sendInstruct("pypi-AgENdGVzdC5weXBpLm9yZwIkYzkwNzZjMTItOWU5OS00YWM4LWFiMWEtYWQwMzU1ZGZkYWVkAAIqWzMsIjRiNDBlZjEwLWRhMmQtNDVlMC1hYjM0LTY1MDI3YzBkYTJmMyJdAAAGILpCa7oU6b1m6k7hUMmp-dybDNN5R1bWdGghvxjjaQll", waitTime=2)
+            executor.sendInstruct("__token__", waitTime=2)
 
-        executor.sendInstruct(f"pause & pip uninstall {self.args.moduleName} & pip install -i https://test.pypi.org/simple {self.args.moduleName}=={'.'.join(map(str, self.actionSet.vsList))}", waitTime=30)
+            executor.sendInstruct("pypi-AgENdGVzdC5weXBpLm9yZwIkYzkwNzZjMTItOWU5OS00YWM4LWFiMWEtYWQwMzU1ZGZkYWVkAAIqWzMsIjRiNDBlZjEwLWRhMmQtNDVlMC1hYjM0LTY1MDI3YzBkYTJmMyJdAAAGILpCa7oU6b1m6k7hUMmp-dybDNN5R1bWdGghvxjjaQll", waitTime=2)
 
-        # print(f"现在你可以运行`cd {self.args.dirPath}`并输入`python -m twine upload --repository testpypi dist/*`以开始上传.\n#您的token:'pypi-AgENdGVzdC5weXBpLm9yZwIkYzkwNzZjMTItOWU5OS00YWM4LWFiMWEtYWQwMzU1ZGZkYWVkAAIqWzMsIjRiNDBlZjEwLWRhMmQtNDVlMC1hYjM0LTY1MDI3YzBkYTJmMyJdAAAGILpCa7oU6b1m6k7hUMmp-dybDNN5R1bWdGghvxjjaQll'")
+            executor.sendInstruct(f"pause & pip uninstall {self.args.moduleName} & pip install -i https://test.pypi.org/simple {self.args.moduleName}=={'.'.join(map(str, self.actionSet.vsList))}", waitTime=30)
+
+        else:
+            print(f"现在你可以运行`cd {self.args.dirPath}`并输入`python -m twine upload --repository testpypi dist/*`以开始上传.\n#您的token:'pypi-AgENdGVzdC5weXBpLm9yZwIkYzkwNzZjMTItOWU5OS00YWM4LWFiMWEtYWQwMzU1ZGZkYWVkAAIqWzMsIjRiNDBlZjEwLWRhMmQtNDVlMC1hYjM0LTY1MDI3YzBkYTJmMyJdAAAGILpCa7oU6b1m6k7hUMmp-dybDNN5R1bWdGghvxjjaQll'")
 
     def _commonPart(self):
         self.actionSet.middleDo()
@@ -1083,26 +1184,42 @@ class upload:
         self._successDo()
 
 
-# parser = ArgumentParser(prog="PYPI软件包上传工具", description="一个用于上传python软件包的工具.", epilog="**\nfileAbsolutePath, *, restore = True, debug = False, color = True, **kwargs\n**")
-# parser.add_argument("file", help="你需要上传的python文件的绝对路径。")
-# parser.add_argument("-T", "--type", default="pyd", choices=['pyc', 'pyd', 'normal'], help="打包的模式,pyc: 通过pyc文件打包, pyd: 通过pyd文件打包, normal: 通过py文件打包.(默认值: pyd)")
-# parser.add_argument("-R", "--restore", default="True", choices=["True", "False"], help="当出现错误时是否要还原初始状态。(默认值: True)")
-# parser.add_argument("-C", "--color", default="True", choices=["True", "False"], help="是否运行输出信息带有色彩。(默认值: True)")
-# parser.add_argument("-D", "--debug", default="False", choices=["True", "False"], help="是否开启debug模式。(默认值: False)")
-# parser.add_argument("-I", "--ignore", default="True", choices=["True", "False"], help="是否将Error降级为warn以保证程序运行。(默认值: True)")
-# parser.add_argument("-E", "--eliminate", default=(eDef := "文件名、目录名或卷标语法不正确。"), help="排除无关紧要的错误信息, 例如: '文件名、目录名或卷标语法不正确。'(默认值: '文件名、目录名或卷标语法不正确。')")
-# parser.add_argument("-V", "--version", help="版本")
-# args = parser.parse_args()
+def argParser():
+    parser = ArgumentParser(prog="PYPI软件包上传工具", description="一个用于上传python软件包的工具.", epilog="**\nfileAbsolutePath, *, restore = True, debug = False, color = True, **kwargs\n**")
+    parser.add_argument("file", help="你需要上传的python文件的绝对路径。")
+    parser.add_argument("-T", "--type", default="pyd", choices=['pyc', 'pyd', 'normal'], help="打包的模式,pyc: 通过pyc文件打包, pyd: 通过pyd文件打包, normal: 通过py文件打包.(默认值: pyd)")
+    parser.add_argument("-R", "--restore", default="True", choices=["True", "False"], help="当出现错误时是否要还原初始状态。(默认值: True)")
+    parser.add_argument("-C", "--color", default="True", choices=["True", "False"], help="是否运行输出信息带有色彩。(默认值: True)")
+    parser.add_argument("-D", "--debug", default="False", choices=["True", "False"], help="是否开启debug模式。(默认值: False)")
+    parser.add_argument("--increase", default="True", choices=["True", "False"], help="是否启用版本自增(如果py文件所在文件夹中有args.json文件的情况下)(默认值: True)")
+    parser.add_argument("-A", "--auto", default="True", choices=["True", "False"], help="是否在打包并生成dist文件夹后弹出cmd调试框。(默认值: True)")
+    parser.add_argument("-I", "--ignore", default="True", choices=["True", "False"], help="是否将Error降级为warn以保证程序运行。(默认值: True)")
+    parser.add_argument("-E", "--eliminate", default=(eDef := "文件名、目录名或卷标语法不正确。"), help="排除无关紧要的错误信息, 例如: '文件名、目录名或卷标语法不正确。'(默认值: '文件名、目录名或卷标语法不正确。')")
+    parser.add_argument("-V", "--version", help="版本")
+    return parser.parse_args()
 
 
 if __name__ == '__main__':
+    test = False
     # pyinstaller -F uploadTools.py -n upload -i upload_1.ico
 
-    ins = upload(r"D:\xst_project_202212\codeSet\Python\pypiOrigin\sqlTools\sqlTools.py", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
-    ins.build("pyd")
+    if test:
 
-    # if args.version:
-    #     print(__version__)
-    # else:
-    #     ins = upload(args.file, debug=strToBool(args.debug, default=False), ignore=strToBool(args.ignore, default=True), eliminate=args.eliminate, color=strToBool(args.color, default=True), restore=strToBool(args.restore, default=True))
-    #     ins.build(args.type)
+        # ins = upload(r"D:\xst_project_202212\codeSet\Python\pypiOrigin\sqlTools\sqlTools.py", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
+        # ins.build("pyd")
+        pass
+
+    else:
+
+        args = argParser()
+
+        ins = upload(args.file,
+                     debug=strToBool(args.debug, default=False),
+                     ignore=strToBool(args.ignore, default=True),
+                     eliminate=args.eliminate,
+                     color=strToBool(args.color, default=True),
+                     restore=strToBool(args.restore, default=True),
+                     increase=strToBool(args.increase, default=True),
+                     auto=strToBool(args.auto, default=True)
+                     )
+        ins.build(args.type)
