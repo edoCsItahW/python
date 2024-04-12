@@ -24,14 +24,14 @@ from time import time
 from csv import writer, reader
 
 
-__version__ = "0.0.8"
+__version__ = "0.0.9"
 
 
 try:
     from ANSIdefine.ansiDefine import ansiManger
 except ModuleNotFoundError:
     try:
-        from ansiDefine.ansiDefine import ansiManger
+        from ansiDefine.ansiDefine import ansiManger  # type: ignore
     except ModuleNotFoundError as e:
         raise e from RuntimeError("没有安装ANSIdefine模块,使用`pip install -i https://test.pypi.org/simple ANSI-Define`安装。")
 

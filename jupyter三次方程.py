@@ -1,4 +1,11 @@
 print("一元三次方程的基本形式:aX³+bX²+cX+d=0(其中a,b,c,d为常数）")
+#  Copyright (c) 2024. All rights reserved.
+#  This source code is licensed under the CC BY-NC-ND
+#  (Creative Commons Attribution-NonCommercial-NoDerivatives) License, By Xiao Songtao.
+#  This software is protected by copyright law. Reproduction, distribution, or use for commercial
+#  purposes is prohibited without the author's permission. If you have any questions or require
+#  permission, please contact the author: 2207150234@st.sziit.edu.cn
+
 from fractions import Fraction
 import numpy as np
 from math import e

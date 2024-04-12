@@ -17,6 +17,7 @@ from subprocess import Popen, PIPE
 from functools import cached_property, partial, singledispatchmethod
 from threading import Thread
 from argparse import ArgumentParser
+from datetime import datetime
 from warnings import warn
 from inspect import currentframe
 from typing import Literal, Callable, Any
@@ -26,7 +27,7 @@ from time import sleep
 from sys import version
 from os import PathLike, path, listdir, mkdir, rename, remove
 from re import findall
-from datetime import datetime
+from scatteredFile.win32test import cmd
 
 __version__ = "1.1.3"
 
@@ -1001,7 +1002,17 @@ class upload:
 
         self.args.executor("python -m build", cwd=self.args.dirPath)
 
-        print(f"现在你可以运行`cd {self.args.dirPath}`并输入`python -m twine upload --repository testpypi dist/*`以开始上传.\n#您的token:'pypi-AgENdGVzdC5weXBpLm9yZwIkYzkwNzZjMTItOWU5OS00YWM4LWFiMWEtYWQwMzU1ZGZkYWVkAAIqWzMsIjRiNDBlZjEwLWRhMmQtNDVlMC1hYjM0LTY1MDI3YzBkYTJmMyJdAAAGILpCa7oU6b1m6k7hUMmp-dybDNN5R1bWdGghvxjjaQll'")
+        executor = cmd("", cwd=self.args.dirPath)
+
+        executor.sendInstruct("python -m twine upload --repository testpypi dist/*")
+
+        executor.sendInstruct("__token__", waitTime=2)
+
+        executor.sendInstruct("pypi-AgENdGVzdC5weXBpLm9yZwIkYzkwNzZjMTItOWU5OS00YWM4LWFiMWEtYWQwMzU1ZGZkYWVkAAIqWzMsIjRiNDBlZjEwLWRhMmQtNDVlMC1hYjM0LTY1MDI3YzBkYTJmMyJdAAAGILpCa7oU6b1m6k7hUMmp-dybDNN5R1bWdGghvxjjaQll", waitTime=2)
+
+        executor.sendInstruct(f"pause & pip uninstall {self.args.moduleName} & pip install -i https://test.pypi.org/simple {self.args.moduleName}=={'.'.join(map(str, self.actionSet.vsList))}", waitTime=30)
+
+        # print(f"现在你可以运行`cd {self.args.dirPath}`并输入`python -m twine upload --repository testpypi dist/*`以开始上传.\n#您的token:'pypi-AgENdGVzdC5weXBpLm9yZwIkYzkwNzZjMTItOWU5OS00YWM4LWFiMWEtYWQwMzU1ZGZkYWVkAAIqWzMsIjRiNDBlZjEwLWRhMmQtNDVlMC1hYjM0LTY1MDI3YzBkYTJmMyJdAAAGILpCa7oU6b1m6k7hUMmp-dybDNN5R1bWdGghvxjjaQll'")
 
     def _commonPart(self):
         self.actionSet.middleDo()
@@ -1072,26 +1083,26 @@ class upload:
         self._successDo()
 
 
-parser = ArgumentParser(prog="PYPI软件包上传工具", description="一个用于上传python软件包的工具.", epilog="**\nfileAbsolutePath, *, restore = True, debug = False, color = True, **kwargs\n**")
-parser.add_argument("file", help="你需要上传的python文件的绝对路径。")
-parser.add_argument("-T", "--type", default="pyd", choices=['pyc', 'pyd', 'normal'], help="打包的模式,pyc: 通过pyc文件打包, pyd: 通过pyd文件打包, normal: 通过py文件打包.(默认值: pyd)")
-parser.add_argument("-R", "--restore", default="True", choices=["True", "False"], help="当出现错误时是否要还原初始状态。(默认值: True)")
-parser.add_argument("-C", "--color", default="True", choices=["True", "False"], help="是否运行输出信息带有色彩。(默认值: True)")
-parser.add_argument("-D", "--debug", default="False", choices=["True", "False"], help="是否开启debug模式。(默认值: False)")
-parser.add_argument("-I", "--ignore", default="True", choices=["True", "False"], help="是否将Error降级为warn以保证程序运行。(默认值: True)")
-parser.add_argument("-E", "--eliminate", default=(eDef := "文件名、目录名或卷标语法不正确。"), help="排除无关紧要的错误信息, 例如: '文件名、目录名或卷标语法不正确。'(默认值: '文件名、目录名或卷标语法不正确。')")
-parser.add_argument("-V", "--version", help="版本")
-args = parser.parse_args()
+# parser = ArgumentParser(prog="PYPI软件包上传工具", description="一个用于上传python软件包的工具.", epilog="**\nfileAbsolutePath, *, restore = True, debug = False, color = True, **kwargs\n**")
+# parser.add_argument("file", help="你需要上传的python文件的绝对路径。")
+# parser.add_argument("-T", "--type", default="pyd", choices=['pyc', 'pyd', 'normal'], help="打包的模式,pyc: 通过pyc文件打包, pyd: 通过pyd文件打包, normal: 通过py文件打包.(默认值: pyd)")
+# parser.add_argument("-R", "--restore", default="True", choices=["True", "False"], help="当出现错误时是否要还原初始状态。(默认值: True)")
+# parser.add_argument("-C", "--color", default="True", choices=["True", "False"], help="是否运行输出信息带有色彩。(默认值: True)")
+# parser.add_argument("-D", "--debug", default="False", choices=["True", "False"], help="是否开启debug模式。(默认值: False)")
+# parser.add_argument("-I", "--ignore", default="True", choices=["True", "False"], help="是否将Error降级为warn以保证程序运行。(默认值: True)")
+# parser.add_argument("-E", "--eliminate", default=(eDef := "文件名、目录名或卷标语法不正确。"), help="排除无关紧要的错误信息, 例如: '文件名、目录名或卷标语法不正确。'(默认值: '文件名、目录名或卷标语法不正确。')")
+# parser.add_argument("-V", "--version", help="版本")
+# args = parser.parse_args()
 
 
 if __name__ == '__main__':
     # pyinstaller -F uploadTools.py -n upload -i upload_1.ico
 
-    # ins = upload(r"D:\xst_project_202212\codeSet\Python\pypiOrigin\systemTools\systemTools.py", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
-    # ins.build("pyc")
+    ins = upload(r"D:\xst_project_202212\codeSet\Python\pypiOrigin\sqlTools\sqlTools.py", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
+    ins.build("pyd")
 
-    if args.version:
-        print(__version__)
-    else:
-        ins = upload(args.file, debug=strToBool(args.debug, default=False), ignore=strToBool(args.ignore, default=True), eliminate=args.eliminate, color=strToBool(args.color, default=True), restore=strToBool(args.restore, default=True))
-        ins.build(args.type)
+    # if args.version:
+    #     print(__version__)
+    # else:
+    #     ins = upload(args.file, debug=strToBool(args.debug, default=False), ignore=strToBool(args.ignore, default=True), eliminate=args.eliminate, color=strToBool(args.color, default=True), restore=strToBool(args.restore, default=True))
+    #     ins.build(args.type)
