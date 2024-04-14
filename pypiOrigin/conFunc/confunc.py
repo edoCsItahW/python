@@ -208,7 +208,7 @@ class waiter(Thread):
         end_wait: 结束等待.
     """
 
-    def __init__(self, length: int, stop: bool = True, interval: int = 0.3, queue: tQueue = None):
+    def __init__(self, length: int, stop: bool = True, interval: int | float = 0.3, queue: tQueue = None):
         super().__init__()
         self.right, self.left = "\u25c9", "\u25cb"
         self.stop = stop

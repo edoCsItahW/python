@@ -1,1 +1,51 @@
-{"increase": true, "proName": null, "version": "0.0.5", "name": "Xiao Songtao", "email": "2257699870@qq.com", "desc": "Collection of Common Methods.", "moduleName": null}
+{
+  "increase": true,
+  "proName": null,
+  "version": "0.0.8",
+  "name": "Xiao Songtao",
+  "email": "2257699870@qq.com",
+  "desc": "Collection of Common Methods.",
+  "moduleName": null,
+  "uploadLog": [
+    {
+      "[2024-04-14 15:11:21]": {
+        "0.0.6": false
+      }
+    },
+    {
+      "[2024-04-14 15:17:19]": {
+        "0.0.7": true
+      }
+    },
+    {
+      "[2024-04-14 15:33:33]": {
+        "0.0.8": false
+      }
+    },
+    {
+      "[2024-04-14 15:48:25]": {
+        "0.0.8": false
+      }
+    },
+    {
+      "[2024-04-14 15:53:20]": {
+        "0.0.8": false
+      }
+    },
+    {
+      "[2024-04-14 15:55:20]": {
+        "0.0.8": false
+      }
+    },
+    {
+      "[2024-04-14 15:58:06]": {
+        "0.0.8": false
+      }
+    },
+    {
+      "[2024-04-14 16:04:57]": {
+        "0.0.8": true
+      }
+    }
+  ]
+}

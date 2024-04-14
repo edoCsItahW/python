@@ -26,12 +26,13 @@ from inspect import currentframe
 from typing import Literal, Callable, Any
 from types import TracebackType
 from json import dump, load
+from copy import deepcopy
 from time import sleep
 from sys import version
 from os import PathLike, path, listdir, mkdir, rename, remove
 from re import findall
 
-__version__ = "1.2.3"
+__version__ = "1.2.5"
 
 errorLog = {}
 
@@ -79,7 +80,7 @@ classifiers = [
 {addFile}
 
 [project.urls]
-"Homepage" = "https://github.com/edoCsItahW/python/{moduleName}"
+"Homepage" = "https://github.com/edoCsItahW/python/pypiOrigin/{moduleName}"
 "Bug Tracker" = "https://github.com/edoCsItahW/python/issues"
 """
 
@@ -98,6 +99,8 @@ from Cython.Build import cythonize
 setup(  
     ext_modules=cythonize("{}", language_level=3),  
 )"""
+
+token = "pypi-AgENdGVzdC5weXBpLm9yZwIkYzkwNzZjMTItOWU5OS00YWM4LWFiMWEtYWQwMzU1ZGZkYWVkAAIqWzMsIjRiNDBlZjEwLWRhMmQtNDVlMC1hYjM0LTY1MDI3YzBkYTJmMyJdAAAGILpCa7oU6b1m6k7hUMmp-dybDNN5R1bWdGghvxjjaQll"
 
 
 class CMDError(Exception):
@@ -715,15 +718,26 @@ class actionSet:
     @vsList.setter
     def vsList(self, value): self._versionList = value
 
+    @staticmethod
+    def _onlyKey(_dict: dict): return list(_dict.keys())[0]
+
+    def _vsIncrease(self, pos: Literal[0, 1, 2] = 2):
+        if self.vsList: return [(v + 1) if i == pos else v for i, v in enumerate(self.vsList)]
+
+    @staticmethod
+    def _vsToList(versionStr: str): return list(map(int, versionStr.split('.')))
+
+    @staticmethod
+    def _listToVs(versionList: list): return '.'.join(map(str, versionList))
+
     def _increase(self, pos: int | Literal[0, 1, 2] = 2):
         with jsonOpen(self.args.jsonPath, "w") as file:
+
             contentDict = file.read()
 
-            self.vsList = versionList = list(map(int, contentDict["version"].split(".")))
+            self.vsList = self._vsToList(contentDict['version'])
 
-            versionList[pos] += 1
-
-            contentDict["version"] = ".".join(map(str, self.vsList))
+            contentDict["version"] = self._listToVs(self._vsIncrease(pos))
 
             if "uploadLog" in contentDict:
 
@@ -772,11 +786,11 @@ class actionSet:
         with jsonOpen(self.args.jsonPath, "w") as file:
             argsDict = file.read()
 
-            argsDict["version"] = ".".join(map(str, self.vsList))
+            argsDict["version"] = self._listToVs(self.vsList)
 
             if "uploadLog" in argsDict:
 
-                (vDict := (timeDict := argsDict["uploadLog"][-1])[list(timeDict.keys())[0]])[list(vDict.keys())[0]] = False
+                (vDict := (timeDict := argsDict["uploadLog"][-1])[self._onlyKey(timeDict)])[self._onlyKey(vDict)] = False
 
             file.write(argsDict)
 
@@ -1081,10 +1095,10 @@ class upload:
             if self.args.flagRestore:
                 self.actionSet.eh.executeWithTry(ins2 := f"rd /s /q {self.args.dirPath}", note=f"[ErrorWarning]还原过程清空出现问题: '{ins2}' {errorHandle.formatFuncInfo(self._commonPart, currentframe().f_lineno)}", group="还原", describe="tryDec -> 还原文件")
 
-                errorHandle.raiseError(e.__class__, e.args[0], note=f"[ErrorWarning]tryDec执行函数'{func.__name__}'出现问题", willDo="log", group="构建")
-
                 if self.actionSet.vsList and self.args.flagIncrease:  # vsList在self.args.jsonPath为假时就为None
                     self.actionSet.versionBack()
+
+                errorHandle.raiseError(e.__class__, e.args[0], note=f"[ErrorWarning]tryDec执行函数'{func.__name__}'出现问题", willDo="log", group="构建")
 
         else:
             None if copy else rename(self.args.newPath, self.args.filePath)
@@ -1108,12 +1122,12 @@ class upload:
 
             executor.sendInstruct("__token__", waitTime=2)
 
-            executor.sendInstruct("pypi-AgENdGVzdC5weXBpLm9yZwIkYzkwNzZjMTItOWU5OS00YWM4LWFiMWEtYWQwMzU1ZGZkYWVkAAIqWzMsIjRiNDBlZjEwLWRhMmQtNDVlMC1hYjM0LTY1MDI3YzBkYTJmMyJdAAAGILpCa7oU6b1m6k7hUMmp-dybDNN5R1bWdGghvxjjaQll", waitTime=2)
+            executor.sendInstruct(token, waitTime=2)
 
             executor.sendInstruct(f"pause & pip uninstall {self.args.moduleName} & pip install -i https://test.pypi.org/simple {self.args.moduleName}=={'.'.join(map(str, self.actionSet.vsList))}", waitTime=30)
 
         else:
-            print(f"现在你可以运行`cd {self.args.dirPath}`并输入`python -m twine upload --repository testpypi dist/*`以开始上传.\n#您的token:'pypi-AgENdGVzdC5weXBpLm9yZwIkYzkwNzZjMTItOWU5OS00YWM4LWFiMWEtYWQwMzU1ZGZkYWVkAAIqWzMsIjRiNDBlZjEwLWRhMmQtNDVlMC1hYjM0LTY1MDI3YzBkYTJmMyJdAAAGILpCa7oU6b1m6k7hUMmp-dybDNN5R1bWdGghvxjjaQll'")
+            print(f"现在你可以运行`cd {self.args.dirPath}`并输入`python -m twine upload --repository testpypi dist/*`以开始上传.\n#您的token:'{token}'")
 
     def _commonPart(self):
         self.actionSet.middleDo()
@@ -1204,8 +1218,9 @@ if __name__ == '__main__':
     # pyinstaller -F uploadTools.py -n upload -i upload_1.ico
 
     if test:
+        warn("正在运行测试版!", SyntaxWarning)
 
-        # ins = upload(r"D:\xst_project_202212\codeSet\Python\pypiOrigin\sqlTools\sqlTools.py", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
+        # ins = upload(r"D:\xst_project_202212\codeSet\Python\pypiOrigin\conFunc\confunc.py", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
         # ins.build("pyd")
         pass
 
