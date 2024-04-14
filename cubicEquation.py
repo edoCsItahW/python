@@ -18,75 +18,75 @@ from functools import cached_property, singledispatchmethod
 from fractions import Fraction
 from warnings import warn
 from typing import overload
-from cmath import pi, log, cos, acos, sqrt
+from sympy import symbols, Rational, sqrt, acos, cos, log, pi, Integer, Eq, solve
 
 
-class autoNumber:
-    @overload
-    def __init__(self, divisorOrFraction: int, dividend: int = None, *, latex: bool = False):
-        ...
-
-    @overload
-    def __init__(self, divisorOrFraction: str, dividend: int = None, *, latex: bool = False):
-        ...
-
-    def __init__(self, divisorOrFraction: int | str, dividend: int = None, *, latex: bool = False):
-        self._divisor, self._dividend = divisorOrFraction.split("/") if '/' in divisorOrFraction else (
-            divisorOrFraction, 1) if dividend is None else (divisorOrFraction, dividend)
-        self._flagLatex = latex
-
-    @property
-    def divisor(self): return Fraction(self._divisor if isinstance(self._divisor, int) else eval(self._divisor))
-
-    @property
-    def dividend(self):
-        if self._dividend == 0: raise ZeroDivisionError("除数不能为0")
-
-        return Fraction(self._dividend if isinstance(self._dividend, int) else eval(self._dividend))
-
-    @property
-    def value(self): return self.divisor / self._dividend
-
-    @property
-    def fraction(self): return Fraction(self.divisor, self.dividend)
-
-    def __repr__(self): return fr"\frac{{{self.divisor}}}{{{self.dividend}}}" if self._flagLatex else str(self.fraction)
-
-    def __str__(self): return self.__repr__()
-
-    def __sub__(self, other): return self.fraction - (Fraction(other) if not isinstance(other, Fraction) else other)
-
-    def __add__(self, other): return self.fraction + (Fraction(other) if not isinstance(other, Fraction) else other)
-
-    def __mul__(self, other): return self.fraction * (Fraction(other) if not isinstance(other, Fraction) else other)
-
-    def __truediv__(self, other): return self.fraction / (Fraction(other) if not isinstance(other, Fraction) else other)
-
-    def __abs__(self): return abs(self.fraction)
-
-    def __int__(self): return int(self.value)
-
-    def __len__(self): return len(str(self.value))
-
-    def __neg__(self): return - self.fraction
-
-    def __pos__(self): return self.fraction
-
-    def __float__(self): return self.value
-
-    def __complex__(self): return complex(self.fraction)
-
-    def __eq__(self, other): return self.fraction == Fraction(other)
-
-    def __ne__(self, other): return self.fraction != Fraction(other)
-
-    def __gt__(self, other): return self.fraction > Fraction(other)
-
-    def __ge__(self, other): return self.fraction >= Fraction(other)
-
-    def __lt__(self, other): return self.fraction < Fraction(other)
-
-    def __le__(self, other): return self.fraction <= Fraction(other)
+# class autoNumber:
+#     @overload
+#     def __init__(self, divisorOrFraction: int, dividend: int = None, *, latex: bool = False):
+#         ...
+#
+#     @overload
+#     def __init__(self, divisorOrFraction: str, dividend: int = None, *, latex: bool = False):
+#         ...
+#
+#     def __init__(self, divisorOrFraction: int | str, dividend: int = None, *, latex: bool = False):
+#         self._divisor, self._dividend = divisorOrFraction.split("/") if '/' in divisorOrFraction else (
+#             divisorOrFraction, 1) if dividend is None else (divisorOrFraction, dividend)
+#         self._flagLatex = latex
+#
+#     @property
+#     def divisor(self): return Fraction(self._divisor if isinstance(self._divisor, int) else eval(self._divisor))
+#
+#     @property
+#     def dividend(self):
+#         if self._dividend == 0: raise ZeroDivisionError("除数不能为0")
+#
+#         return Fraction(self._dividend if isinstance(self._dividend, int) else eval(self._dividend))
+#
+#     @property
+#     def value(self): return self.divisor / self._dividend
+#
+#     @property
+#     def fraction(self): return Fraction(self.divisor, self.dividend)
+#
+#     def __repr__(self): return fr"\frac{{{self.divisor}}}{{{self.dividend}}}" if self._flagLatex else str(self.fraction)
+#
+#     def __str__(self): return self.__repr__()
+#
+#     def __sub__(self, other): return self.fraction - (Fraction(other) if not isinstance(other, Fraction) else other)
+#
+#     def __add__(self, other): return self.fraction + (Fraction(other) if not isinstance(other, Fraction) else other)
+#
+#     def __mul__(self, other): return self.fraction * (Fraction(other) if not isinstance(other, Fraction) else other)
+#
+#     def __truediv__(self, other): return self.fraction / (Fraction(other) if not isinstance(other, Fraction) else other)
+#
+#     def __abs__(self): return abs(self.fraction)
+#
+#     def __int__(self): return int(self.value)
+#
+#     def __len__(self): return len(str(self.value))
+#
+#     def __neg__(self): return - self.fraction
+#
+#     def __pos__(self): return self.fraction
+#
+#     def __float__(self): return self.value
+#
+#     def __complex__(self): return complex(self.fraction)
+#
+#     def __eq__(self, other): return self.fraction == Fraction(other)
+#
+#     def __ne__(self, other): return self.fraction != Fraction(other)
+#
+#     def __gt__(self, other): return self.fraction > Fraction(other)
+#
+#     def __ge__(self, other): return self.fraction >= Fraction(other)
+#
+#     def __lt__(self, other): return self.fraction < Fraction(other)
+#
+#     def __le__(self, other): return self.fraction <= Fraction(other)
 
 
 class CEoperator:
@@ -100,6 +100,8 @@ class CEoperator:
 
         self._args = []
 
+        self._x = symbols("x")
+
     def __repr__(self): return f"等式: <{''.join(self._constantFormat)}=0>"
 
     @property
@@ -111,28 +113,22 @@ class CEoperator:
                fr"x_1x_2x_3=-\frac{{d}}{{a}}=\sigma_3={self.sigma3}"
                r"\end{cases} \\"
                r"(这是由于(\mathbf{x}-x_1)(\mathbf{x}-x_2)(\mathbf{x}-x_3)="
-               r"x^3 -(x_1 +x_2 +x_3 )x^2 +(x_1 x_2 +x_1 x_2 +x_2 x_3 )x-x_1 x_2 x_3)",
+               r"x^3 -(x_1 +x_2 +x_3 )x^2 +(x_1 x_2 +x_1 x_2 +x_2 x_3 )x-x_1 x_2 x_3) \\",
             1: r"\begin{aligned}令: x_1+\omega x_2+\omega^2 x_3 &=X \\"
                r"x_1+\omega^2 x_2+\omega x_3 &=Y \\"
                r"(其中\omega^3 &=1)) \end{aligned}\\"
                r"为求解\omega我们将1变换为e^{2\pi i}(因为由欧拉公式e^{2\pi i}=cos(2\pi) +sin(2\pi)i =1),"
                r"则\omega =e^{\frac{1}{3} 2\pi \mathbf{k}}(k为常数) \\"
-               r"\begin{aligned} \begin{cases}"
+               r"\begin{align*} \begin{cases}"
                r"当\mathbf{k} &=0时 \quad \omega =1 \\"
-               r"当\mathbf{k} &=1时 \quad \omega ="
-               r"e^{\frac{2\pi}{3}}="
-               r"cos(\frac{2\pi}{3}) +sin(\frac{2\pi}{3})i ="
-               r"-\frac{1}{2}+\frac{\sqrt{3}}{2}i \\"
-               r"当\mathbf{k} &=2时 \quad \omega ="
-               r"e^{\frac{4\pi}{3}}="
-               r"cos(\frac{4\pi}{3}) +sin(\frac{4\pi}{3})i ="
-               r"-\frac{1}{2}-\frac{\sqrt{3}}{2}i \\ "
-               r"(注:\omega的三个解组成了一个循环集合,当k取大于等于3的整数时,解将重复, \\ "
-               r"因此只考虑k = 0、1和2的情况就可以覆盖所有可能的解)\end{cases} \end{aligned}",
+               r"当\mathbf{k} &=1时 \quad \omega = e^{\frac{2\pi}{3}}= cos(\frac{2\pi}{3}) +sin(\frac{2\pi}{3})i = -\frac{1}{2}+\frac{\sqrt{3}}{2}i \\"
+               r"当\mathbf{k} &=2时 \quad \omega = e^{\frac{4\pi}{3}}= cos(\frac{4\pi}{3}) +sin(\frac{4\pi}{3})i = -\frac{1}{2}-\frac{\sqrt{3}}{2}i \\ "
+               r"\end{cases} \end{align*} \\"
+               r"(注:\omega的三个解组成了一个循环集合,当k取大于等于3的整数时,解将重复, 因此只考虑k = 0、1和2的情况就可以覆盖所有可能的解) \\",
             2: r"\begin{aligned}则&(x_1+\omega x_2+\omega^2 x_3)^3 +(x_1+\omega^2 x_2+\omega x_3)^3 "
                fr"=X^3 +Y^3 =2{{\sigma_1}}^3 -9\sigma_1 \sigma_2 +27\sigma_3 = {self.A}\\"
                r"&(x_1+\omega x_2+\omega^2 x_3)^3 (x_1+\omega^2 x_2+\omega x_3)^3 "
-               fr"=X^3 Y^3 =({{\sigma_1}}^2 -3\sigma_2)^3 = {self.B}\end{{aligned}}",
+               fr"=X^3 Y^3 =({{\sigma_1}}^2 -3\sigma_2)^3 = {self.B}\end{{aligned}} \\",
             3: r"联立\left\{\begin{aligned} "
                r"&X^3 +Y^3 \\"
                r"&X^3 Y^3 "
@@ -140,20 +136,20 @@ class CEoperator:
                r"\quad解得\left\{\begin{aligned}"
                fr"&Y=\sqrt[3]{{\frac{f'{self.A}-{self.sp}sqrt{self.A ** 2 - 4 * self.B}'}{{2}}}}"
                fr"&X=\sqrt[3]{{\frac{f'{self.A}+{self.sp}sqrt{self.A ** 2 - 4 * self.B}'}{{2}}}} \\"
-               r"\end{aligned}\right.",
+               r"\end{aligned}\right. \\",
             4: r"为演示这里将$$A=X^3 +Y^3,B=X^3 Y^3$$(为下式计算,这里将\sqrt{-1}代为虚数i) \\"
                r"则\left\{\begin{aligned}"
                fr"&X=\sqrt[3]{{\frac{f'{{A+{self.sp}sqrt{{4B-A ^ 2}}i}}'}{{2}}}} \\"
                fr"&Y=\sqrt[3]{{\frac{f'{{A-{self.sp}sqrt{{4B-A ^ 2}}i}}'}{{2}}}}"
-               r"\end{aligned}\right.",
+               r"\end{aligned}\right. \\",
             5: r"为将$$X,Y$$转化为三角函数，且符合三角恒等式sin^2 +cos^2 =1,我们将$$X$$转换为如下形式:\\"
                r"以X为例:X="
                r"\sqrt[6]{B} \sqrt[3]{\frac{A}{2\sqrt{B}} +\frac{\sqrt{4B-A^2}i}{2\sqrt{B}}} \\"
-               r"(使用待定系数,即(\frac{A}{2C})^2 +(\frac{\sqrt{4B-A^2}}{2C})^2 =1,则C=\sqrt{B})",
+               r"(使用待定系数,即(\frac{A}{2C})^2 +(\frac{\sqrt{4B-A^2}}{2C})^2 =1,则C=\sqrt{B}) \\",
             6: r"如此我们令\left\{\begin{aligned}"
                r"&cos\alpha =\frac{A}{2\sqrt{B}} \\"
                r"&sin\alpha =\frac{\sqrt{4B-A^2}}{2\sqrt{B}}i "
-               r"\end{aligned}\right.",
+               r"\end{aligned}\right. \\",
             7: r"即相当于:X=\sqrt[6]{B} \sqrt[3]{cos\alpha +sin\alpha i}"
                r"(其中:\alpha =arccos(\frac{A}{2\sqrt{B}}))\\"
                r"\\ 由欧拉公式:e^{ix} =cosx+isinx \\"
@@ -218,7 +214,7 @@ class CEoperator:
                r"x_3 \end{pmatrix} =\begin{pmatrix}"
                r"\frac{1}{3}(\sigma_1 +X+Y) \\"
                r"\frac{1}{3} \left\{ \sigma_1 +\frac{1}{\omega} [X-(\omega +1)Y] \right\} \\"
-               r"\frac{1}{3} \left\{ \sigma_1 +\frac{1}{\omega} [Y-(\omega +1)X] \right\} \end{pmatrix}",
+               r"\frac{1}{3} \left\{ \sigma_1 +\frac{1}{\omega} [Y-(\omega +1)X] \right\} \end{pmatrix} \\",
             8: r"则原方程解x_1 =\frac{1}{3} (\sigma_1 +X+Y)="
                r"\frac{1}{3} \sigma_1 +\frac{1}{3} \sqrt[6]{B}"
                r"(e^{\frac{1}{3} arccos(\frac{A}{2\sqrt{B}})i} +e^{-\frac{1}{3} arccos(\frac{A}{2\sqrt{B}})i}) \\"
@@ -229,7 +225,7 @@ class CEoperator:
                r"=\frac{1}{3} \sigma_1 -\frac{1}{3} \sqrt[6]{B}"
                r"(e^{\frac{\pi}{3} +\frac{1}{3} arccos(\frac{A}{2\sqrt{B}})i} +"
                r"e^{-[\frac{\pi}{3} +\frac{1}{3} arccos(\frac{A}{2\sqrt{B}})]i}) \\"
-               r"X_3同理",
+               r"X_3同理 \\",
             9: r"为凑成欧拉公式的余弦\frac{e^{ix} +e^{-ix}}{2} =cos(x)的形式，将x_1中提出2 \\"
                r"即\begin{aligned} x_1 &=\frac{1}{3} \sigma_1 +\frac{2}{3} \sqrt[6]{B}"
                r"(\frac{e^{\frac{1}{3} arccos(\frac{A}{2\sqrt{B}})i} "
@@ -238,9 +234,12 @@ class CEoperator:
                r"x_2 &=\frac{1}{3} \sigma_1 -\frac{2}{3} \sqrt[6]{B} "
                r"cos(\frac{\pi}{3} +\frac{1}{3} arccos(\frac{A}{2\sqrt{B}}) \\"
                r"x_3 &=\frac{1}{3} \sigma_1 -\frac{2}{3} \sqrt[6]{B} "
-               r"cos(-\frac{\pi}{3} +\frac{1}{3} arccos(\frac{A}{2\sqrt{B}}) \end{aligned}"
+               r"cos(-\frac{\pi}{3} +\frac{1}{3} arccos(\frac{A}{2\sqrt{B}}) \end{aligned} \\"
         }
         return _
+
+    @property
+    def x(self): return self._x
 
     @cached_property  # autoNumber()
     def constantDict(self): return {i: Fraction(self._input(i)) for i in ['a', 'b', 'c', 'd']}
@@ -263,13 +262,13 @@ class CEoperator:
     def d(self): return self.constantDict['d']
 
     @cached_property
-    def sigma1(self): return - self.b / self.a
+    def sigma1(self): return Rational(-self.b, self.a)
 
     @cached_property
-    def sigma2(self): return self.c / self.a
+    def sigma2(self): return Rational(self.c, self.a)
 
     @cached_property
-    def sigma3(self): return - self.d / self.a
+    def sigma3(self): return Rational(- self.d, self.a)
 
     @cached_property
     def A(self): return 2 * self.sigma1 ** 3 - 9 * self.sigma1 * self.sigma2 + 27 * self.sigma3
@@ -307,27 +306,45 @@ class CEoperator:
         return inp
 
     def calculate(self, num: int | float | Fraction):
-        fracSq = lambda A, B: self.decimalsToFractions(A / sqrt(2 * abs(B)))
+        fracSq = lambda A, B: A / (2 * sqrt(B))  # abs(B)
 
-        startEq = self.decimalsToFractions(1 / 3) * self.sigma1
+        startEq = Rational(1, 3) * self.sigma1
 
-        return startEq + self.decimalsToFractions(-2/3)*(self.B**(1/6))*cos(num+self.decimalsToFractions(1/3)*acos(fracSq(self.A, self.B))) \
-            if num != 0 else startEq + self.decimalsToFractions(2/3)*(self.B**(1/6))*cos(num+self.decimalsToFractions(1/3)*((pi/2)-1j*log(fracSq(self.A, self.B)+sqrt(fracSq(self.A, self.B)**2-1)))) \
-            if self.B <= 0 else startEq + self.decimalsToFractions(2/3)*(self.B**(1/6))*cos(num+self.decimalsToFractions(1/3)*acos(fracSq(self.A, self.B)))
+        return (startEq + Rational(2, 3)*(self.B**Rational(1, 6))*cos(num+Rational(1, 3)*acos(fracSq(self.A, self.B)))) \
+            if num != 0 else (startEq - Rational(2, 3)*(self.B**Rational(1, 6))*cos(num+Rational(1, 3)*(-1j*log(fracSq(self.A, self.B)+1j*sqrt(1-fracSq(self.A, self.B)**2))))) \
+            if self.B <= 0 else (startEq - Rational(2, 3)*(self.B**Rational(1, 6))*cos(num+Rational(1, 3)*acos(fracSq(self.A, self.B))))
+
+    @staticmethod
+    def getValue(num: Integer):
+        # print(type(num), num)
+
+        try:
+            return float(num)
+
+        except TypeError:
+
+            return complex(num)
 
     def execute(self):
         for i in self.textDict:
             self.show(i)
         
-        res1, res2, res3 = [self.decimalsToFractions(i) for i in (self.calculate(0), self.calculate(pi / 3), self.calculate(-pi / 3))]
+        res1, res2, res3 = [self.getValue(i) for i in (self.calculate(0), self.calculate(pi / 3), self.calculate(-pi / 3))]
         
         try:
-            print(''.join([f"\nx_{i}={r}" for i, r in enumerate([res1, res2, res3], start=1)]))
+            print(''.join([f"\nx{i} = {r}" for i, r in enumerate([res1, res2, res3], start=1)]))
 
         except Exception as err:
             raise err
+
+    def realValue(self):
+        equation = Eq(self.a * self.x ** 3 + self.b * self.x ** 2 + self.c * self.x + self.d, 0)
+
+        for i, sol in enumerate(solve(equation, self.x, dict=True), start=1):
+            print(f"x{i} = {self.getValue(sol[list(sol.keys())[0]])}")
 
 
 if __name__ == '__main__':
     opt = CEoperator()
     opt.execute()
+    opt.realValue()

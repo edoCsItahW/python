@@ -19,16 +19,38 @@ from pandas import DataFrame
 from numpy import array, ndarray
 from functools import cached_property
 from copy import deepcopy
+from random import choice
 
 
 class visualize:
-    def __init__(self, **kwargs: list):
+    def __init__(self, *, minTime: int = 60, **kwargs: list):
         self._kw = kwargs
 
         self._keys = ["Mon", "Tue", "Wen", "Thu", "Fri", "Sat", "Sun"]
+        self._taskTable = {k: [] for k in self._keys}
+        self._minTime = minTime
+
+        self._tFTdict = {k: sum(self.freeTimeDict[k]) for k in self.freeTimeDict}
+
+        self._taskList = ["a", "b", "c", "d", "d"]
+
+    @property
+    def taskTable(self): return self._taskTable
+
+    @property
+    def taskList(self): return self._taskList
+
+    @taskTable.setter
+    def taskTable(self, value): self._taskTable = value
 
     @cached_property
     def freeTimeDict(self): return {k: self._kw[k] if k in self._kw else [] for k in self._kw}
+
+    @property
+    def tFreeTimeDict(self): return self._tFTdict
+
+    @tFreeTimeDict.setter
+    def tFreeTimeDict(self, value): self._tFTdict = value
 
     @cached_property
     def fullFTDict(self):
@@ -45,6 +67,9 @@ class visualize:
     @cached_property
     def totalTime(self): return sum([array(l) @ array([1] * 5) for l in self.fullFTDict.values()])
 
+    @property
+    def minTime(self): return self._minTime
+
     def stackedColumn(self, *args: list, reverse: bool = False):
         if not args: args = DataFrame(self.fullFTDict).values
 
@@ -58,7 +83,16 @@ class visualize:
 
         show()
 
+    def insertTask(self):
+        for k in self.tFreeTimeDict:
+            while self.tFreeTimeDict[k] > self.minTime:
+
+                self.taskTable[k].append(choice(self.taskList))
+
+                self.tFreeTimeDict[k] -= self.minTime
+
 
 if __name__ == '__main__':
     ins = visualize(Mon=[85, 50, 60, 60, 60], Tue=[60, 60, 60], Wen=[85, 75, 50, 60, 60], Thu=[75, 70, 60, 60, 60], Fri=[210], Sat=[450], Sun=[270])
-    ins.stackedColumn(reverse=True)
+    ins.insertTask()
+    print(ins.taskTable, ins.tFreeTimeDict)

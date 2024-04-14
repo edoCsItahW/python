@@ -424,12 +424,13 @@ def outputInfo(info: str, *, color: Literal["red", "green", "blue", "yellow"] | 
 
 
 def strToBool(text: str, *, default: bool) -> bool:
-    if text.lower() == "true":
-        return True
-    elif text.lower() == "false":
-        return False
-    else:
-        return default
+    match text.lower():
+        case "true":
+            return True
+        case "false":
+            return False
+        case _:
+            return default
 
 
 class pathTools:
@@ -799,8 +800,7 @@ class actionSet:
 
             self._jsonIncrease(self.args.argsDict["increase"] if "increase" in self.args.argsDict else None)
 
-        text = f"""[tool.poetry.scripts]
-        files = ["{file}"]"""
+        text = f"""[tool.poetry.scripts]\nfiles = ["{file}"]"""
 
         return {
             "proName":    _ if (_ := self.args.argsDict["proName"]) else self.args.moduleName,
@@ -1046,7 +1046,7 @@ class upload:
         :type kwargs: ...
         :raise ValueError: 如果传入的文件路径不是绝对路径。
         """
-        self._args = argSet(fileAbsPath, restore=restore, debug=debug, color=color, **kwargs)
+        self._args = argSet(fileAbsPath, restore=restore, debug=debug, color=color, auto=auto, increase=increase, **kwargs)
         self._actionSet = actionSet(self._args)
 
         self._common = [
@@ -1238,3 +1238,5 @@ if __name__ == '__main__':
                      auto=strToBool(args.auto, default=True)
                      )
         ins.build(args.type)
+
+        # print(args.file, args.debug, args.ignore, args.eliminate, args.color, args.restore, strToBool(args.increase, default=True), strToBool(args.auto, default=True), args.type)
