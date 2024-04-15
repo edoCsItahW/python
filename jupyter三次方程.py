@@ -13,8 +13,6 @@
 # 编码模式: utf-8
 # 注释:
 # -------------------------<Lenovo>----------------------------
-print("一元三次方程的基本形式:aX³+bX²+cX+d=0(其中a,b,c,d为常数）")
-
 from fractions import Fraction
 import numpy as np
 from math import e
@@ -22,6 +20,9 @@ from IPython.display import display, Math
 from sympy import *
 import cmath
 import sympy
+
+
+print("一元三次方程的基本形式:aX³+bX²+cX+d=0(其中a,b,c,d为常数）")
 
 C_list = ["a", "b", "c", "d"]
 nu_arr = np.empty((0, 0))
