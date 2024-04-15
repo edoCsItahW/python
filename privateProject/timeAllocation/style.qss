@@ -1,0 +1,14 @@
+mainWindow {
+    background-color: rgba(38, 38, 38, 0.56);
+    flex-direction: row;
+
+}
+
+mainWindow QStatusBar {
+    background-color: #cccccc;
+}
+
+QWidget#monBar {
+    background-color: #006699;
+    border-radius: 5px;
+}

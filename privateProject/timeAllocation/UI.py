@@ -1,7 +1,7 @@
 #! /user/bin/python3
 
 #  Copyright (c) 2024. All rights reserved.
-#  This source code is licensed under the CC BY-NC-ND
+#  This source code is licensed under the CC BY-NC-SA
 #  (Creative Commons Attribution-NonCommercial-NoDerivatives) License, By Xiao Songtao.
 #  This software is protected by copyright law. Reproduction, distribution, or use for commercial
 #  purposes is prohibited without the author's permission. If you have any questions or require
@@ -13,7 +13,7 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
-from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget, QVBoxLayout, QHBoxLayout
 from PyQt6.QtGui import QIcon, QScreen
 from PyQt6.QtCore import Qt
 from win32print import GetDeviceCaps
@@ -60,10 +60,12 @@ class mainWindow(QMainWindow):
         self._flagISS = ignoreSecondaryScreen
 
         super().__init__()
+        self.attrsInit()
         self.conponentInit()
 
         # self.setWindowIcon(QIcon(""))
 
+    # 参转私有
     @property
     def app(self):
         if self._app: return self._app
@@ -79,12 +81,24 @@ class mainWindow(QMainWindow):
     @property
     def flagISS(self): return self._flagISS
 
+    # 私有
+    @cached_property
+    def body(self):
+        body = QWidget(self)
+
+        body.setObjectName("body")
+
+        self.setCentralWidget(body)
+
+        return body
+
     @cached_property
     def screenList(self) -> list[QScreen]: return [self.app.primaryScreen()]  # if self.flagISS else self.app.screens()
 
     @cached_property
     def mainScreen(self) -> QScreen: return self.screenList[0]
 
+    # 普通方法
     def getSize(self, screen: QScreen = None, *, mode: Literal["phy", "dpi", "rel"] = "phy"):
         if screen is None: screen = self.mainScreen
 
@@ -110,7 +124,11 @@ class mainWindow(QMainWindow):
 
         self.resize(int((size := self.getSize(screen))[0] * xRatio), int(size[1] * yRatio))
 
-    def conponentInit(self):
+    def setMargin(self, widget: QWidget):
+        # TODO: 使用QLayout模拟Margin
+        pass
+
+    def attrsInit(self):
         self.statusBar()
         self.setStatusTip("TM")
         self.setWindowTitle("TM")
@@ -122,11 +140,23 @@ class mainWindow(QMainWindow):
             # | Qt.WindowType.WindowContextHelpButtonHint  # 帮助按钮
         )
 
+    def conponentInit(self):
+
+        # monbarLY = QVBoxLayout(self.body)
+        monBar = QWidget(self.body)
+        monBar.setObjectName("monBar")
+        # monbarLY.addWidget(monBar)
+        # monbarLY.addWidget(QWidget(self.body), stretch=2)
+
 
 if __name__ == '__main__':
     app = QApplication(argv)
 
+    with open(r"D:\xst_project_202212\codeSet\Python\privateProject\timeAllocation\style.qss", "r", encoding="utf-8") as file:
+        style = file.read()
+
     main = mainWindow(ignoreSecondaryScreen=True)
+    main.setStyleSheet(style)
     main.show()
 
     exit(app.exec())
