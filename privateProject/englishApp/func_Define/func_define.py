@@ -5,8 +5,9 @@
 #  purposes is prohibited without the author's permission. If you have any questions or require
 #  permission, please contact the author: 2207150234@st.sziit.edu.cn
 
-from PyQt5.Qt import *
-from constantPackage.sqlTools.sqlTools import sqlManger
+from PyQt6.QtWidgets import QAbstractButton, QApplication, QLineEdit, QStyle
+from PyQt6.QtCore import Qt, QObject
+from PyQt6.QtGui import QIcon, QAction
 
 
 def setattribute(Object: QObject, dict_property: dict) -> None:
@@ -159,7 +160,7 @@ def passcheck(accountobj: QAbstractButton, passwordobj: QAbstractButton):
     :return: 操作执行函数不做返回.
     :retype: None
     """
-    with sqlManger() as man:
+    with sqlManger() as man:  # type: ignore
         if man.popinfo("accountinfo", accountobj.text()):
             if man.checkinfo("accountinfo", accountobj.text(), passwordobj.text()):
                 print("登录成功")

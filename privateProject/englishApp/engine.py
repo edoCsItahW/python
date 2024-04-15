@@ -17,6 +17,7 @@ from netTools.netTools import translate_single  # , request
 from functools import cached_property
 from random import choices, randint
 # from pandas import DataFrame
+from sqlTools import baseSQL
 from typing import Literal  # , Callable
 from time import sleep
 

@@ -5,11 +5,9 @@
 #  purposes is prohibited without the author's permission. If you have any questions or require
 #  permission, please contact the author: 2207150234@st.sziit.edu.cn
 
-from PyQt5.Qt import (
-    QObject, QEvent, QIcon, Qt, QAction, QCompleter,
-    QMainWindow,
-    QLineEdit, QPushButton, QLabel,
-    pyqtSignal)
+from PyQt6.QtWidgets import QCompleter, QMainWindow, QLineEdit, QPushButton, QLabel
+from PyQt6.QtCore import Qt, QObject, QEvent, pyqtSignal
+from PyQt6.QtGui import QIcon, QAction
 from privateProject.englishApp.func_Define.func_define import \
     fastset, passshow, passcheck, checklen, FilterInstall, tolalpos
 from itertools import accumulate
@@ -123,7 +121,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("登录")
         self.setWindowIcon(QIcon(r"/Python/englishApp/素材库/软件图标.ico"))
         self.resize(640, 450)
-        self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
+        self.setWindowFlags(Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.MSWindowsFixedSizeDialogHint)
         # | Qt.WindowContextHelpButtonHint)
         self.begpos, self.inpos1, self.inpos2 = None, None, None
         self.btn1_1, self.inp1_1, self.inp1_2, self.labr, self.lab1_1, self.lab1_2, self.btn1_2 = (None for i in range(7))
