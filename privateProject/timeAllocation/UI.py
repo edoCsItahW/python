@@ -13,11 +13,11 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget, QVBoxLayout, QHBoxLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QBoxLayout
 from PyQt6.QtGui import QIcon, QScreen
 from PyQt6.QtCore import Qt
 from win32print import GetDeviceCaps
-from functools import cached_property
+from functools import cached_property, partial
 from win32con import DESKTOPHORZRES, DESKTOPVERTRES
 from win32api import EnumDisplayMonitors
 from win32gui import GetDC, ReleaseDC
@@ -137,16 +137,31 @@ class mainWindow(QMainWindow):
                 raise ValueError(
                     "参数'vertical'或'horizontal'中的值不能大于1!")
 
+        def around(_widget: QWidget, _layout: QBoxLayout, *args: int | float):
+            space = [int((10 - i * 10) / 2) for i in args]
+
+            _layout.addWidget(QWidget(), stretch=space[0])
+            _layout.addWidget(_widget, int(10 * (args[0] + args[1]))) if len(args) > 1 else int((10 * args[0]))
+            _layout.addWidget(QWidget(), stretch=space[1] if len(space) > 1 else space[0])
+
+        around = partial(around, widget)
+
         if all([isinstance(var, (float, int)) for var in (vertical, horizontal)]):
             for i in (vertical, horizontal):
                 valueLimit(i)
 
-            ver, hor = [int(10 * (1 - i) / 2) for i in (vertical, horizontal)]
+            around(QVBoxLayout(self.body), vertical)
+            around(QHBoxLayout(self.body), horizontal)
 
-            layout = QVBoxLayout(self.body)
-            layout.addWidget(QWidget(), stretch=ver)
-            layout.addWidget(widget, stretch=int(10 * vertical))
-            layout.addWidget(QWidget(), stretch=ver)
+        elif all([isinstance(var, tuple) for var in (vertical, horizontal)]):
+            vertical: tuple
+            horizontal: tuple
+
+            for i in list(vertical) + list(horizontal):
+                valueLimit(i)
+
+            around(QVBoxLayout(self.body), *vertical)
+            around(QHBoxLayout(self.body), *horizontal)
 
     def attrsInit(self):
         self.statusBar()
@@ -165,7 +180,7 @@ class mainWindow(QMainWindow):
         monBar = QWidget(self.body)
         monBar.setObjectName("monBar")
 
-        self.setMargin(monBar)
+        self.setMargin(monBar, vertical=0.5, horizontal=0.5)
 
 
 if __name__ == '__main__':
