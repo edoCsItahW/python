@@ -23,6 +23,7 @@ from win32api import EnumDisplayMonitors
 from win32gui import GetDC, ReleaseDC
 from typing import Literal
 from sys import argv, exit
+from typing import overload
 
 
 r"""
@@ -118,15 +119,34 @@ class mainWindow(QMainWindow):
                     f"位置参数'mode'被传入了一个非期望的值'{mode}'!")
 
     def setAutoSize(self, screen: QScreen = None, *, xRatio: float = 0.8, yRatio: float = 0.8):
-        if any([xRatio > 1, yRatio > 1]):
+        if any([i > 1 or i < 0 for i in (xRatio, yRatio)]):
             raise ValueError(
                 "参数'XRation'或'yRatio'不能大于1!")
 
         self.resize(int((size := self.getSize(screen))[0] * xRatio), int(size[1] * yRatio))
 
-    def setMargin(self, widget: QWidget):
-        # TODO: 使用QLayout模拟Margin
-        pass
+    @overload
+    def setMargin(self, widget: QWidget, *, vertical: tuple = 0.8, horizontal: tuple = 0.8): ...
+
+    @overload
+    def setMargin(self, widget: QWidget, *, vertical: float = 0.8, horizontal: float = 0.8): ...
+
+    def setMargin(self, widget: QWidget, *, vertical: float = 0.8, horizontal: float = 0.8):
+        def valueLimit(value: int | float):
+            if value < 0 or value > 1:
+                raise ValueError(
+                    "参数'vertical'或'horizontal'中的值不能大于1!")
+
+        if all([isinstance(var, (float, int)) for var in (vertical, horizontal)]):
+            for i in (vertical, horizontal):
+                valueLimit(i)
+
+            ver, hor = [int(10 * (1 - i) / 2) for i in (vertical, horizontal)]
+
+            layout = QVBoxLayout(self.body)
+            layout.addWidget(QWidget(), stretch=ver)
+            layout.addWidget(widget, stretch=int(10 * vertical))
+            layout.addWidget(QWidget(), stretch=ver)
 
     def attrsInit(self):
         self.statusBar()
@@ -142,11 +162,10 @@ class mainWindow(QMainWindow):
 
     def conponentInit(self):
 
-        # monbarLY = QVBoxLayout(self.body)
         monBar = QWidget(self.body)
         monBar.setObjectName("monBar")
-        # monbarLY.addWidget(monBar)
-        # monbarLY.addWidget(QWidget(self.body), stretch=2)
+
+        self.setMargin(monBar)
 
 
 if __name__ == '__main__':
