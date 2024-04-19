@@ -20,7 +20,6 @@ from numpy import array, ndarray
 from functools import cached_property
 from copy import deepcopy
 from random import choice
-from pypiOrigin.linkedList.linkedList import *
 
 
 class visualize:
@@ -97,8 +96,18 @@ if __name__ == '__main__':
     # ins = visualize(Mon=[85, 50, 60, 60, 60], Tue=[60, 60, 60], Wen=[85, 75, 50, 60, 60], Thu=[75, 70, 60, 60, 60], Fri=[210], Sat=[450], Sun=[270])
     # ins.insertTask()
     # print(ins.taskTable, ins.tFreeTimeDict)
-    head = createNode(1)
+    import inspect
 
-    head.addChild(createNode(2))
 
-    printList(head)
+    def func1():
+        print("In func1")
+        print(inspect.currentframe().f_back.f_code.co_name)
+
+
+    def func2():
+        print("In func2")
+        func1()
+
+
+    func2()
+    pass
