@@ -1023,7 +1023,14 @@ class actionSet:
         return self._versionList
 
     @vsList.setter
-    def vsList(self, value): self._versionList = value
+    def vsList(self, value):
+        """
+        设置版本号列表
+
+        :param value:
+        :return:
+        """
+        self._versionList = value
 
     @staticmethod
     def _onlyKey(_dict: dict): return list(_dict.keys())[0]
