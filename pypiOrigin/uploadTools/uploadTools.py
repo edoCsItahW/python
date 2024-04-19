@@ -458,7 +458,7 @@ class pathTools:
 
 
 class argSet:
-    def __init__(self, fileAbsPath: str | PathLike[str], *, restore: bool = True, debug: bool = False, color: bool = True, auto: bool = True, increase: bool = True, **kwargs):
+    def __init__(self, fileAbsPath: str | PathLike[str], *, restore: bool = True, debug: bool = False, color: bool = True, auto: bool = True, increase: bool = True, suffix: Literal["py", "c"] = "py", **kwargs):
         """
         /rootPath
             /dirPath = rootPath(old)
@@ -479,7 +479,7 @@ class argSet:
         :type kwargs: ...
         :raise ValueError: 如果传入的文件路径不是绝对路径。
         """
-        self.compliantArg(fileAbsPath, suffix="py")
+        self.compliantArg(fileAbsPath, suffix=suffix)
 
         self._filePath = fileAbsPath
         self._newPath = None
@@ -970,29 +970,33 @@ class actionSet:
 
         return path.join(self.args.projectPath, f"{self.args.moduleName}.c")
 
-    def spawnPyd(self):
-        self.eh.executeWithTry(ins1 := r"cmake -B build -S . -Dpybind11_DIR=F:\ProgramFiles\Anaconda3\Lib\site-packages\pybind11\share\cmake\pybind11 -Wno-dev", cwd=self.args.projectPath, note=f"[ErrorWarning]cmake build出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyc, currentframe().f_lineno)}", group="生成pyd", describe="spawnPyd -> cmake构建")
+    def spawnPyd(self, *, toPath: str | PathLike[str] = None):
+        if toPath is None: toPath = self.args.projectPath
 
-        tempFunc = lambda x: path.join(self.args.projectPath, x)
+        self.eh.executeWithTry(ins1 := r"cmake -B build -S . -Dpybind11_DIR=F:\ProgramFiles\Anaconda3\Lib\site-packages\pybind11\share\cmake\pybind11 -Wno-dev", cwd=toPath, note=f"[ErrorWarning]cmake build出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyd, currentframe().f_lineno)}", group="生成pyd", describe="spawnPyd -> cmake构建")
+
+        tempFunc = lambda x: path.join(toPath, x)
 
         rename(cPath := tempFunc(f"{self.args.moduleName}.c"), tempFunc(newName := f"{self.args.moduleName}.cpp"))
 
-        self.CMakeLists(newName)
+        self.CMakeLists(newName)  # 更名Cpp
 
-        self.eh.executeWithTry(ins2 := "cmake --build build --config Release", cwd=self.args.projectPath, note=f"[ErrorWarning]cmake生成pyd出现问题: '{ins2}' {errorHandle.formatFuncInfo(self.spawnPyc, currentframe().f_lineno)}", group="生成pyd", describe="spawnPyd -> 生成pyd")
+        self.eh.executeWithTry(ins2 := "cmake --build build --config Release", cwd=toPath, note=f"[ErrorWarning]cmake生成pyd出现问题: '{ins2}' {errorHandle.formatFuncInfo(self.spawnPyd, currentframe().f_lineno)}", group="生成pyd", describe="spawnPyd -> 生成pyd")
 
-        rename(path.join(self.args.projectPath, "build", "Release", f"{self.args.moduleName}.cp311-win_amd64.pyd"), finPath := path.join(self.args.projectPath, f"{self.args.moduleName}.pyd"))
+        rename(path.join(toPath, "build", "Release", f"{self.args.moduleName}.cp311-win_amd64.pyd"), finPath := path.join(toPath, f"{self.args.moduleName}.pyd"))
 
-        self.eh.executeWithTry(ins3 := f"rd /s /q build", cwd=self.args.projectPath, note=f"[ErrorWarning]移除cmake build文件夹出现问题: '{ins3}' {errorHandle.formatFuncInfo(self.spawnPyc, currentframe().f_lineno)}", group="生成pyd", describe="spawnPyd -> 移除残留build文件夹")
+        self.eh.executeWithTry(ins3 := f"rd /s /q build", cwd=toPath, note=f"[ErrorWarning]移除cmake build文件夹出现问题: '{ins3}' {errorHandle.formatFuncInfo(self.spawnPyd, currentframe().f_lineno)}", group="生成pyd", describe="spawnPyd -> 移除残留build文件夹")
 
-        rename(path.join(self.args.projectPath, newName), cPath)
+        rename(path.join(toPath, newName), cPath)
 
-        remove(path.join(self.args.projectPath, "CMakeLists.txt"))
+        remove(path.join(toPath, "CMakeLists.txt"))
 
         return finPath
 
-    def CMakeLists(self, fileName: str):
-        with open(path.join(self.args.projectPath, "CMakeLists.txt"), "w", encoding="utf-8") as file:
+    def CMakeLists(self, fileName: str, *, toPath: str | PathLike[str] = None):
+        if toPath is None: toPath = self.args.projectPath
+
+        with open(path.join(toPath, "CMakeLists.txt"), "w", encoding="utf-8") as file:
             file.write(self._warpCmake(fileName))
 
     def middleDo(self, *, copy: bool = False):
@@ -1022,7 +1026,14 @@ class actionSet:
 
 
 class upload:
-    def __init__(self, fileAbsPath: str | PathLike[str], *, restore: bool = True, debug: bool = False, color: bool = True, auto: bool = True, increase: bool = True, **kwargs):
+    typeDict = {
+        "pyc": "py",
+        "pyd": "py",
+        "normal": "py",
+        "ctopyd": "c",
+    }
+
+    def __init__(self, fileAbsPath: str | PathLike[str], *, restore: bool = True, debug: bool = False, color: bool = True, auto: bool = True, increase: bool = True, suffix: Literal["py", "c"] = "py", **kwargs):
         """
         --restore=bool       当出现错误时是否要还原初始状态。
         --debug=bool         是否开启Debug模式。
@@ -1046,7 +1057,7 @@ class upload:
         :type kwargs: ...
         :raise ValueError: 如果传入的文件路径不是绝对路径。
         """
-        self._args = argSet(fileAbsPath, restore=restore, debug=debug, color=color, auto=auto, increase=increase, **kwargs)
+        self._args = argSet(fileAbsPath, restore=restore, debug=debug, color=color, auto=auto, increase=increase, suffix=suffix, **kwargs)
         self._actionSet = actionSet(self._args)
 
         self._common = [
@@ -1181,8 +1192,13 @@ class upload:
 
         self.actionSet.spawnPyproject()
 
-    def build(self, Type: Literal["pyc", "pyd", "normal"] = "pyd"):
-        match Type:
+    def cToPyd(self):
+        self.actionSet.CMakeLists(self.args.filePath, toPath=self.args.rootPath)
+
+        self.actionSet.spawnPyd(toPath=self.args.rootPath)
+
+    def build(self, Type: Literal["pyc", "pyd", "normal", "cToPyd"] = "pyd"):
+        match Type.lower():
             case "pyc":
                 self.tryDec(self.pyc)
 
@@ -1192,16 +1208,19 @@ class upload:
             case "normal":
                 self.tryDec(self.normal, copy=True)
 
+            case "ctopyd":
+                self.tryDec(self.cToPyd)  # TODO:
+
             case _: raise ValueError(
-                f"位置参数'Type'必须是['pyc', 'pyd', 'normal']中所有,而你的输入'{Type}'")
+                f"位置参数'Type'必须是['pyc', 'pyd', 'normal', 'cToPyd']中所有,而你的输入'{Type}'")
 
         self._successDo()
 
 
 def argParser():
     parser = ArgumentParser(prog="PYPI软件包上传工具", description="一个用于上传python软件包的工具.", epilog="**\nfileAbsolutePath, *, restore = True, debug = False, color = True, **kwargs\n**")
-    parser.add_argument("file", help="你需要上传的python文件的绝对路径。")
-    parser.add_argument("-T", "--type", default="pyd", choices=['pyc', 'pyd', 'normal'], help="打包的模式,pyc: 通过pyc文件打包, pyd: 通过pyd文件打包, normal: 通过py文件打包.(默认值: pyd)")
+    parser.add_argument("file", help="你需要上传的python文件的绝对路径,获取需要转换为pyd文件的C文件绝对路径。")
+    parser.add_argument("-T", "--type", default="pyd", choices=['pyc', 'pyd', 'normal'], help="打包的模式,pyc: 通过pyc文件打包, pyd: 通过pyd文件打包, normal: 通过py文件打包, cToPyd: 将C文件转换为pyd文件.(默认值: pyd)")
     parser.add_argument("-R", "--restore", default="True", choices=["True", "False"], help="当出现错误时是否要还原初始状态。(默认值: True)")
     parser.add_argument("-C", "--color", default="True", choices=["True", "False"], help="是否运行输出信息带有色彩。(默认值: True)")
     parser.add_argument("-D", "--debug", default="False", choices=["True", "False"], help="是否开启debug模式。(默认值: False)")
@@ -1218,10 +1237,11 @@ if __name__ == '__main__':
     # pyinstaller -F uploadTools.py -n upload -i upload_1.ico
 
     if test:
-        warn("正在运行测试版!", SyntaxWarning)
+        warn(
+            "正在运行测试版!", SyntaxWarning)
 
-        # ins = upload(r"D:\xst_project_202212\codeSet\Python\pypiOrigin\conFunc\confunc.py", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")
-        # ins.build("pyd")
+        # ins = upload(r"D:\xst_project_202212\codeSet\Python\py_extent.c", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。", suffix="c")
+        # ins.build("cToPyd")
         pass
 
     else:
@@ -1235,7 +1255,8 @@ if __name__ == '__main__':
                      color=strToBool(args.color, default=True),
                      restore=strToBool(args.restore, default=True),
                      increase=strToBool(args.increase, default=True),
-                     auto=strToBool(args.auto, default=True)
+                     auto=strToBool(args.auto, default=True),
+                     suffix=upload.typeDict[args.type.lower()]
                      )
         ins.build(args.type)
 
