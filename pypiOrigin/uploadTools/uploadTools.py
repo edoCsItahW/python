@@ -630,7 +630,7 @@ class pathTools:
         :param _path: 文件路径
         :type _path: str | PathLike
         :keyword kwargs: {note: 错误原因注解, willDo: [warn, error, stop] 报错方式, fromError: ..., group: 组}
-        :type kwargs: dict[str, Any]
+        :type kwargs: Any
         :return: 文件是否存在
         :rtype: bool
         :raise FileNotFoundError: 如果文件不存在.
@@ -743,18 +743,46 @@ class argSet:
         return path.dirname(self.filePath)
 
     @cached_property
-    def fileName(self):
+    def fileName(self) -> str:
+        """
+        文件名.
+
+        :return: 文件名
+        :rtype: str
+        """
         return path.basename(self.filePath)
 
     @cached_property
-    def moduleName(self):
+    def moduleName(self) -> str:
+        """
+        模块名.
+
+        :return: 模块名
+        :rtype: str
+        """
         return self._splitList[0]
 
     @cached_property
-    def fileSuffix(self): return self._splitList[1][1:]
+    def fileSuffix(self) -> str:
+        """
+        文件后缀.
+
+        :return: 文件后缀
+        :rtype: str
+        """
+        return self._splitList[1][1:]
 
     @singledispatchmethod
     def checkSuffix(self, suffix) -> bool:
+        """
+        检查文件后缀是否合规.
+
+        :param suffix: 文件后缀
+        :type suffix: str | list[str]
+        :return: 是否合规
+        :rtype: bool
+        :raise NotImplementedError: 类型不支持.
+        """
         raise NotImplementedError(f"不支持的类型'{type(suffix)}'")
 
     @checkSuffix.register(str)
@@ -766,7 +794,14 @@ class argSet:
         return any(s in ["c", "cpp"] for s in suffix)
 
     @cached_property
-    def dirPath(self):
+    def dirPath(self) -> PathLike[str] | str:
+        """
+        模块目录路径.
+
+        :return: 模块目录路径
+        :rtype: str
+        :raise RuntimeError: 当文件后缀为c或cpp时,会抛出此错误.
+        """
         root = path.join(self.rootPath, self.moduleName)
 
         if self.checkSuffix(self.suffix):
@@ -779,7 +814,14 @@ class argSet:
         return root
 
     @cached_property
-    def projectPath(self):
+    def projectPath(self) -> PathLike[str] | str:
+        """
+        项目目录路径.
+
+        :return: 项目目录路径
+        :rtype: PathLike[str] | str
+        :raise RuntimeError: 当文件后缀为c或cpp时,会抛出此错误.
+        """
         prj = path.join(self.dirPath, self.moduleName)
 
         if self.checkSuffix(self.suffix):
@@ -793,56 +835,138 @@ class argSet:
         return prj
 
     @property
-    def newPath(self): return self._newPath
+    def newPath(self):
+        """
+        上传后文件的路径.
+
+        :return: 上传后文件的路径,最开始返回None,直到上传并赋值后才有值.
+        :rtype: str
+        """
+        return self._newPath
 
     @newPath.setter
     def newPath(self, value): self._newPath = value
 
     @cached_property
-    def jsonPath(self):
+    def jsonPath(self) -> PathLike[str] | str | None:
+        """
+        args.json路径.
+
+        :return: args.json路径
+        :rtype: str | None
+        """
         return jsPath if path.exists(jsPath := path.join(self.rootPath, "args.json")) else None
 
     @property
-    def argsDict(self):
+    def argsDict(self) -> dict[str, Any] | None:
+        """
+        args.json字典.
+
+        :return: args.json字典
+        :rtype: dict[str, Any]
+        """
         if self.jsonPath:
             with jsonOpen(self.jsonPath, "r") as file:
                 return file.read()
 
     @cached_property
-    def separator(self):
+    def separator(self) -> str:
+        """
+        路径分隔符.
+
+        :return: 路径分隔符
+        :rtype: str
+        """
         return "/" if "/" in self.filePath else "\\"
 
     @property
-    def executor(self):
+    def executor(self) -> instruct:
+        """
+        命令行执行器.
+
+        :return: 命令行执行器
+        :rtype: instruct
+        """
         return self._executor
 
     @property
-    def color(self):
+    def color(self) -> bool:
+        """
+        关键字参数color启用信号.
+
+        :return: 启用信号
+        :rtype: bool
+        """
         return self._color
 
     @property
-    def flagRestore(self):
+    def flagRestore(self) -> bool:
+        """
+        关键字参数restore启用信号.
+
+        :return: 启用信号
+        :rtype: bool
+        """
         return self._flagRestore
 
     @property
-    def flagDebug(self):
+    def flagDebug(self) -> bool:
+        """
+        关键字参数debug启用信号.
+
+        :return: 启用信号
+        :rtype: bool
+        """
         return self._flagDebug
 
     @property
-    def flagAuto(self): return self._flagAuto
+    def flagAuto(self) -> bool:
+        """
+        关键字参数auto启用信号.
+
+        :return: 启用信号
+        :rtype: bool
+        """
+        return self._flagAuto
 
     @property
-    def flagIncrease(self): return self._flagIncrease
+    def flagIncrease(self) -> bool:
+        """
+        关键字参数increase启用信号.
+
+        :return: 启用信号
+        :rtype: bool
+        """
+        return self._flagIncrease
 
     @property
-    def suffix(self): return self._suffix.lower() if isinstance(self._suffix, str) else [s.lower() for s in self._suffix]
+    def suffix(self) -> str | list[str]:
+        """
+        文件后缀.
+
+        :return: 文件后缀
+        :rtype: str
+        """
+        return self._suffix.lower() if isinstance(self._suffix, str) else [s.lower() for s in self._suffix]
 
     @cached_property
-    def pyVersion(self):
+    def pyVersion(self) -> str | None:
+        """
+        python版本号.
+
+        :return: python版本号
+        :rtype: str
+        """
         return findall(r"^\d\.\d{1,2}", version)[0]
 
     @cached_property
-    def cmakeVersion(self):
+    def cmakeVersion(self) -> str | None:
+        """
+        CMake版本号.
+
+        :return: CMake版本号
+        :rtype: str
+        """
         return findall(r"\d\.\d{1,2}", self.executor("cmake --version", output=False))[0]
 
     @staticmethod
@@ -875,20 +999,43 @@ class errorHandle:
     _instance = None
 
     def __new__(cls, *args, **kwargs):
+        # 单例模式
         if not cls._instance:
             cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self, args: argSet):
+        """
+        错误处理类
+
+        :param args: 参数设置和存储类
+        :type args: argSet
+        """
 
         self._args: argSet = args
 
     @property
-    def args(self):
+    def args(self) -> argSet:
+        """
+        属性存储类
+
+        :return: 属性存储类
+        :rtype: argSet
+        """
         return self._args
 
     @staticmethod
-    def _formatErrorGroup(*, _lastKey: list = None, _result: list = None):
+    def _formatErrorGroup(*, _lastKey: list = None, _result: list = None) -> ExceptionGroup:
+        """
+        将错误记录字典(dict)递归的组装成嵌套的ExceptionGroup字典.
+
+        :keyword _lastKey: 上一个键
+        :type _lastKey: list
+        :keyword _result: 结果
+        :type _result: list
+        :return: 如果_lastKey不为空,则返回ExceptionGroup字典,否则递归的执行_formatErrorGroup函数.
+        :rtype: ExceptionGroup | dict
+        """
         if _lastKey is not None:
             if len(_lastKey):
                 firstKey = _lastKey[0]
@@ -916,22 +1063,40 @@ class errorHandle:
         :type error: Exception
         :param group: 分至组
         :type group: str
-        :return: 操作执行函数不做返回
-        :rtype: None
         """
         if group not in errorLog: errorLog.update([(group, [])])
 
         errorLog[group].append(error)
 
     @classmethod
-    def raiseErrorGroup(cls):
+    def raiseErrorGroup(cls) -> None:
+        """
+        引发错误组.
+        """
         if errorLog:
             raise cls._formatErrorGroup()
 
     @staticmethod
     def raiseError(errorType: type[Exception], info: str = '', *, note: str = "",
                    willDo: Literal["warn", "error", "stop", "log"] = "error", fromError: Exception = None,
-                   group: str = "其它"):
+                   group: str = "其它") -> None:
+        """
+        错误处理函数.
+
+        :keyword errorType: 错误类型
+        :type errorType: type[Exception]
+        :keyword info: 错误信息
+        :type info: str
+        :keyword note: 错误注解
+        :type note: str
+        :keyword willDo: 错误处理方式: warn-警告, error-报错, stop-强制退出, log-记录日志
+        :type willDo: Literal["warn", "error", "stop", "log"]
+        :keyword fromError: 错误来源
+        :type fromError: Exception
+        :keyword group: 错误分组
+        :type group: str
+        :raise ValueError: 入参错误
+        """
         def rerr(err, fe):
             if fe:
                 raise err from fe
@@ -970,10 +1135,36 @@ class errorHandle:
                     f"关键字参数'willDo'必须是['warn', 'error', 'stop', 'log']中所有,而你的输入'{willDo}'")
 
     @staticmethod
-    def formatFuncInfo(func: Callable, line: int):
+    def formatFuncInfo(func: Callable, line: int) -> str:
+        """
+        格式化函数信息
+
+        :param func: 函数
+        :type func: Callable
+        :param line: 行号(一般为currentframe().f_back.f_lineno)
+        :type line: int
+        :return: 格式化后的函数信息
+        :rtype: str
+        """
         return f"from {func.__name__} in {line}"
 
-    def executeWithTry(self, instruction: str, *, cwd: str | PathLike = None, note: str = "", group: str = "其它", describe: str = None, color: str = "yellow"):
+    def executeWithTry(self, instruction: str, *, cwd: str | PathLike = None, note: str = "", group: str = "其它", describe: str = None, color: str = "yellow") -> None:
+        """
+        在try-except中执行指令.
+
+        :param instruction: 指令
+        :type instruction: str
+        :keyword cwd: 执行指令的目录
+        :type cwd: str | PathLike
+        :keyword note: 指令注解
+        :type note: str
+        :keyword group: 指令分组
+        :type group: str
+        :keyword describe: 指令描述
+        :type describe: str
+        :keyword color: 是否允许输出带有颜色,或者指定颜色
+        :type color: str
+        """
         try:
             self.args.executor(instruction, cwd=cwd, note=note)
 
@@ -986,7 +1177,69 @@ class errorHandle:
 
 
 class actionSet:
+    """
+    操作集合类
+
+    Attributes:
+        :ivar args: 参数设置和存储类.
+        :ivar eh: 错误处理类.
+        :ivar vsList: 版本号列表.
+    Methods:
+        :meth:`versionBack`: 版本号回退.
+
+        :meth:`_jsonIncrease`: 版本号入口函数.
+
+        :meth:`_kewargs`: 获取关键字参数.
+
+        :meth:`_warpCmake`: 包装CMakeLists.format函数.
+
+        :meth:`_vsIncrease`: 版本号自增.
+
+        :meth:`_vsToList`: 将版本号字符串转换为列表.
+
+        :meth:`_listToVs`: 将版本号列表转换为字符串.
+
+        :meth:`_onlyKey`: 对于只有一个键的字典,返回这个键.
+
+        :meth:`_jsonIncrease`: 版本号入口函数.
+
+        :meth:`_increase`: 版本号自增主函数.
+
+        :meth: `spawnPyi`: 生成pyi文件.
+
+        :meth: `spawnPyc`: 生成pyc文件.
+
+        :meth: `spawnHtml`: 生成html文件.
+
+        :meth: `spawnReadme`: 生成readme文件.
+
+        :meth: `spawnSetup`: 生成setup.py文件.
+
+        :meth: `spawnInit`: 生成__init__.py文件.
+
+        :meth: `cmakeLists`: 生成CMakeLists.txt文件.
+
+        :meth: `spawnPyproject`: 生成pyproject.toml文件.
+
+        :meth: `spawnManifest`: 生成MANIFEST.in文件.
+
+        :meth: `spawnLicense`: 生成LICENSE文件.
+
+        :meth: `spawnC`: 生成c文件.
+
+        :meth: `spawnPyd`: 生成pyd文件.
+
+        :meth: `middleDo`: 初始化操作.
+
+        :meth: `checkRequestList`: 检查是否与预设文件结构相同.
+    """
     def __init__(self, args: argSet):
+        """
+        操作集合类
+
+        :param args: 参数设置和存储类
+        :type args: argSet
+        """
         self._args = args
         self._errorHandle = errorHandle(self.args)
 
@@ -1033,18 +1286,59 @@ class actionSet:
         self._versionList = value
 
     @staticmethod
-    def _onlyKey(_dict: dict): return list(_dict.keys())[0]
+    def _onlyKey(_dict: dict) -> Any:
+        """
+        对于只有一个键的字典,返回这个键.
 
-    def _vsIncrease(self, pos: Literal[0, 1, 2] = 2):
+        :param _dict: 字典
+        :type _dict: dict
+        :return: 字典的键
+        :rtype: Any
+        """
+        return list(_dict.keys())[0]
+
+    def _vsIncrease(self, pos: Literal[0, 1, 2] = 2) -> list[int]:
+        """
+        版本号自增.
+
+        :param pos: 自增位置: 0-主版本号, 1-副版本号, 2-补丁号
+        :type pos: int
+        :return: 版本号列表
+        :rtype: list
+        """
         if self.vsList: return [(v + 1) if i == pos else v for i, v in enumerate(self.vsList)]
 
     @staticmethod
-    def _vsToList(versionStr: str): return list(map(int, versionStr.split('.')))
+    def _vsToList(versionStr: str) -> list[int]:
+        """
+        将版本号字符串转换为列表.
+
+        :param versionStr: 版本号字符串
+        :type versionStr: str
+        :return: 版本号列表
+        :rtype: list
+        """
+        return list(map(int, versionStr.split('.')))
 
     @staticmethod
-    def _listToVs(versionList: list): return '.'.join(map(str, versionList))
+    def _listToVs(versionList: list) -> str:
+        """
+        将版本号列表转换为字符串.
 
-    def _increase(self, pos: int | Literal[0, 1, 2] = 2):
+        :param versionList: 版本号列表
+        :type versionList: list
+        :return: 版本号字符串
+        :rtype: str
+        """
+        return '.'.join(map(str, versionList))
+
+    def _increase(self, pos: int | Literal[0, 1, 2] = 2) -> None:
+        """
+        版本号自增主函数.
+
+        :param pos: 自增位置: 0-主版本号, 1-副版本号, 2-补丁号
+        :type pos: int
+        """
         with jsonOpen(self.args.jsonPath, "w") as file:
 
             contentDict = file.read()
@@ -1063,7 +1357,13 @@ class actionSet:
             file.write(contentDict)
 
     @singledispatchmethod
-    def _jsonIncrease(self, increase: bool | Literal["major", "minor", "patch"] = "patch"):
+    def _jsonIncrease(self, increase: bool | Literal["major", "minor", "patch"] = "patch") -> None:
+        """
+        版本号入口函数.
+
+        :param increase: 是否自增版本号,或者自增位置,major: 主版本号, minor: 副版本号, patch: 补丁号 , 默认为patch
+        :type increase: bool | str
+        """
         if increase is not None:
             raise TypeError(
                 f"位置参数'increase'必须为布尔(bool)或['major', 'minor', 'patch']中的字符串(str)类型,而你的输入'{increase}'!")
@@ -1111,7 +1411,15 @@ class actionSet:
 
             file.write(argsDict)
 
-    def _kewargs(self, file: str):
+    def _kewargs(self, file: str) -> dict[str, str]:
+        """
+        获取关键字参数.
+
+        :param file: 文件名
+        :type file: str
+        :return: 关键字参数字典
+        :rtype: dict
+        """
         if self.args.jsonPath and self.args.flagIncrease:
 
             self._jsonIncrease(self.args.argsDict["increase"] if "increase" in self.args.argsDict else None)
@@ -1129,11 +1437,28 @@ class actionSet:
         }
 
     @property
-    def _warpCmake(self):
+    def _warpCmake(self) -> partial:
+        """
+        包装CMakeLists.format函数.
+
+        :return: 包装了CMakeLists.format的partial函数
+        :rtype: partial
+        """
         return partial(CMakeLists.format, self.args.cmakeVersion, self.args.moduleName.upper(), self.args.pyVersion, self.args.moduleName)
 
-    def spawnPyi(self):
-        """生成pyi文件"""
+    def spawnPyi(self) -> str | PathLike[str]:
+        """
+        生成pyi文件.
+
+        过程::
+            1. 生成stub文件: stubgen {fileName}
+            2. 移除缓存文件: rd /s /q __pycache__
+            3. 移动pyi文件: move out/{moduleName}/{moduleName}.pyi {projectPath}
+            4. 删除out文件夹: rd /s /q out
+
+        :return: 生成的pyi文件路径
+        :rtype: str
+        """
         self.eh.executeWithTry(ins1 := f"stubgen {self.args.fileName}", cwd=self.args.projectPath,
                                note=f"[ErrorWarning]生成pyi文件出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyi, currentframe().f_lineno)}",
                                group="生成pyi", describe="spawnPyi -> 生成pyi文件.")
@@ -1162,7 +1487,19 @@ class actionSet:
 
         return path.join(self.args.projectPath, f"{self.args.moduleName}.pyi")
 
-    def spawnPyc(self):
+    def spawnPyc(self) -> str | PathLike[str]:
+        """
+        生成pyc文件.
+
+        过程::
+            1. 编译py文件: python -m py_compile {fileName}
+            2. 移动pyc文件: move __pycache__/{fileName}.pyc {projectPath}
+            3. 删除缓存文件: rd /s /q __pycache__
+            4. 重命名pyc文件: ren {fileName}.pyc {fileName}.cpython-39.pyc
+
+        :return: 生成的pyc文件路径
+        :rtype: str
+        """
         self.eh.executeWithTry(ins1 := f"python -m py_compile {self.args.fileName}", cwd=self.args.projectPath,
                                note=f"[ErrorWarning]pyc文件编译出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyc, currentframe().f_lineno)}",
                                group="生成pyc", describe="spawnPyc -> 生成pyc文件")
@@ -1196,7 +1533,17 @@ class actionSet:
                                        note=f"该文件由'{ins1}'指令生成", willDo="log", group="生成pyc",
                                        fromError=SpawnError("生成pyc文件错误?"))
 
-    def spawnHtml(self):
+    def spawnHtml(self) -> str | PathLike[str]:
+        """
+        生成html文档.
+
+        过程::
+            1. 生成html文档: pdoc -d=markdown --output {dirPath} {filePath}
+            2. 移除index.html和search.js文件
+
+        :return: 生成的html文档路径
+        :rtype: str
+        """
         self.eh.executeWithTry(ins1 := f"pdoc -d=markdown --output {self.args.dirPath} {self.args.filePath}", note=f"[ErrorWarning]生成html文档出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnHtml, currentframe().f_lineno)}", group="生成html", describe="spawnHtml -> 生成html文档")
 
         pathTools.isFileExist(html := path.join(self.args.dirPath, f"{self.args.moduleName}.html"), note=f"该文件由: '{ins1}'指令生成 {errorHandle.formatFuncInfo(self.spawnHtml, currentframe().f_lineno)}", willDo="log", fromError=SpawnError("生成html文档错误?"), group="生成html")
@@ -1206,7 +1553,18 @@ class actionSet:
 
         return path1 if path.exists(path1 := path.join(self.args.dirPath, f"{self.args.moduleName}.html")) else path.join(self.args.dirPath, self.args.moduleName, f"{self.args.moduleName}.html")
 
-    def spawnREADME(self):
+    def spawnREADME(self) -> str | PathLike[str]:
+        """
+        生成README.md文件.
+
+        过程::
+            1. 生成html文档: self.spawnHtml()
+            2. 转换html为markdown: pandoc -f html -t markdown {htmlPath} -o {readmePath}
+            3. 删除html文件: del {htmlPath}
+
+        :return: 生成的README.md文件路径
+        :rtype: str
+        """
         htmlPath = self.spawnHtml()
 
         self.eh.executeWithTry(
@@ -1220,7 +1578,11 @@ class actionSet:
 
         return readmePath
 
-    def spawnLicense(self):
+    def spawnLicense(self) -> None:
+        """
+        生成License.txt文件.
+        """
+
         try:
             with open(path.join(self.args.dirPath, "LICENSE.txt"), "w", encoding="utf-8") as file:
                 file.write(License)
@@ -1250,6 +1612,10 @@ class actionSet:
             outputInfo("spawnManifest -> 生成MANIFEST.in")
 
     def spawnInit(self):
+        """
+        生成__init__.py文件.
+        """
+
         try:
             with open(path.join(self.args.projectPath, "__init__.py"), "w", encoding="utf-8") as file:
                 file.write(f"from .{self.args.moduleName} import *\n")
@@ -1262,7 +1628,14 @@ class actionSet:
         else:
             outputInfo("spawnInit -> 生成__init__.py")
 
-    def spawnPyproject(self, filePath: str | PathLike[str] = None):
+    def spawnPyproject(self, filePath: str | PathLike[str] = None) -> None:
+        """
+        生成pyproject.toml文件.
+
+        :param filePath: 生成pyproject.toml文件的路径,默认为None
+        :type filePath: str | PathLike[str]
+        """
+
         try:
             with open(path.join(self.args.dirPath, "pyproject.toml"), "w", encoding="utf-8") as file:
                 file.write(pyproject.format(**self._kewargs(filePath.replace(self.args.separator, self.args.separator * 2) if filePath else filePath)))
@@ -1276,11 +1649,23 @@ class actionSet:
             outputInfo("spawnPyproject -> 生成pyproject.toml")
 
     def spawnSetup(self):
+        """
+        生成setup.py文件.
+        """
         if not path.exists(setupPath := path.join(self.args.projectPath, "setup.py")):
             with open(setupPath, "w", encoding="utf-8") as file:
                 file.write(setup.format(self.args.fileName))
 
-    def spawnC(self):
+    def spawnC(self) -> str | PathLike[str]:
+        """
+        生成C文件.
+
+        过程::
+            1. 使用setuptools将py文件编译为C文件: python setup.py build_ext --inplace
+
+        :return: 生成的C文件路径
+        :rtype: str
+        """
         self.eh.executeWithTry(ins1 := "python setup.py build_ext --inplace", cwd=self.args.projectPath, note=f"[ErrorWarning]C文件生成出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyc, currentframe().f_lineno)}", group="生成C", describe="spawnC -> 生成C文件")
 
         return path.join(self.args.projectPath, f"{self.args.moduleName}.c")
@@ -1341,7 +1726,13 @@ class actionSet:
         with open(path.join(toPath, "CMakeLists.txt"), "w", encoding="utf-8") as file:
             file.write(self._warpCmake(fileName))  # 使用模板生成CMakeLists.txt
 
-    def middleDo(self, *, copy: bool = False):
+    def middleDo(self, *, copy: bool = False) -> None:
+        """
+        初始化操作.
+
+        :keyword copy: 是否复制py源文件到指定路径,默认为False
+        :type copy: bool
+        """
         self.args.newPath = path.join(self.args.projectPath, self.args.fileName)
 
         try:
@@ -1361,7 +1752,13 @@ class actionSet:
             outputInfo(f"build -> 移动{self.args.fileName}")
 
     @staticmethod
-    def checkRequestList(requestList: list):
+    def checkRequestList(requestList: list) -> None:
+        """
+        检查预设需求文件结构是否存在.
+
+        :param requestList: 预设需求文件结构列表.
+        :type requestList: list
+        """
         for p in requestList:
             if not path.exists(p): raise FileNotFoundError(
                 f"缺少预设需求文件结构中的'{p}'文件!")
@@ -1431,16 +1828,39 @@ class upload:
         }
 
     @property
-    def args(self): return self._args
+    def args(self) -> argSet:
+        """
+        返回参数对象.
+
+        :return: 参数对象.
+        :rtype: argSet
+        """
+        return self._args
 
     @property
-    def actionSet(self): return self._actionSet
+    def actionSet(self) -> actionSet:
+        """
+        返回操作集对象.
 
-    def tryDec(self, func: Callable, *, copy: bool = False):
+        :return: 操作集对象.
+        :rtype: actionSet
+        """
+        return self._actionSet
+
+    def tryDec(self, func: Callable, *, copy: bool = False) -> None:
+        """
+        在try-except中执行函数,并在出现错误时还原文件.
+
+        :param func: 要执行的函数.
+        :type func: Callable
+        :keyword copy: 是否复制py源文件到指定路径,默认为False
+        :type copy: bool
+        """
         try:
             func()
 
-            # self.actionSet.checkRequestList(self.requestDict[func])
+            if func in self.requestDict:
+                self.actionSet.checkRequestList(self.requestDict[func])
 
         except Exception as e:
             None if copy else rename(self.args.newPath, self.args.filePath)
@@ -1460,7 +1880,10 @@ class upload:
             if errorLog:
                 errorHandle.raiseErrorGroup()
 
-    def _successDo(self):
+    def _successDo(self) -> None:
+        """
+        成功执行后执行的操作.
+        """
         if not self.args.jsonPath:
             if input("现在你可以编辑pyproject.toml,编辑完成后输入ok以继续:").lower() == "ok":
                 pass
@@ -1482,7 +1905,10 @@ class upload:
         else:
             print(f"现在你可以运行`cd {self.args.dirPath}`并输入`python -m twine upload --repository testpypi dist/*`以开始上传.\n#您的token:'{token}'")
 
-    def _commonPart(self):
+    def _commonPart(self) -> None:
+        """
+        对于py文件的共同操作.
+        """
         self.actionSet.middleDo()
 
         self.actionSet.spawnInit()
@@ -1494,9 +1920,7 @@ class upload:
         self.actionSet.spawnLicense()
 
     def pyc(self):
-        """
-
-        """
+        """pyc文件打包"""
         self._commonPart()
 
         pathTools.isFileExist(pyc := self.actionSet.spawnPyc(), note=f"该文件由spawnPyc生成 {errorHandle.formatFuncInfo(self._commonPart, currentframe().f_lineno)}", willDo="log", fromError=SpawnError("生成pyc文件错误!"), group="生成pyc")
@@ -1508,6 +1932,7 @@ class upload:
         remove(path.join(self.args.projectPath, f"{self.args.moduleName}.html"))
 
     def pyd(self):
+        """pyd文件打包"""
         self._commonPart()
 
         self.actionSet.spawnManifest("pyd")
@@ -1524,6 +1949,7 @@ class upload:
             remove(p)
 
     def normal(self):
+        """普通py文件打包"""
         self.actionSet.middleDo(copy=True)
 
         self.actionSet.spawnLicense()
@@ -1535,11 +1961,18 @@ class upload:
         self.actionSet.spawnPyproject()
 
     def cToPyd(self):
+        """将C或Cpp文件转换为pyd文件"""
         self.actionSet.CMakeLists(self.args.fileName, toPath=self.args.rootPath)
 
         self.actionSet.spawnPyd(toPath=self.args.rootPath, cppFile=self.args.fileSuffix == "cpp")
 
-    def build(self, Type: Literal["pyc", "pyd", "normal", "cToPyd"] = "pyd"):
+    def build(self, Type: Literal["pyc", "pyd", "normal", "cToPyd"] = "pyd") -> None:
+        """
+        根据传入的打包类型,执行相应的最终打包操作.
+
+        :param Type: 打包类型,可选值: pyc, pyd, normal, cToPyd.(默认值: pyd)
+        :type Type: str
+        """
         match Type.lower():
             case "pyc":
                 self.tryDec(self.pyc)
