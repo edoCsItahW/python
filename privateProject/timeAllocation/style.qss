@@ -11,3 +11,6 @@ QWidget#monBar {
     background-color: #006699;
     border-radius: 5px;
 }
+
+#body {
+}

@@ -426,8 +426,7 @@ class autoBrowser:
         return BeautifulSoup(html, mode)
 
 
-def translate_web(word: str, driver: Chrome | Edge = None, *,
-                  webtype: Literal["edge", "chrome"] = "edge", mutil: bool = False) -> str | list:
+def translate_web(word: str, driver: Chrome | Edge = None, *, webtype: Literal["edge", "chrome"] = "edge", mutil: bool = False) -> str | list:
     """
     使用浏览器的无头模式对输入的文本进行翻译.
 

@@ -13,10 +13,10 @@
 # 编码模式: utf-8
 # 注释: 由于pyinstaller的多文件打包的功能比较麻烦,因此我将所有功能都集成到一个文件中.
 # -------------------------<Lenovo>----------------------------
-from threading import Thread
 from win32com.client import Dispatch, CDispatch
 from subprocess import Popen, PIPE
 from functools import cached_property, partial, singledispatchmethod
+from threading import Thread
 from win32gui import FindWindow, SetForegroundWindow, EnumWindows, GetWindowText, IsWindowVisible
 from argparse import ArgumentParser, Namespace
 from win32api import ShellExecute
