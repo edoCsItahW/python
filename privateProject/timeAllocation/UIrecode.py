@@ -397,7 +397,7 @@ class TaskOption(QDialog):
 
     @property
     def body(self):
-        body = funcSet.createWidget(self, objectName="body", styleSheet="background-color: #cccccc;")
+        body = funcSet.createWidget(self, objectName="body", styleSheet="background-color: transparent;")# #cccccc;")
 
         self.posOpt.fullPerent(body, keep=True)
 
@@ -418,12 +418,37 @@ class TaskOption(QDialog):
 
     def conponentInit(self):
 
-        func1, func2 = lambda _widget: QLabel("label1:", _widget), lambda _widget: QLineEdit(_widget)
+        vlayout = QVBoxLayout(self.body)
+        labelList = []
+        lineEditList = []
 
-        widget1, [label, lineEdit] = self.posOpt.PFhLayout(self.body, {func1: 1, func2: 9})
+        func1, func2 = lambda _widget: QLabel("任务名:", _widget), lambda _widget: QLineEdit(_widget)
 
-        lineEdit.setStyleSheet("background-color: #595959;")
-        lineEdit.setPlaceholderText("input")
+        widget1, [label, lineEdit] = self.posOpt.PFhLayout(self.body, {func1: 1, func2: 4})
+
+        lineEdit.setPlaceholderText("...")
+
+        labelList.append(label)
+        lineEditList.append(lineEdit)
+
+        vlayout.addWidget(widget1)
+
+        func3, func4 = lambda _widget: QLabel("开始时间:", _widget), lambda _widget: QTimeEdit(_widget)
+
+        widget2, [label2, timeEdit] = self.posOpt.PFhLayout(self.body, {func3: 1, func4: 4})
+
+        timeEdit.setDisplayFormat("hh:mm")
+
+        labelList.append(label2)
+        # lineEditList.append(timeEdit)
+
+        # vlayout.addWidget(widget2)
+
+        for l in labelList:
+            l.setStyleSheet("color: #cccccc; font-weight: bold; font-size: 20px;")
+
+        for l in lineEditList:
+            l.setStyleSheet("background-color: #595959; font-size: 20px;")
 
     def closeEvent(self, event: QCloseEvent):
         super().closeEvent(event)
