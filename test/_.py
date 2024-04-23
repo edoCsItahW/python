@@ -13,34 +13,93 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy
+
+# import sys
+# from PyQt5.QtWidgets import *
+#
+#
+# def getEnumStrings(cls, enum):
+#     s = {}
+#     for key in dir(cls):
+#         value = getattr(cls, key)
+#         if isinstance(value, enum):
+#             s['{:02d}'.format(value)] = key
+#     return s
+#
+#
+# class MainWnd(QWidget):
+#     def __init__(self, parent=None):
+#         super(MainWnd, self).__init__(parent)
+#         # 对字典进行排序,字典默认按照key(升序)进行排序,sorted()函数返回一个列表
+#         icons = sorted(getEnumStrings(QStyle, QStyle.StandardPixmap).items())
+#         layout = QGridLayout(self)  # 创建栅格布局
+#         colNums = 4  # 每行显示的图标数目
+#         for i, iconInfo in enumerate(icons[1:]):
+#             print(iconInfo)
+#             btn = QPushButton(QApplication.style().standardIcon(i), ' {} - {}'.format(*iconInfo))
+#             btn.setStyleSheet('QPushButton{text-align:left; height:30}')  # 设置样式表
+#             layout.addWidget(btn, int(i / colNums), i % colNums)  # 将按钮控件放到栅格布局上
+#             self.setWindowTitle('Qt内置图标显示')  # 设置窗口标题
+#             self.setWindowIcon(QApplication.style().standardIcon(QStyle.StandardPixmap.SP_DriveFDIcon))  # 设置窗口图标
+#
+#
+# if __name__ == '__main__':
+#     app = QApplication(sys.argv)
+#     w = MainWnd()
+#     w.show()
+#     sys.exit(app.exec_())
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QVBoxLayout
 from PyQt6.QtCore import Qt
 
 
-class CenteredWidget(QWidget):
+class newWindow(QWidget):
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        # 创建一个垂直布局
+        # layout = QVBoxLayout(self)
+
+        # 创建一个 QLabel 并添加到布局中
+        label = QLabel("test", self)
+        # layout.addWidget(label)
+
+        self.setStyleSheet("background-color: yellow;")
+
+        # 显示 newWindow
+        self.show()
+
+
+class MainWindow(QMainWindow):
+
     def __init__(self):
         super().__init__()
 
-        # 创建主布局
-        main_layout = QVBoxLayout(self)
+        # 设置窗口标题
+        self.setWindowTitle('主窗口')
 
-        # 创建一个要居中的 QWidget
-        centered_widget = QWidget()
+        # 创建一个中心部件
+        # central_widget = QWidget()
+        # self.setCentralWidget(central_widget)
 
-        # 设置 QWidget 的尺寸策略为水平和垂直方向上的首选大小
-        centered_widget.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred))
+        # 设置背景颜色
+        self.setStyleSheet("background-color: red;")
 
-        # 创建一个水平布局，并添加 QWidget 到其中
-        horizontal_layout = QHBoxLayout()
-        horizontal_layout.addWidget(centered_widget)
-        horizontal_layout.addStretch(1)  # 添加一个伸缩因子以在右侧创建空间
+        # 创建 newWindow 实例
+        new = newWindow(self)
 
-        # 将水平布局添加到主布局中
-        main_layout.addLayout(horizontal_layout)
+        new.resize((size := self.size()).width(), size.height())
+
+        # 显示 MainWindow
+        self.show()
 
 
-if __name__ == "__main__":
-    app = QApplication([])
-    window = CenteredWidget()
-    window.show()
-    app.exec()
+if __name__ == '__main__':
+    import sys
+
+    argv = sys.argv
+    app = QApplication(argv)
+
+    main = MainWindow()
+
+    sys.exit(app.exec())

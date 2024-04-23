@@ -6,11 +6,13 @@ mainWindow QStatusBar {
     background-color: #cccccc;
 }
 
-QWidget#monBar {
+#dayTable {
     border: 0;
-    background-color: #006699;
+    background-color: #3e3e3e;
     border-radius: 5px;
 }
 
-#body {
+#dayTable QWidget {
+    background-color: #8b8b8b;
+    border-radius: 5px;
 }

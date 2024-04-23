@@ -13,11 +13,12 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QBoxLayout, QSizePolicy, QSpacerItem
-from PyQt6.QtGui import QIcon, QResizeEvent, QScreen
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QHBoxLayout, QGraphicsScene, QGraphicsPixmapItem, QDialog,
+                             QPushButton, QVBoxLayout, QBoxLayout, QSizePolicy, QSpacerItem, QLabel)
+from PyQt6.QtGui import QIcon, QResizeEvent, QScreen, QPixmap, QPalette, QBrush, QPaintEvent, QMouseEvent
 from PyQt6.QtCore import Qt
 from win32print import GetDeviceCaps
-from functools import cached_property, partial
+from functools import cached_property, partial, cache
 from win32con import DESKTOPHORZRES, DESKTOPVERTRES
 from win32api import EnumDisplayMonitors
 from win32gui import GetDC, ReleaseDC
@@ -27,6 +28,7 @@ from typing import overload
 
 
 ignoreSecondaryScreen: int = 1 << 0
+# TODO: 将widget和setOption独立为类
 
 
 class mainWindow(QMainWindow):
@@ -85,6 +87,17 @@ class mainWindow(QMainWindow):
 
     @cached_property
     def mainScreen(self) -> QScreen: return self.screenList[0]
+
+    @cache
+    def dayBarDict(self, parent):
+
+        dayDict = {obj: self.createWidget(parent, objectName=obj) for obj in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]}
+
+        for day in dayDict.values():
+
+            self.dayBarInit(day)
+
+        return dayDict
 
     # 普通方法
     def _flagsParser(self):
@@ -162,8 +175,17 @@ class mainWindow(QMainWindow):
         self.setVCenter(widget, keep=keep)
 
     def resizeEvent(self, event: QResizeEvent):
+        super().resizeEvent(event)
+
         for func in self.eventDoList:
             func()
+
+    @staticmethod
+    def createWidget(parent, *, objectName: str = ""):
+        widget = QWidget(parent)
+        if objectName: widget.setObjectName(objectName)
+
+        return widget
 
     @staticmethod
     def warpFunc(func: Callable, *args, **kwargs):
@@ -181,6 +203,9 @@ class mainWindow(QMainWindow):
 
     def attrsInit(self):
         self.statusBar()
+
+        self.setWindowIcon(QIcon(r"./static/imgs/timeA.ico"))
+
         self.setStatusTip("TM")
         self.setWindowTitle("TM")
         self.setAutoSize()
@@ -193,18 +218,41 @@ class mainWindow(QMainWindow):
 
     def conponentInit(self):
 
-        monBar = QWidget(self.body)
-        monBar.setObjectName("monBar")
+        dayTable = self.createWidget(self.body, objectName="dayTable")
 
-        self.setPercentageSize(monBar, vertical=0.8, horizontal=0.8, keep=True)
+        self.setPercentageSize(dayTable, vertical=0.95, horizontal=0.95, keep=True)
 
-        self.setCenter(monBar, keep=True)
+        self.setCenter(dayTable, keep=True)
+
+        layout = QHBoxLayout(dayTable)
+
+        for bar in self.dayBarDict(dayTable).values():
+            layout.addWidget(bar)
+
+    def dayBarInit(self, day: QWidget):
+        day.setStyleSheet("background-image: url(./static/imgs/add.ico); background-position: center; background-repeat: no-repeat;")
+
+        def func(event: QMouseEvent):
+            widget = QDialog(self)
+            # TODO: 完善Dialog
+
+            widget.setStyleSheet("background-color: red;")
+
+            widget.resize(600, 400)
+
+            layout = QVBoxLayout(widget)
+
+            layout.addWidget(QLabel("test", widget))
+
+            widget.show()
+
+        day.mousePressEvent = func
 
 
 if __name__ == '__main__':
     app = QApplication(argv)
 
-    with open(r"D:\xst_project_202212\codeSet\Python\privateProject\timeAllocation\style.qss", "r", encoding="utf-8") as file:
+    with open(r"./static/qss/style.qss", "r", encoding="utf-8") as file:
         style = file.read()
 
     main = mainWindow(flags=ignoreSecondaryScreen)
