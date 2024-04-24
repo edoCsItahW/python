@@ -16,9 +16,8 @@
 from functools import wraps
 from traceback import format_exc
 from warnings import warn, catch_warnings, simplefilter
-from inspect import getmodule
 from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL, basicConfig, debug, info, warning, error, critical
-from inspect import currentframe
+from inspect import currentframe, getmodule
 from typing import Callable, Literal
 from re import sub, findall
 

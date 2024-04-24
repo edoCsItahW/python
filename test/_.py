@@ -48,58 +48,66 @@
 #     w = MainWnd()
 #     w.show()
 #     sys.exit(app.exec_())
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QVBoxLayout
-from PyQt6.QtCore import Qt
-
-
-class newWindow(QWidget):
-
-    def __init__(self, parent):
-        super().__init__(parent)
-
-        # 创建一个垂直布局
-        # layout = QVBoxLayout(self)
-
-        # 创建一个 QLabel 并添加到布局中
-        label = QLabel("test", self)
-        # layout.addWidget(label)
-
-        self.setStyleSheet("background-color: yellow;")
-
-        # 显示 newWindow
-        self.show()
-
-
-class MainWindow(QMainWindow):
-
-    def __init__(self):
-        super().__init__()
-
-        # 设置窗口标题
-        self.setWindowTitle('主窗口')
-
-        # 创建一个中心部件
-        # central_widget = QWidget()
-        # self.setCentralWidget(central_widget)
-
-        # 设置背景颜色
-        self.setStyleSheet("background-color: red;")
-
-        # 创建 newWindow 实例
-        new = newWindow(self)
-
-        new.resize((size := self.size()).width(), size.height())
-
-        # 显示 MainWindow
-        self.show()
-
-
-if __name__ == '__main__':
-    import sys
-
-    argv = sys.argv
-    app = QApplication(argv)
-
-    main = MainWindow()
-
-    sys.exit(app.exec())
+# from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QVBoxLayout
+# from PyQt6.QtCore import Qt
+#
+#
+# class newWindow(QWidget):
+#
+#     def __init__(self, parent):
+#         super().__init__(parent)
+#
+#         # 创建一个垂直布局
+#         # layout = QVBoxLayout(self)
+#
+#         # 创建一个 QLabel 并添加到布局中
+#         label = QLabel("test", self)
+#         # layout.addWidget(label)
+#
+#         self.setStyleSheet("background-color: yellow;")
+#
+#         # 显示 newWindow
+#         self.show()
+#
+#
+# class MainWindow(QMainWindow):
+#
+#     def __init__(self):
+#         super().__init__()
+#
+#         # 设置窗口标题
+#         self.setWindowTitle('主窗口')
+#
+#         # 创建一个中心部件
+#         # central_widget = QWidget()
+#         # self.setCentralWidget(central_widget)
+#
+#         # 设置背景颜色
+#         self.setStyleSheet("background-color: red;")
+#
+#         # 创建 newWindow 实例
+#         new = newWindow(self)
+#
+#         new.resize((size := self.size()).width(), size.height())
+#
+#         # 显示 MainWindow
+#         self.show()
+#
+#
+# if __name__ == '__main__':
+#     import sys
+#
+#     argv = sys.argv
+#     app = QApplication(argv)
+#
+#     main = MainWindow()
+#
+#     sys.exit(app.exec())
+# from linkedList import append, printList, Node
+#
+# head = Node()
+#
+# for i in range(1, 20):
+#     append(head, i)
+#
+# printList(head)

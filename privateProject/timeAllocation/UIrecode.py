@@ -18,11 +18,12 @@ from PyQt6.QtWidgets import QApplication, QLabel, QMainWindow, QWidget, QHBoxLay
 from PyQt6.QtCore import QEvent, Qt
 from PyQt6.QtGui import QCloseEvent, QMouseEvent, QResizeEvent, QIcon, QScreen, QEnterEvent
 from functools import cached_property
-from typing import Callable, Literal
+from typing import Callable, Literal, Any
 from types import FunctionType
 from win32print import GetDeviceCaps
 from win32con import DESKTOPHORZRES, DESKTOPVERTRES
 from win32gui import GetDC, ReleaseDC
+from traceback import format_exc
 
 
 class funcSet:
@@ -184,19 +185,20 @@ class posOptons:
             hlayout.addWidget(w := func(widget), stretch=s)
             widgetList.append(w)
 
-        return widget, widgetList
+        return widget, *widgetList
 
     @staticmethod
-    def PFhLayout(parent: QWidget, widgets: dict[FunctionType, int]) -> tuple[QWidget, list]:
+    def PFhLayout(parent: QWidget, widgets: dict[int, FunctionType]):
+
         hlayout = QHBoxLayout(widget := funcSet.createWidget(parent))
 
         widgetList = []
 
-        for func, s in widgets.items():
+        for s, func in widgets.items():
             hlayout.addWidget(w := func(widget), stretch=s)
             widgetList.append(w)
 
-        return widget, widgetList
+        return widget, *widgetList
 
 
 class mainWindow(QMainWindow):
@@ -397,7 +399,7 @@ class TaskOption(QDialog):
 
     @property
     def body(self):
-        body = funcSet.createWidget(self, objectName="body", styleSheet="background-color: transparent;")# #cccccc;")
+        body = funcSet.createWidget(self, objectName="body", styleSheet="background-color: transparent;")
 
         self.posOpt.fullPerent(body, keep=True)
 
@@ -416,39 +418,43 @@ class TaskOption(QDialog):
 
         self.resize(600, 400)
 
+    def addConponent(self, parent: QWidget, funcDict: dict[int: dict[QWidget, tuple]], *, otherAttr: dict[int: dict[str: Any]] = None, execFunc: dict[int: dict[str: Any]] = None):
+
+        def _(d: dict[int: dict[QWidget, tuple]]):
+            key, value = (k := list(d.keys())[0]), d[k]
+
+            return lambda _widget: key(*value, _widget) if value and value[0] is not None else key(_widget)
+
+        widgetDict = {i: _(d) for i, d in funcDict.items()}
+
+        result = self.posOpt.PFhLayout(parent, widgetDict)
+
+        if otherAttr:
+            for i, d in otherAttr.items():
+                for k, v in d.items():
+                    setattr(result[i], k, v)
+
+        if execFunc:
+            for i, d in execFunc.items():
+                for k, v in d.items():
+                    try:
+                        getattr(result[i], k)(v)
+                    except Exception as e:
+                        print(k, v, e, result)
+
+        return result
+
     def conponentInit(self):
 
         vlayout = QVBoxLayout(self.body)
-        labelList = []
-        lineEditList = []
 
-        func1, func2 = lambda _widget: QLabel("任务名:", _widget), lambda _widget: QLineEdit(_widget)
-
-        widget1, [label, lineEdit] = self.posOpt.PFhLayout(self.body, {func1: 1, func2: 4})
-
-        lineEdit.setPlaceholderText("...")
-
-        labelList.append(label)
-        lineEditList.append(lineEdit)
+        widget1, label, lineEdit = self.addConponent(self.body, {1: {QLabel: ("任务名", )}, 4: {QLineEdit: (None, )}}, execFunc={1: {"setStyleSheet": "color: #cccccc; font-weight: bold; font-size: 20px;"}, 2: {"setPlaceholderText": "...", "setStyleSheet": "background-color: #595959; font-size: 20px;"}})
 
         vlayout.addWidget(widget1)
 
-        func3, func4 = lambda _widget: QLabel("开始时间:", _widget), lambda _widget: QTimeEdit(_widget)
+        widget2, label, timeEdit = self.addConponent(self.body, {1: {QLabel: ("开始时间", )}, 4: {QTimeEdit: (None, )}}, execFunc={1: {"setStyleSheet": "color: #cccccc; font-weight: bold; font-size: 20px;"}, 2: {"setDisplayFormat": "hh:mm"}})
 
-        widget2, [label2, timeEdit] = self.posOpt.PFhLayout(self.body, {func3: 1, func4: 4})
-
-        timeEdit.setDisplayFormat("hh:mm")
-
-        labelList.append(label2)
-        # lineEditList.append(timeEdit)
-
-        # vlayout.addWidget(widget2)
-
-        for l in labelList:
-            l.setStyleSheet("color: #cccccc; font-weight: bold; font-size: 20px;")
-
-        for l in lineEditList:
-            l.setStyleSheet("background-color: #595959; font-size: 20px;")
+        vlayout.addWidget(widget2)
 
     def closeEvent(self, event: QCloseEvent):
         super().closeEvent(event)
