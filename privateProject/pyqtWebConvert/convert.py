@@ -17,6 +17,7 @@ from bs4 import BeautifulSoup, Tag
 from cssutils import parseFile
 from os import PathLike
 from functools import cached_property
+from warnings import warn
 
 
 class htmlParser:
@@ -158,11 +159,6 @@ class htmlAst:
 
 
 class qtCovert:
-    AST = {
-        'import': {},
-        'body':   [],
-    }
-
     def __init__(self, htmlAST: dict):
         self._htmlAST = htmlAST
 
@@ -172,25 +168,62 @@ class qtCovert:
     def htmlAST(self):
         return self._htmlAST
 
-    def transform(self, ast: dict | list = None, *, level: int = 0):
+    def transform(self, ast: dict | list = None, *, level: int = 0, laskKey: str = None):
         if ast is None: ast = self.htmlAST['body']
 
         if isinstance(ast, dict):
             for k, v in ast.items():
                 print("    " * level + f"{k}:")
 
-                self.transform(v, level=level + 1)
+                self.transform(v, level=level + 1, laskKey=k)
 
         elif isinstance(ast, list):
             for d in ast:
                 self.transform(d, level=level + 1)
 
         elif isinstance(ast, tagWarpper):
-            # TODO: 转换为Qt代码
-            pass
+            print("    " * level + str(ast))
+
+            if laskKey == 'self':
+
+                qtFunc(ast.element.name)
 
         else:
-            print("    " * level, ast)
+            warn(f"未知类型{type(ast)}")
+
+
+class qtFunc:
+    AST = {
+        'import': {},
+        'body':   [],
+    }
+
+    def __new__(cls, key: str):
+        funcDict = {
+            "html": cls.html
+        }
+
+        try:
+            return funcDict[key]
+
+        except KeyError as e:
+            warn(  # 无标签对应方法
+                f"没有为标签'<{key}>'定义方法")
+
+            return print
+
+    @classmethod
+    def assign(cls, key: str, value: str):
+        pass
+
+    @classmethod
+    def funcDefine(cls, funcName: str):
+
+    @classmethod
+    def html(cls):
+        cls.AST['import']['sys'] = ['argv']
+        cls.AST['import']['PyQt6.QtWidgets'] = ['QApplication', 'QMainWindow']
+        cls.AST['body'].append()
 
 
 if __name__ == '__main__':
