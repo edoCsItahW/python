@@ -13,7 +13,6 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
-from ptParser import qtCovert
 from bs4 import BeautifulSoup, Tag
 from cssutils import parseFile
 from os import PathLike
@@ -148,14 +147,52 @@ class htmlAst:
 
     def toAst(self, element: Tag, *, key='body'):
         return {
-            'tag': element.name,
-            'attrs': element.attrs,
-            'parent': f"{tagWarpper(element.parent)}",
+            'self': tagWarpper(element),
+            'parent': tagWarpper(element.parent),
             'children': [self.toAst(i) for i in element.children if i.name]
         }
+
+    def __call__(self):
+        self.transform()
+        return self.AST
+
+
+class qtCovert:
+    AST = {
+        'import': {},
+        'body':   [],
+    }
+
+    def __init__(self, htmlAST: dict):
+        self._htmlAST = htmlAST
+
+        self.transform()
+
+    @property
+    def htmlAST(self):
+        return self._htmlAST
+
+    def transform(self, ast: dict | list = None, *, level: int = 0):
+        if ast is None: ast = self.htmlAST['body']
+
+        if isinstance(ast, dict):
+            for k, v in ast.items():
+                print("    " * level + f"{k}:")
+
+                self.transform(v, level=level + 1)
+
+        elif isinstance(ast, list):
+            for d in ast:
+                self.transform(d, level=level + 1)
+
+        elif isinstance(ast, tagWarpper):
+            # TODO: 转换为Qt代码
+            pass
+
+        else:
+            print("    " * level, ast)
 
 
 if __name__ == '__main__':
     ins = htmlAst(htmlParser("./static/html.html").elements)
-    ins.transform()
-    print(htmlAst.AST)
+    qtCovert(ins())

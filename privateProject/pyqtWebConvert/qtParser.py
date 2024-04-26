@@ -13,12 +13,3 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
-from bs4 import Tag
-from functools import cached_property
-from typing import Callable
-from executor import warpFunc, funcSet
-
-
-class qtCovert:
-    def __init__(self, htmlAST: dict):
-        pass
