@@ -1,0 +1,88 @@
+/*
+ * Copyright (c) 2024. All rights reserved.
+ * This source code is licensed under the CC BY-NC-SA
+ * (Creative Commons Attribution-NonCommercial-NoDerivatives) License, By Xiao Songtao.
+ * This software is protected by copyright law. Reproduction, distribution, or use for commercial
+ * purposes is prohibited without the author's permission. If you have any questions or require
+ * permission, please contact the author: 2207150234@st.sziit.edu.cn
+ */
+/* （内联样式）Inline style > （内部样式）Internal style sheet >（外部样式）External style sheet > 浏览器默认样式 */
+
+
+/* animation: name duration timing-function delay iteration-count direction */
+/*
+    name: 设置动画名称,
+    duration: 设置动画的持续时间,
+    timing-function: 设置动画效果的速率,
+        ease: 逐渐变慢,
+        linear: 匀速,
+        ease-in: 加速,
+        ease-out: 减速,
+        ease-in-out: 先加速后减速.
+    delay: 设置动画的开始时间(延时执行),
+    iteration-count: 设置动画循环的次数,infinite为无限循环,
+    direction: 设置动画播放的方向,
+        normal: 向前播放,
+        alternate: 动画播放在第偶数次向前播放,第奇数次反向播放.
+    animation-play-state: 控制动画的播放状态,running播放,paused停止.
+*/
+
+@keyframes abc {
+    0% {
+        background-color: #FFFF66;
+    }
+
+    25% {
+        background-color: #ff5500;
+    }
+
+    50% {
+        background-color: #d95050;
+    }
+
+    75% {
+        background-color: #50e650;
+    }
+
+    100% {
+        background-color: #4a77d4;
+    }
+
+}
+
+body {
+    background-image: url("../imgs/三角组合.jpg");
+    /*background-size: cover;*/
+    background-size: 100% 100%;
+    /*background-repeat: no-repeat;*/
+    background-attachment: fixed;
+}
+
+div {
+    margin-bottom: 10px;
+}
+
+.needAnim {
+    animation: abc 3s linear 0s infinite paused;
+}
+
+.needAnim:hover {
+    /*background-color: #d95050;*/
+    animation-play-state: running;
+}
+
+/*.needAnim:*/
+
+.need div::after {
+    /*content: "\A";*/
+    /*white-space: pre;*/
+    content: "";
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: black;
+}
+
+
+
+

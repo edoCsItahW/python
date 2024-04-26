@@ -448,13 +448,17 @@ class TaskOption(QDialog):
 
         vlayout = QVBoxLayout(self.body)
 
-        widget1, label, lineEdit = self.addConponent(self.body, {1: {QLabel: ("任务名", )}, 4: {QLineEdit: (None, )}}, execFunc={1: {"setStyleSheet": "color: #cccccc; font-weight: bold; font-size: 20px;"}, 2: {"setPlaceholderText": "...", "setStyleSheet": "background-color: #595959; font-size: 20px;"}})
+        widget1, label1, lineEdit1 = self.addConponent(self.body, {1: {QLabel: ("任务名", )}, 4: {QLineEdit: (None, )}}, execFunc={1: {"setStyleSheet": "color: #cccccc; font-weight: bold; font-size: 20px;"}, 2: {"setPlaceholderText": "...", "setStyleSheet": "background-color: #595959; font-size: 20px;"}})
 
         vlayout.addWidget(widget1)
 
-        widget2, label, timeEdit = self.addConponent(self.body, {1: {QLabel: ("开始时间", )}, 4: {QTimeEdit: (None, )}}, execFunc={1: {"setStyleSheet": "color: #cccccc; font-weight: bold; font-size: 20px;"}, 2: {"setDisplayFormat": "hh:mm"}})
+        widget2, label2, timeEdit1 = self.addConponent(self.body, {1: {QLabel: ("开始时间", )}, 4: {QTimeEdit: (None, )}}, execFunc={1: {"setStyleSheet": "color: #cccccc; font-weight: bold; font-size: 20px;"}, 2: {"setDisplayFormat": "hh:mm"}})
 
         vlayout.addWidget(widget2)
+
+        widget3, label3, timeEdit2 = self.addConponent(self.body, {1: {QLabel: ("结束时间",)}, 4: {QTimeEdit: (None,)}}, execFunc={1: { "setStyleSheet": "color: #cccccc; font-weight: bold; font-size: 20px;"}, 2: {"setDisplayFormat": "hh:mm"}})
+
+        vlayout.addWidget(widget3)
 
     def closeEvent(self, event: QCloseEvent):
         super().closeEvent(event)

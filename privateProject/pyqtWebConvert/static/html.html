@@ -1,0 +1,446 @@
+<!--
+  ~ Copyright (c) 2024. All rights reserved.
+  ~ This source code is licensed under the CC BY-NC-SA
+  ~ (Creative Commons Attribution-NonCommercial-NoDerivatives) License, By Xiao Songtao. 
+  ~ This software is protected by copyright law. Reproduction, distribution, or use for commercial 
+  ~ purposes is prohibited without the author's permission. If you have any questions or require 
+  ~ permission, please contact the author: 2207150234@st.sziit.edu.cn
+  -->
+
+<!--
+  Copyright (c) 2024. All rights reserved.
+  This source code is licensed under the CC BY-NC-SA
+  (Creative Commons Attribution-NonCommercial-NoDerivatives) License, By Xiao Songtao.
+  This software is protected by copyright law. Reproduction, distribution, or use for commercial
+  purposes is prohibited without the author's permission. If you have any questions or require
+  permission, please contact the author: 2207150234@st.sziit.edu.cn
+  -->
+
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <!-- 元信息定义 -->
+    <meta charset="UTF-8">
+    <meta name="description" content="示例页面">
+    <meta name="keywords" content="HTML, CSS, XML, JavaScript">
+    <meta name="author" content="Xiao Songtao">
+    <title>{{ get_flashed_messages()[0] }}</title>
+
+    <!-- <meta http-equiv="refresh" content="120"> -->  <!-- 每120秒刷新一次页面 -->
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='imgs/装甲.jpg') }}">  <!-- 定义页面图标 -->
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">  <!-- 链接到外部css样式表 -->
+    <!-- 等同于(但似乎无效) -->
+    <!-- <style> -->
+        <!-- @import url("../static/css/style.css"); -->
+    <!-- </style> -->
+
+    <script src="https://unpkg.com/ipfs-api/dist/index.js"></script>
+    <script src="https://cdn.staticfile.org/vue/3.2.36/vue.global.min.js"></script>
+
+</head>
+<body>
+    <div class="tagShow need">
+        <div class="title_h needAnim" onmouseover="playAnimation(this)" onmouseout="resetAnimation(this)">
+            <h1>一级标题</h1>
+            <h2>二级标题</h2>
+            <h3>三级标题</h3>
+        </div>
+
+        <div class="conect_to_tip need">
+            <a id="tips">提示</a>
+
+            <br>
+
+            <a href="#tips">锚至提示</a>
+        </div>
+
+        <div class="href need">
+            <a href="https://www.baidu.com" target="_blank" style="text-decoration: none;">没有下划线的链接(百度)</a>  <!-- _blank: 从新的标签页打开 -->
+        </div>
+
+        <div class="imgShow need">
+            <a href="https://www.baidu.com" target="_blank">
+                <img src="{{ url_for('static', filename='imgs/湖畔柳.jpg') }}" alt="图片作为链接" width="512" height="512">
+
+            </a>
+
+        </div>
+
+        <div class="comment_tag need">
+            <br>  <!-- 换行符 -->
+
+            <hr>  <!-- 分割线 -->
+
+            <b>粗体</b>
+
+            <br>
+
+            <i>斜体</i>
+
+            <br>
+
+            <code>电脑输出</code>
+
+            <br>
+
+            <sub>下标</sub>
+
+            <br>
+
+            <sup>上标</sup>
+
+            <br>
+
+            <abbr title="补充内容-缩写">鼠标悬停以展示</abbr>
+
+            <br>
+
+            <p><bdo dir="rtl">从右向左显示</bdo></p>
+
+            <article>用于分离更加独立的板块以方便布局</article>
+
+            <p>段落</p>
+
+            <element>样式元素</element>
+
+            <br>
+
+            <em>着重文字</em>
+
+            <br>
+
+            <small>小号字</small>
+
+            <br>
+
+            <strong>加重语气</strong>
+
+            <br>
+
+            <ins>插入字</ins>
+
+            <br>
+
+            <del>删除字</del>
+
+            <br>
+
+            <kbd>键盘码</kbd>
+
+            <br>
+
+            <samp>计算机代码样本</samp>
+
+            <br>
+
+            <var>变量</var>
+
+            <br>
+
+            <blockquote>长引用</blockquote>
+
+            <br>
+
+            <q>短引用</q>
+
+            <br>
+
+            <cite>引用,引证</cite>
+
+            <br>
+
+            <dfn>定义项</dfn>
+
+        </div>
+
+        <div class="list need" style="background-color: #78C3F3;">
+            表格:
+            <table border="1" width="600px" height="400px">
+                <thead>
+                    <tr>
+                        <th>列标题1</th>
+                        <th>列标题2</th>
+                        <th>列标题3</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                <!-- 余此类推colspan="2" rowspan="2"则占2x2个 -->
+                    <tr>
+                        <td colspan="2">行1, 列1与行1, 列2</td>
+                        <!-- <td>行1, 列2</td> -->
+                        <td rowspan="2">行1, 列3与行2, 列3</td>
+
+                    </tr>
+
+                    <tr>
+                        <td>行2, 列1</td>
+                        <td>行2, 列2</td>
+                        <!-- <td>行2, 列3</td> -->
+
+                    </tr>
+                </tbody>
+
+            </table>
+
+            <p>无序列表</p>
+            <ul>
+                <li>1</li>
+                <li>2</li>
+            </ul>
+
+            <p>有序列表</p>
+            <ol>
+                <li>1</li>
+                <li>2</li>
+            </ol>
+
+            <p>自定义列表</p>
+            <dl>
+                <dt>1</dt>
+                <dd>first</dd>
+                <dt>2</dt>
+                <dd>second</dd>
+            </dl>
+
+            <video src="" controls></video>
+
+        </div>
+
+        <div class="des_for_a need">
+            <a href="http://localhost:5000" download>下载</a>
+            <!-- target="_top": 跳出框架 -->
+
+            <a href="http://localhost:5000/#tips">链接至提示</a>
+
+            <a href="https://www.runoob.com/try/try.php?filename=tryhtml_base">菜鸟教程上的base标签说明</a>
+
+        </div>
+
+        <div class="comment_tag need">
+            <pre>
+                文本模式: 保留 空格与
+                换行
+            </pre>
+
+        </div>
+
+        <div class="comment_tag need">
+            <address>
+                邮箱: <a href="mailto:2257699870@qq.com">author: Xiao Songtao</a>
+            </address>
+
+        </div>
+
+        <div class="exp_str need">
+            <p>预留文本,小于号: &lt;, 不间断空格: &nbsp;</p>
+
+        </div>
+
+        <article>
+            文章标签article
+        </article>
+
+        <nav class="crumbs">
+            nav标签,目录
+            <ol>
+                <li class="crumb"><a href="#">1</a></li>
+                <li class="crumb"><a href="#">2</a></li>
+                <li class="crumb">3</li>
+            </ol>
+        </nav>
+
+        <section>
+            定义文档中的节,如章节,页眉,页脚
+
+        </section>
+
+        <aside>
+            侧边栏
+
+        </aside>
+
+    </div>
+
+    <div class="infoFetch need" id="fader" style="background-color: #2E3033;">
+        <form action="/" method="get">
+            <label for="name">用户名: </label>
+            <input type="text" id="name" name="name" required>
+
+            <br>
+
+            <label for="password">密码: </label>
+            <input type="password" id="password" name="password" required>
+
+            <br>
+
+            <label>性别: </label>
+            <input type="radio" id="male" name="gender" value="mela" checked>
+            <label for="male">🚹</label>
+            <input type="radio" id="female" name="gender" value="female" checked>
+            <label for="female">🚺</label>
+
+            <br>
+
+            <input type="checkbox" id="subscribe" name="subscribe" checked>
+            <label for="subscribe">推送信息</label>
+
+            <br>
+
+            <label for="country">国家: </label>
+            <select id="country" name="country">
+                <option value="cn">CN</option>
+                <option value="usa">USA</option>
+                <option value="uk">UK</option>
+
+            </select>
+
+            <br>
+
+            <input type="submit" value="提交">
+
+        </form>
+
+        <form name="input" action="/serch" method="get">
+            <label for="serch">Username: </label><input type="text" name="user" id="serch">
+            <input type="submit" value="搜索">
+
+        </form>
+
+        <form action="/" method="post" id="uploadForm">
+            <label for="textarea">输入python代码</label>
+            <textarea rows="10" cols="30" id="textarea" name="code">输入代码</textarea>
+
+            <br>
+
+            <input type="button" value="上传" onclick="uploadContent()">
+        </form>
+
+        <form action="">
+            <input id="btn" type="button" value="一个按钮" onclick="console.log(1)">
+
+        </form>
+
+        <form action="">
+            <fieldset>
+                <legend>个人信息:</legend>
+                名字: <input type="text" size="30"><br>ja
+                E-mail: <input type="text" size="30"><br>
+                生日: <input type="text" size="10">
+
+            </fieldset>
+
+        </form>
+
+        <form action="/download" method="post">
+            <fieldset>
+                <legend>下载:</legend>
+                <label for="url">视频流地址: </label><input type="text" id="url" name="url" size="30" required><br>
+                <label for="min">分钟数: </label><input type="text" id="min" name="min" size="30" required><br>
+                <label for="sec">秒数: </label><input type="text" id="sec" name="sec" size="10" required>
+
+                <input type="submit" value="开始下载">
+            </fieldset>
+
+        </form>
+
+    </div>
+
+    <div class="ifram need">
+        <iframe src="" width="200" height="200"></iframe>
+
+    </div>
+
+    <div class="style">
+        <style>
+            element {
+                display: block;
+                background-color: #78C3F3;
+                padding: 50px;
+                font-size: 30px;
+            }
+        </style>
+    </div>
+
+    <div class="script">
+        <script>
+            <!-- script: 创建p元素并将其附加到文档 -->
+            const tag = document.createElement("p")
+            tag.innerHTML = "script插入的文字"
+            document.body.appendChild(tag)
+
+        </script>
+
+        <script>
+            <!-- 文本框上传脚本 -->
+            function uploadContent() {
+                var content = document.getElementById("textarea").value;
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/upload", true);
+                xhr.setRequestHeader("Content-Type", "application/json")
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        alert(xhr.responseText);
+                    }
+                };
+                xhr.send(JSON.stringify({content: content}))
+            }
+
+        </script>
+
+        <script>
+            <!-- 移开鼠标时重置动画 -->
+            function playAnimation(element) {
+                element.style.animationPlayState = 'running'
+            }
+            function resetAnimation(element) {
+                element.style.animation = 'none';
+                setTimeout(function() {
+                    element.style.animation = 'abc 3s linear 0s infinite paused';
+                }, 0);
+            }
+
+        </script>
+
+        <script type="module" src="{{ url_for('static', filename='javascript/node.js') }}"></script>
+
+        <script class="script">
+            <!-- 改变字符 -->
+            document.write("打印出一串字符")
+
+            function demoFunction() {
+                document.getElementById("demo").innerHTML = "新的内容"
+            }
+
+        </script>
+
+        <noscript>该浏览器不支持JavaScript</noscript>
+
+        <p id="demo">原本的内容</p>
+
+        <button type="button" onclick="demoFunction()">变文按钮</button>
+
+    </div>
+
+    <footer>
+        <p>© 2024 MIT</p>
+    </footer>
+
+</body>
+</html>
+
+<!--
+    块级元素: div、form、h1~h6、hr、p、table、ul
+    独占一行,可以设置width,height,可以包含行内元素和块级元素
+-->
+<!--
+    内联元素: a、b、em、i、span、strong
+    只占自身,不可设置w,h,不可包含块级元素
+-->
+<!--
+    行内块级元素: button、img、input
+    不换行,可以设置w,h
+-->
