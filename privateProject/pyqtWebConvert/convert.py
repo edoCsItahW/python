@@ -18,6 +18,8 @@ from cssutils import parseFile
 from os import PathLike
 from functools import cached_property
 from warnings import warn
+from ast import parse
+from astor import to_source
 
 
 class htmlParser:
@@ -218,6 +220,7 @@ class qtFunc:
 
     @classmethod
     def funcDefine(cls, funcName: str):
+        pass
 
     @classmethod
     def html(cls):
@@ -226,6 +229,34 @@ class qtFunc:
         cls.AST['body'].append()
 
 
+def splitAttr(obj: object, *, level: int = 0, laskKey: str = None):
+
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            print(f"{' ' * 4 * level}{k}:")
+
+            splitAttr(v, level=level + 1)
+
+    elif isinstance(obj, list):
+        for d in obj:
+            splitAttr(d, level=level + 1)
+
+    elif isinstance(obj, (str, int, float)):
+        if laskKey: print(f"{' ' * 4 * level}{laskKey}:")
+
+        print(f"{' ' * 4 * (level + 1)}{obj}\n")
+
+    else:
+        print(f"{' ' * 4 * level}{obj}")
+
+        for i in filter(lambda x: not x.startswith('_'), dir(obj)):
+            splitAttr(getattr(obj, i), level=level + 1, laskKey=i)
+
+
 if __name__ == '__main__':
-    ins = htmlAst(htmlParser("./static/html.html").elements)
-    qtCovert(ins())
+    # ins = htmlAst(htmlParser("./static/html.html").elements)
+    # qtCovert(ins())
+    with open(__file__, 'r', encoding='utf-8') as file:
+        code = file.read()
+
+    splitAttr(parse(code).body)
