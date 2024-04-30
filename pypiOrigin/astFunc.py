@@ -175,25 +175,143 @@ module Python
 # exec(compile(code, '', 'exec'))
 #
 # func("a")  # type: ignore
-from ast import FunctionDef, Assign, Attribute, Name, Num, Call, Expr, Constant, Load, Store, If, Module, arguments, Return, parse, dump
+from ast import FunctionDef, Assign, Attribute, Name, Num, Call, Expr, Constant, Load, Store, If, Module, arguments, Return, parse, dump, ClassDef
 from astor import to_source
+from typing import Any
 
 
-# with open(r"D:\xst_project_202212\codeSet\Python\privateProject\pyqtWebConvert\convert.py", "r", encoding="utf-8") as file:
-#     code = file.read()
+class astFunc:
+    @staticmethod
+    def showFrame(testCode: str, *, returnCode: bool = False):
+        print(dump(ast := parse(testCode)))
 
-code = """
-class a:
-    def __init__(self, c: int = None, *, d: int = 1):
-        self.c = c
-        
-    @property
-    def c(self) -> int:
-        return self.c
-"""
+        if returnCode:
+            print(to_source(ast))
 
-tree = parse(code)
+    @staticmethod
+    def FuncDef(name: str, args: list | arguments | Any = None, body: list = None, decorators: list = None, returns: Any = None):
+        """
+        Example::
 
-print(dump(tree))
+            def func(arg: int, *, kwarg: str = 'default', none = None, ):
+                return arg
 
-print(to_source(tree))
+            FunctionDef(
+                name='func',
+                args=arguments(
+                    posonlyargs=[],
+                    args=[
+                        arg(
+                            arg='arg',
+                            annotation=Name(id='int', ctx=Load()),
+                        )
+                    ],
+                    kwonlyargs=[],
+                    kw_defaults=[],
+                    defaults=[]),
+                    body=[
+                        Return(value=Name(id='arg', ctx=Load()))
+                    ],
+                    decorator_list=[]
+                )
+
+
+        :param name: 函数名
+        :param args: 参数列表
+        :param body: 函数体
+        :param decorators: 装饰器列表
+        :param returns: 返回值
+        :return: FunctionDef
+        """
+
+        args = [] if args is None else args
+        body = [] if body is None else body
+        decorators = [] if decorators is None else decorators
+
+        return FunctionDef(
+            name=name,
+            args=args,
+            body=body,
+            decorator_list=decorators,
+            returns=returns,
+        )
+
+    @staticmethod
+    def ClassDef(name: str, bases: list = None, keywords: list = None, body: list = None, decorators: list = None, type_params: list = None):
+        """
+        Example::
+
+             class MyClass(object):
+                 def __init__(self, arg: int):
+                     self.arg = arg
+
+             ClassDef(
+                 name='MyClass',
+                 bases=[Name(id='object', ctx=Load())],
+                 keywords=[],
+                 body=[
+                     FunctionDef(
+                         name='__init__',
+                         args=arguments(
+                             posonlyargs=[],
+                             args=[
+                                 arg(
+                                     arg='self',
+                                     annotation=None,
+                                 ),
+                                 arg(
+                                     arg='arg',
+                                     annotation=Name(id='int', ctx=Load()),
+                                 )
+                             ],
+                             kwonlyargs=[],
+                             kw_defaults=[],
+                             defaults=[]),
+                         body=[
+                             Assign(
+                                 targets=[
+                                     Attribute(
+                                         value=Name(id='self', ctx=Load()),
+                                         attr='arg',
+                                         ctx=Store(),
+                                     )
+                                 ],
+                                 value=Name(id='arg', ctx=Load()),
+                                 type_comment=None
+                             )
+                         ],
+                         decorator_list=[]
+                     )
+                 ],
+                 decorator_list=[],
+                 type_params=[]
+
+        :param name: 类名
+        :param bases: 基类列表
+        :param keywords: 关键字参数列表
+        :param body: 类体
+        :param decorators: 装饰器列表
+        :param type_params: 类型参数列表
+        :return: ClassDef
+        """
+        bases = [] if bases is None else bases
+        keywords = [] if keywords is None else keywords
+        body = [] if body is None else body
+        decorators = [] if decorators is None else decorators
+        type_params = [] if type_params is None else type_params
+
+        return ClassDef(
+            name=name,
+            bases=bases,
+            keywords=keywords,
+            body=body,
+            decorator_list=decorators,
+            type_params=type_params,
+        )
+
+
+if __name__ == '__main__':
+    testCode = """def func(arg: int):
+        return arg
+    """
+    astFunc.showFrame(testCode, returnCode=True)

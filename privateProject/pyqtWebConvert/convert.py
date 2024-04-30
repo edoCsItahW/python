@@ -18,7 +18,7 @@ from cssutils import parseFile
 from os import PathLike
 from functools import cached_property
 from warnings import warn
-from ast import parse, Module, ImportFrom, alias, ClassDef, Name, Load, FunctionDef, arguments, arg, Constant, NodeVisitor, Assign, Attribute, Return, Store
+from ast import parse, Module, ImportFrom, alias, ClassDef, Name, Load, FunctionDef, arguments, arg, Constant, NodeVisitor, Assign, Attribute, Return, Store, If, Compare, Eq, Pass, Call, Expr
 from astor import to_source
 
 
@@ -253,6 +253,15 @@ class qtFunc(NodeVisitor):
                 )
             ],
             decorator_list=[]
+        ))
+
+        self.AST.body.append(If(
+            test=Compare(left=Name(id='__name__', ctx=Load()), ops=[Eq()], comparators=[Constant(value='__main__')]),
+            body=[
+                Assign(targets=[Name(id='app', ctx=Store())], value=Call(func=Name(id='QApplication', ctx=Load()), args=[Name(id='argv', ctx=Load())], keywords=[])),
+                Expr(value=Call(func=Name(id='exit'), args=[Call(func=Attribute(value=Name(id='app', ctx=Load()), attr='exec', ctx=Load()), args=[], keywords=[])], keywords=[])),
+            ],
+            orelse=[]
         ))
 
 
