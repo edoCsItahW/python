@@ -18,7 +18,7 @@ from cssutils import parseFile
 from os import PathLike
 from functools import cached_property
 from warnings import warn
-from ast import parse
+from ast import parse, Module, ImportFrom, alias, ClassDef, Name, Load, FunctionDef, arguments, arg, Constant, NodeVisitor, Assign, Attribute, Return, Store
 from astor import to_source
 
 
@@ -148,10 +148,10 @@ class htmlAst:
     def transform(self):
         self.AST['body'].append(self.toAst(self.elements[0]))
 
-    def toAst(self, element: Tag, *, key='body'):
+    def toAst(self, element: Tag, *, key = 'body'):
         return {
-            'self': tagWarpper(element),
-            'parent': tagWarpper(element.parent),
+            'self':     tagWarpper(element),
+            'parent':   tagWarpper(element.parent),
             'children': [self.toAst(i) for i in element.children if i.name]
         }
 
@@ -187,50 +187,76 @@ class qtCovert:
             print("    " * level + str(ast))
 
             if laskKey == 'self':
-
                 qtFunc(ast.element.name)
 
         else:
             warn(f"未知类型{type(ast)}")
 
 
-class qtFunc:
-    AST = {
-        'import': {},
-        'body':   [],
-    }
+class qtFunc(NodeVisitor):
+    # def __new__(cls, key: str):
+    #     funcDict = {
+    #         "html": cls.html
+    #     }
+    #
+    #     try:
+    #         return funcDict[key]
+    #
+    #     except KeyError as e:
+    #         warn(  # 无标签对应方法
+    #             f"没有为标签'<{key}>'定义方法")
+    #
+    #         return print
 
-    def __new__(cls, key: str):
-        funcDict = {
-            "html": cls.html
-        }
+    def __init__(self):
+        self._AST = Module(body=[])
 
-        try:
-            return funcDict[key]
+    @property
+    def AST(self):
+        return self._AST
 
-        except KeyError as e:
-            warn(  # 无标签对应方法
-                f"没有为标签'<{key}>'定义方法")
+    @AST.setter
+    def AST(self, value):
+        self._AST = value
 
-            return print
+    def html(self):
+        self.AST.body.append(ImportFrom(module='sys', names=[alias(name='argv')], level=0))
+        self.AST.body.append(ImportFrom(module='PyQt6.QtWidgets', names=[alias(name='QApplication'), alias(name='QMainWindow')], level=0))
 
-    @classmethod
-    def assign(cls, key: str, value: str):
-        pass
-
-    @classmethod
-    def funcDefine(cls, funcName: str):
-        pass
-
-    @classmethod
-    def html(cls):
-        cls.AST['import']['sys'] = ['argv']
-        cls.AST['import']['PyQt6.QtWidgets'] = ['QApplication', 'QMainWindow']
-        cls.AST['body'].append()
+        self.AST.body.append(ClassDef(
+            name='mainWindow',
+            bases=[Name(id='QMainWindow', ctx=Load())],
+            body=[
+                FunctionDef(
+                    name='__init__',
+                    args=arguments(args=[arg(arg='self')],
+                                   kwonlyargs=[arg(arg='_app', annotation=Name(id='QApplication', ctx=Load()))],
+                                   defaults=[],
+                                   kw_defaults=[Constant(value=None)]
+                                   ),
+                    body=[
+                        Assign(
+                            targets=[Attribute(value=Name(id='self', ctx=Load()), attr='_app', ctx=Store())],
+                            value=Name(id='_app', ctx=Load())
+                        )
+                    ],
+                    decorator_list=[],
+                    returns=None
+                ),
+                FunctionDef(
+                    name='app',
+                    args=arguments(args=[arg(arg='self')],
+                                   defaults=[],),
+                    decorator_list=[Name(id='property', ctx=Load())],
+                    body=[Return(value=Attribute(value=Name(id='self', ctx=Load()), attr='_app', ctx=Load()))],
+                    returns=Name(id='QApplication', ctx=Load())
+                )
+            ],
+            decorator_list=[]
+        ))
 
 
 def splitAttr(obj: object, *, level: int = 0, laskKey: str = None):
-
     if isinstance(obj, dict):
         for k, v in obj.items():
             print(f"{' ' * 4 * level}{k}:")
@@ -256,7 +282,7 @@ def splitAttr(obj: object, *, level: int = 0, laskKey: str = None):
 if __name__ == '__main__':
     # ins = htmlAst(htmlParser("./static/html.html").elements)
     # qtCovert(ins())
-    with open(__file__, 'r', encoding='utf-8') as file:
-        code = file.read()
-
-    splitAttr(parse(code).body)
+    ins = qtFunc()
+    ins.html()
+    print(to_source(ins.AST))
+    pass

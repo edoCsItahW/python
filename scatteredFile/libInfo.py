@@ -216,14 +216,13 @@ print(source_code)
 
 import ast
 import astor
-from typing import List
 
-# 创建一个表示__init__方法的AST节点
+# 创建 __init__ 方法
 init_method = ast.FunctionDef(
     name='__init__',
     args=ast.arguments(
         args=[ast.arg(arg='self', annotation=None), ast.arg(arg='arg', annotation=ast.Name(id='int', ctx=ast.Load()))],
-        defaults=[ast.Num(n=1)]  # arg的默认值
+        defaults=[ast.Num(n=1)]
     ),
     body=[
         ast.Assign(
@@ -235,16 +234,14 @@ init_method = ast.FunctionDef(
     returns=None
 )
 
-
-property_call = ast.Call(
+# 创建 @property 装饰器调用
+property_decorator = ast.Call(
     func=ast.Name(id='property', ctx=ast.Load()),
     args=[],
     keywords=[]
 )
 
-decorator_expr = ast.Expr(value=property_call)
-
-# 创建一个表示带@property的arg方法的AST节点
+# 创建 arg 方法，并添加 @property 装饰器
 property_arg_method = ast.FunctionDef(
     name='arg',
     args=ast.arguments(
@@ -254,18 +251,22 @@ property_arg_method = ast.FunctionDef(
     body=[
         ast.Return(value=ast.Attribute(value=ast.Name(id='self', ctx=ast.Load()), attr='arg', ctx=ast.Load()))
     ],
-    decorator_list=[decorator_expr],
-    returns=ast.Name(id='int', ctx=ast.Load())  # 返回类型注解
+    decorator_list=["property"],  # 直接将装饰器调用添加到 decorator_list
+    returns=ast.Name(id='int', ctx=ast.Load())
 )
 
-# 创建一个表示@staticmethod装饰器的AST节点
-staticmethod_decorator = ast.Name(id='staticmethod', ctx=ast.Load())
+# 创建 @staticmethod 装饰器调用
+staticmethod_decorator = ast.Call(
+    func=ast.Name(id='staticmethod', ctx=ast.Load()),
+    args=[],
+    keywords=[]
+)
 
-# 创建一个表示带@staticmethod的func方法的AST节点
+# 创建 func 方法，并添加 @staticmethod 装饰器
 staticmethod_func_method = ast.FunctionDef(
     name='func',
     args=ast.arguments(
-        args=[ast.arg(arg='cls', annotation=None)],  # 注意这里通常使用cls作为静态方法的第一个参数
+        args=[ast.arg(arg='cls', annotation=None)],
         defaults=[]
     ),
     body=[
@@ -275,22 +276,26 @@ staticmethod_func_method = ast.FunctionDef(
             keywords=[]
         ))
     ],
-    decorator_list=[decorator_expr],
+    decorator_list=["staticmethod"],  # 直接将装饰器调用添加到 decorator_list
     returns=None
 )
 
-# 创建一个类定义AST节点
+# 创建类定义，包含上述方法
 class_def = ast.ClassDef(
     name='a',
-    bases=[],  # 无基类，因为继承自object是隐式的
+    bases=[],
     keywords=[],
-    body=[init_method, property_arg_method, staticmethod_func_method],  # 类体，包含方法和装饰器
-    decorator_list=[]  # 装饰器列表，留空表示没有类装饰器
+    body=[init_method, property_arg_method, staticmethod_func_method],
+    decorator_list=[]
 )
 
-# 创建一个模块AST节点，将类定义作为其子节点
+# 创建模块定义，包含类定义
 module = ast.Module(body=[class_def])
 
-# 使用astor模块将AST还原为源码
+# 将AST转换为源代码
 source_code = astor.to_source(module)
+
+# 打印源代码
 print(source_code)
+
+exec(source_code)
