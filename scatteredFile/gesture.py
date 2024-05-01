@@ -34,7 +34,7 @@ from re import findall
 
 try:
     from figureTools import processimg  # type: ignore
-    from conFunc import partitem, temPrint  # type: ignore
+    from confunc import partitem, temPrint  # type: ignore
 
 except ModuleNotFoundError as e:
     module = findall(r"(?<=')(.*?)(?=')", e.args[0])[0]
@@ -571,14 +571,14 @@ if __name__ == '__main__':
     batch_size = 64  # 每一批次的数量
     labelDict = {"angry": 0, "disgust": 1, "fear": 2, "happy": 3, "neutral": 4, "sad": 5, "surprise": 6}
 
-    trainSet = dataset(listdir(r"D:\xst_project_202212\Python\数据集\facial_expression\channel1\train\All"),
+    trainSet = dataset(listdir(r"E:\codeSpace\codeSet\数据集\facial_expression\channel1\train\All"),
                        labelMethod=lambda x: x.split("_")[0],
-                       beforePath=r"D:\xst_project_202212\Python\数据集\facial_expression\channel1\train\All",
+                       beforePath=r"E:\codeSpace\codeSet\数据集\facial_expression\channel1\train\All",
                        labelToInt=labelDict, debug=True)
 
-    validSet = dataset(listdir(r"D:\xst_project_202212\Python\数据集\facial_expression\channel1\valid\ALl"),
+    validSet = dataset(listdir(r"E:\codeSpace\codeSet\数据集\facial_expression\channel1\valid\All"),
                        labelMethod=lambda x: x.split("_")[0],
-                       beforePath=r"D:\xst_project_202212\Python\数据集\facial_expression\channel1\valid\All",
+                       beforePath=r"E:\codeSpace\codeSet\数据集\facial_expression\channel1\valid\All",
                        labelToInt=labelDict, debug=True)
 
     trainLoader, validLoader = DataLoader(trainSet, batch_size, shuffle=True), DataLoader(validSet, batch_size,

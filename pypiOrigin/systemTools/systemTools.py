@@ -29,7 +29,7 @@ from re import findall, sub
 __version__ = "0.0.12"
 
 try:
-    from ANSIdefine.ansiDefine import ansiManger
+    from ANSIdefine.ansiDefine import ansiManger  # type: ignore
 except Exception:
     from ansiDefine.ansiDefine import ansiManger  # type: ignore
 

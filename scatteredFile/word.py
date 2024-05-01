@@ -20,7 +20,7 @@ from textTools import isChinese
 from datetime import date, datetime
 from requests import ConnectTimeout
 from netTools import request, translate_web, translate_single, translate_mutil
-from SQLtools import baseSQL
+from sqlTools import baseSQL
 from warnings import warn
 from inspect import currentframe
 from random import randint, shuffle, uniform

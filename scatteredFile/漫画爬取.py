@@ -14,12 +14,12 @@
 # 注释: 
 # -------------------------<Lenovo>----------------------------
 from netTools import request
-from conFunc import square
+from confunc import square
 from ansiDefine import ansiManger
 from multiprocessing import freeze_support
 from asyncio import get_event_loop, gather, new_event_loop
 from threading import Lock
-from constantPackage.ptioTools.PTIOtools import processDo, threadDo
+from PTIOtools import parallel
 from os import mkdir, path
 
 
