@@ -218,6 +218,7 @@ class qtFunc:
 
     @classmethod
     def funcDefine(cls, funcName: str):
+        pass
 
     @classmethod
     def html(cls):
