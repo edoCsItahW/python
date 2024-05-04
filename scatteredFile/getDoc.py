@@ -28,6 +28,7 @@ class docSpawner:
         self._commonRules = []
         self._classRules = []
         self.funcRules = []
+        self.result = []
 
         self.ruleInit()
 
@@ -68,66 +69,90 @@ class docSpawner:
         for node in iter_child_nodes(self.ast):
             self.getDoc(node)
 
-    def getDoc(self, astNode: AST, *, replace: bool = True):
-        if hasattr(body := astNode.body[0], "value"):
-            comment: str = body.value.s
+    def getDoc(self, node: AST):
+        if isinstance(node, dict):
+            for value in node.values():
+                self.getDoc(value)
+
+        elif isinstance(node, list):
+            for item in node:
+                self.getDoc(item)
+
+        elif isinstance(node, (ClassDef, FunctionDef)):
+            self.getNodeDoc(node)
+
+        elif hasattr(node, "body"):
+            for n in node.body:
+                self.getDoc(n)
+
+        else:
+            pass
+            # warn(
+            #     f"不支持的节点类型: '{node.__class__.__name__}'")
+
+    def getNodeDoc(self, astNode: ClassDef | FunctionDef, *, replace: bool = True):
+        if hasattr(exp := astNode.body[0], "value") and isinstance(exp, Expr):
+            if not (comment := exp.value.s):
+                return
         else:
             return
 
         fields = {}
 
         res = None
-        for rule in self.classRules:
+        for rule in self.commonRules:
             res = rule(comment, fields)
 
-            if replace: comment.replace("".join(res[0]), "")
+            if replace and res: comment.replace("".join(res), "")
 
         if isinstance(astNode, ClassDef):
             for rule in self.classRules:
                 res = rule(comment, fields)
 
-                if replace: comment.replace("".join(res[0]), "")
+                if replace and res: comment.replace("".join(res[0]), "")
 
         elif isinstance(astNode, FunctionDef):
             for rule in self.funcRules:
                 res = rule(comment, fields)
 
-                if replace: comment.replace("".join(res[0]), "")
+                if replace and res: comment.replace("".join(res[0]), "")
 
         else:
             warn(
                 f"不支持的节点类型: {astNode.__class__.__name__}")
 
-        return fields
+        self.result.append(res)
 
     @staticmethod
-    def middleware(reExp: Pattern, comment: str, fields: dict, field: str, *, flags: RegexFlag = None, condition: Callable = None):
-        if condition is None or condition(comment):
+    def middleware(reExp: Pattern, comment: str, fields: dict, field: str, *, flags: RegexFlag = 0, condition: Callable = None):
+        if condition is None or condition(comment) and field not in fields:
             fields[field] = res = findall(reExp, comment, flags)
 
+            if not res:
+                warn(
+                    f"正则表达式: `{reExp}`对于注释: '{comment}'没有匹配到任何东西!")
+                    # "正则表达式: `{reExp}`对于注释: '{}'没有匹配到任何东西!".format(comment.replace('\n', '\\n'), reExp=reExp))
+
             return res
+        return False
 
-    @singleDispatchMethod
-    def register(self, rule: Literal["common", "class", "func"] = "common", reExp: Pattern = None, field: str = None, *, flags: RegexFlag = None, condition: Callable = None):
-        raise NotImplementedError(
-            f"不支持的规则类型: {rule}")
-
-    @register.register(value="common")
-    def _(self, rule: str, reExp: Pattern, field: str, *, flags: RegexFlag = None, condition: Callable = None):
-        print(self)
-        self.commonRules.append(lambda comment, fields: self.middleware(reExp, comment, fields, field, flags=flags, condition=condition))
-
-    @register.register(value="class")
-    def _(self, rule: str, reExp: Pattern, field: str, *, flags: RegexFlag = None, condition: Callable = None):
-        self.classRules.append(lambda comment, fields: self.middleware(reExp, comment, fields, field, flags=flags, condition=condition))
-
-    @register.register(value="func")
-    def _(self, rule: str, reExp: Pattern, field: str, *, flags: RegexFlag = None, condition: Callable = None):
-        self.funcRules.append(lambda comment, fields: self.middleware(reExp, comment, fields, field, flags=flags, condition=condition))
+    def register(self, rule: Literal["common", "class", "func"] = "common", reExp: Pattern | str = None, field: str = None, *, flags: RegexFlag = 0, condition: Callable = None):
+        match rule:
+            case "common":
+                self.commonRules.append(lambda comment, fields: self.middleware(reExp, comment, fields, field, flags=flags, condition=condition))
+            case "class":
+                self.classRules.append(lambda comment, fields: self.middleware(reExp, comment, fields, field, flags=flags, condition=condition))
+            case "func":
+                self.funcRules.append(lambda comment, fields: self.middleware(reExp, comment, fields, field, flags=flags, condition=condition))
+            case _:
+                raise NotImplementedError(
+                    f"不支持的规则类型: {rule}")
 
     def ruleInit(self):
-        self.register("common", r"(?:.?).*?(?:.?)", "description")
-        self.register("common", r"(?<=Example:|example:)(?::).*?(?=:|$|Attributes|Methods)", "example", flags=DOTALL)
+        self.register("common", r".*", "description", condition=lambda comment: '\n' not in comment)
+        self.register("common", r"(?:\n?)\S+(?:\n?)", "description", condition=lambda comment: not len(findall(r"\n\s+\n", comment)))
+        self.register("common", r"(?:\n?)\S+(?:\n?\s+\n)", "description")
+        self.register("common", r"(?<=Example:|example:)(?::).*?(?=:|$|Attributes|Methods)", "example", flags=DOTALL, condition=lambda comment: any([f in comment for f in ["Example", "example"]]))
         self.register("class", r"(?<=Example:|example:)(?::).*?(?=:|$|Attributes|Methods)", "attributes", flags=DOTALL, condition=lambda comment: "Attributes" in comment)
         self.register("class", r"(?<=Methods:)(?::)(?:\n).*(?=$)", "methods", flags=DOTALL, condition=lambda comment: "Methods" in comment)
         self.register("func", r":(param|type|keyword|raise)(.*)(?=$)", "param", flags=DOTALL)
@@ -139,3 +164,4 @@ if __name__ == '__main__':
     # print(dump(parse('def func():\n    """\n    This is a class.\n"""\n    pass'), indent=4))
     ins = docSpawner(r"E:\codeSpace\codeSet\Python\pypiOrigin\uploadTools\uploadTools.py")
     ins.getDoc(ins.ast)
+    print(ins.result)

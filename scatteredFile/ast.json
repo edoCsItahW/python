@@ -1,0 +1,475 @@
+{
+  "('CMDError', 'class')": {
+    "comment": "\n    CMD\u9519\u8bef\u7c7b\n    ",
+    "children": {
+      "('__init__', 'function')": {
+        "comment": null,
+        "children": {}
+      }
+    }
+  },
+  "('winAuto', 'class')": {
+    "comment": null,
+    "children": {
+      "('__init__', 'function')": {
+        "comment": "\n        \u81ea\u52a8\u5f39\u51facmd\u7a97\u53e3\u5e76\u6267\u884c\u6307\u4ee4\n\n        :param args: \u6307\u4ee4,\u8fd9\u4e9b\u6307\u4ee4\u5c06\u88ab\u7528'&'\u8fde\u63a5\u5e76\u6267\u884c\n        :type args: str\n        :keyword cwd: \u6267\u884c\u547d\u4ee4\u7684\u5f53\u524d\u8def\u5f84\n        :type cwd: str\n        :keyword init: \u521d\u59cb\u547d\u4ee4(\u9ed8\u8ba4\u4e3a: ['color 80', 'cls'])\n        :type init: list\n        :keyword waitTime: \u6bcf\u6761\u6307\u4ee4\u7684\u7b49\u5f85\u65f6\u95f4(\u9ed8\u8ba4\u4e3a:0.5)\n        :type waitTime: float\n        ",
+        "children": {}
+      },
+      "('shell', 'function')": {
+        "comment": "\n        \u8fd4\u56deWScript.Shell\u5bf9\u8c61\n\n        :return: WScript.Shell\u5bf9\u8c61\n        ",
+        "children": {}
+      },
+      "('args', 'function')": {
+        "comment": "\n        \u8fd4\u56de\u6307\u4ee4\u5143\u7ec4\n\n        :return: \u6307\u4ee4\u5143\u7ec4\n        ",
+        "children": {}
+      },
+      "('findCmd', 'function')": {
+        "comment": "\n        \u67e5\u627ecmd\u7a97\u53e3\n\n        :keyword keyword: \u67e5\u627e\u5173\u952e\u5b57\n        :type keyword: str\n        :return: cmd\u7a97\u53e3\u53e5\u67c4\n        :rtype: int\n        ",
+        "children": {}
+      },
+      "('_codeBack', 'function')": {
+        "comment": "\n        \u7a97\u53e3\u679a\u4e3e\u56de\u8c03\u51fd\u6570\n\n        :param hwnd: \u7a97\u53e3\u53e5\u67c4\n        :type hwnd: int\n        :param _: \u5ffd\u7565\u7684\u53c2\u6570\n        :type _: Any\n        ",
+        "children": {}
+      },
+      "('getAllTitle', 'function')": {
+        "comment": "\n        \u83b7\u53d6\u6240\u6709\u7a97\u53e3\u6807\u9898\n\n        :return: \u6240\u6709\u7a97\u53e3\u6807\u9898\u5217\u8868\n        ",
+        "children": {}
+      },
+      "('sendInstruct', 'function')": {
+        "comment": "\n        \u53d1\u9001\u6307\u4ee4\n\n        :param instruct: \u6307\u4ee4\n        :type instruct: str\n        :keyword waitTime: \u7b49\u5f85\u65f6\u95f4\n        :type waitTime: int\n        :keyword enter: \u662f\u5426\u81ea\u52a8\u6dfb\u52a0\u56de\u8f66\u7b26\u53f7{ENTER}\n        :type enter: bool\n        ",
+        "children": {}
+      },
+      "('begin', 'function')": {
+        "comment": "\n        \u5f00\u59cb\u6267\u884c\n        ",
+        "children": {}
+      }
+    }
+  },
+  "('cmd', 'class')": {
+    "comment": "\n    \u7528\u4e8e\u5f39\u51facmd\u7a97\u53e3\u5e76\u8fdb\u884c\u6309\u952e\u6a21\u62df\n    ",
+    "children": {
+      "('__new__', 'function')": {
+        "comment": "\n\n        :param args: \u6307\u4ee4,\u8fd9\u4e9b\u6307\u4ee4\u5c06\u88ab\u7528'&'\u8fde\u63a5\u5e76\u6267\u884c\n        :type args: str\n        :keyword cwd: \u6267\u884c\u547d\u4ee4\u7684\u5f53\u524d\u8def\u5f84\n        :type cwd: str\n        :keyword init: \u521d\u59cb\u5316\u547d\u4ee4(\u9ed8\u8ba4\u4e3a: ['color 80', 'cls'])\n        :type init: list\n        :keyword waitTime: \u6bcf\u6761\u6307\u4ee4\u7684\u7b49\u5f85\u65f6\u95f4(\u9ed8\u8ba4\u4e3a: 0.5)\n        :type waitTime: int | float\n        :return: \u8fd4\u56de\u4e00\u4e2awinAuto\u7c7b,\u4f60\u53ef\u4ee5\u7ee7\u7eed\u5bf9\u8fd9\u4e2a\u7c7b\u8fdb\u884c\u64cd\u4f5c.\n        :retype: winAuto\n        ",
+        "children": {}
+      }
+    }
+  },
+  "('instruct', 'class')": {
+    "comment": "\n    \u547d\u4ee4\u884c\u8fd0\u884c\u5668\n\n    \u4f7f\u7528\u65b9\u6cd5::\n\n        >>> ins = instruct(output=True, ignore=False, color=True)\n        >>> ins(\"dir\")\n    ",
+    "children": {
+      "('__new__', 'function')": {
+        "comment": "\n        \u5355\u4f8b\u6a21\u5f0f\n        ",
+        "children": {}
+      },
+      "('__init__', 'function')": {
+        "comment": "\n        \u547d\u4ee4\u884c\u521d\u59cb\u5668\n\n        >>> def __call__(self, instruction: str, *, cwd: PathLike | str = None, output: bool = None, encoding: Literal[\"gbk\", \"utf-8\"] = \"gbk\", note: str = \"\"): ...\n\n        :keyword output: \u662f\u5426\u8fd0\u884c\u8f93\u51fa\u7ed3\u679c.\n        :type output: bool\n        :keyword ignore: \u662f\u5426\u5c06\u6240\u6709(\u539f\u672c\u5c06\u4f1a\u629b\u51fa\u9519\u8bef)\u9519\u8bef(Error)\u964d\u7ea7\u4e3a\u8b66\u544a(Warning)\u4ee5\u4fdd\u8bc1\u7a0b\u5e8f\u4e0d\u4e2d\u65ad.\n        :type ignore: bool\n        :keyword color: \u6863\u4e3a\u5e03\u5c14\u7c7b\u578b(bool)\u662f\u51b3\u5b9a\u8f93\u51fa\u662f\u5426\u5e26\u6709ANSI\u8272\u5f69,\u4e3a\u5b57\u7b26\u4e32(str)\u65f6\u51b3\u5b9a\u8f93\u51fa\u4ec0\u4e48\u989c\u8272.\n        :type color: bool\n        :keyword eliminate: \u662f\u5426\u6392\u9664\u67d0\u4e9b\u4f1a\u88ab\u8bef\u8ba4\u4e3a\u9519\u8bef\u7684\u65e0\u5173\u7d27\u8981\u7684\u8b66\u544a,\u4f8b\u5982: '\u6587\u4ef6\u540d\u3001\u76ee\u5f55\u540d\u6216\u5377\u6807\u8bed\u6cd5\u4e0d\u6b63\u786e\u3002'\n        ",
+        "children": {}
+      },
+      "('__call__', 'function')": {
+        "comment": "\n        \u6267\u884c\u5668\n\n        :param instruction: \u6307\u4ee4\n        :type instruction: str\n        :keyword cwd: \u8bbe\u5b9a\u5f53\u524d\u8def\u5f84\u6216\u6267\u884c\u8def\u5f84\n        :type cwd: str\n        :keyword output: \u662f\u5426\u5141\u8bb8\u6253\u5370\u7ed3\u679c\n        :type output: bool\n        :return: cmd\u6267\u884c\u7ed3\u679c\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('_execute', 'function')": {
+        "comment": "\n        \u6267\u884c\u5668\u5185\u6838\n\n        :param instruction: \u6307\u4ee4\n        :type instruction: str\n        :param cwd: \u6267\u884c\u73af\u5883\u8def\u5f84\n        :type cwd: PathLike | str\n        :param encoding: \u7f16\u7801.(\u9632\u6b62\u547d\u4ee4\u884c\u8f93\u51fa\u4e71\u7801)\n        :type encoding: str\n        :return: \u4e00\u4e2a\u5b57\u5178,\u952e'C'\u5bf9\u5e94\u6b63\u786e\u4fe1\u606f,\u952e'E'\u5bf9\u5e94\u9519\u8bef\u6d88\u606f\n        :rtype: dict\n        ",
+        "children": {}
+      }
+    }
+  },
+  "('jsonFile', 'class')": {
+    "comment": "\n    json\u6587\u4ef6\u64cd\u4f5c\u7c7b\n    ",
+    "children": {
+      "('__init__', 'function')": {
+        "comment": "\n        :param jsonDict: \u5916\u5c42\u7c7b\u4f20\u5165\u7684\u5b57\u5178\n        :type jsonDict: dict\n        ",
+        "children": {}
+      },
+      "('jsonData', 'function')": {
+        "comment": "\n        \u8bbe\u7f6ejson\u6570\u636e\n\n        :param value: \u5b57\u5178(dict)\u5f62\u5f0f\u7684json\u6570\u636e\n        :type value: dict\n        :raise TypeError: \u8f93\u5165\u7c7b\u578b\u9519\u8bef\n        ",
+        "children": {}
+      },
+      "('_pairParser', 'function')": {
+        "comment": "\n        \u952e\u503c\u5bf9\u89e3\u6790\u5668\n\n        :param key: \u952e\n        :type key: Any\n        :param value: \u503c\n        :type value: Any\n        ",
+        "children": {}
+      },
+      "('update', 'function')": {
+        "comment": "\n        \u66f4\u65b0json\u6570\u636e\n\n        :param __m: \u952e\u503c\u5bf9\u5217\u8868\n        :type __m: list[tuple[Any, Any]]\n        :raise ValueError: \u53c2\u6570\u5f62\u5f0f\u9519\u8bef\n        ",
+        "children": {}
+      },
+      "('read', 'function')": {
+        "comment": "\n        \u8bfb\u53d6json\u6570\u636e\n\n        :return: \u8fd4\u56de\u5b57\u5178(dict)\u5f62\u5f0f\u7684json\u6570\u636e\n        ",
+        "children": {}
+      },
+      "('write', 'function')": {
+        "comment": "\n        \u5199\u5165json\u6570\u636e\n\n        :param __d: \u5b57\u5178(dict)\u5f62\u5f0f\u7684json\u6570\u636e,\u5982\u679c\u4e3aNone\u5219\u4f7f\u7528\u5f53\u524djson\u6570\u636e\n        :type __d: dict\n        ",
+        "children": {}
+      }
+    }
+  },
+  "('jsonOpen', 'class')": {
+    "comment": "\n    json\u6587\u4ef6\u64cd\u4f5c\u7c7b\n    ",
+    "children": {
+      "('__init__', 'function')": {
+        "comment": "\n        \u4e0eopen\u76f8\u540c\n\n        \u539f\u672c\u4f7f\u7528open\u65b9\u6cd5\u6253\u5f00\u5e76\u4fee\u6539\u6587\u4ef6\u9700\u8981::\n\n        >>> from json import load, dump\n        >>>\n        >>>\n        >>> with open(file, \"r\") as file:\n        >>>     jsonDict = load(file)  # type: dict\n        >>>     jsonDict[\"key\"] = \"value\"\n        >>>\n        >>> with open(file, \"w\") as file:\n        >>>     dump(jsonDict, file)\n\n        \u73b0\u5728\u4f7f\u7528jsonOpen\u65b9\u6cd5\u6253\u5f00\u5e76\u4fee\u6539\u6587\u4ef6\u53ea\u9700\u8981::\n\n\n        >>> with jsonOpen(file, \"w\") as file:\n        >>>     file.update([(\"key\", \"value\")])\n\n        \u8fd9\u6837\u5c31\u80fd\u76f4\u63a5\u5bf9json\u6570\u636e\u8fdb\u884c\u64cd\u4f5c,\u800c\u4e0d\u9700\u8981\u518d\u4f7f\u7528load\u548cdump\u65b9\u6cd5.\n\n        :param file: \u6587\u4ef6\u8def\u5f84\n        :type file: str | bytes | PathLike[str] | PathLike[bytes]\n        :param mode: \u6587\u4ef6\u6253\u5f00\u6a21\u5f0f\n        :type mode: Literal[\"r+\", \"+r\", \"w+\", \"+w\", \"a+\", \"+a\", \"w\", \"a\", \"r\"]\n        :raise FileNotFoundError: \u6587\u4ef6\u4e0d\u5b58\u5728\u3002\n        ",
+        "children": {}
+      },
+      "('_file', 'function')": {
+        "comment": "\n        \u8bbe\u7f6ejsonFile\u5bf9\u8c61\n\n        :param value: jsonFile\u5bf9\u8c61\n        ",
+        "children": {}
+      },
+      "('__enter__', 'function')": {
+        "comment": "\n        \u8fdb\u5165with\u8bed\u53e5\u5757,\u8fd4\u56dejsonFile\u5bf9\u8c61\n\n        :return: jsonFile\u5bf9\u8c61\n        :rtype: jsonFile\n        ",
+        "children": {}
+      },
+      "('__exit__', 'function')": {
+        "comment": "\n        \u9000\u51fawith\u8bed\u53e5\u5757,\u6839\u636e\u6a21\u5f0f\u51b3\u5b9a\u662f\u5426\u5199\u5165json\u6570\u636e\n\n        :param exc_type: \u8fd0\u884c\u8fc7\u7a0b\u4e2d\u4ea7\u751f\u7684\u9519\u8bef\u7c7b\u578b\n        :type exc_type: Exception\n        :param exc_val: \u8fd0\u884c\u8fc7\u7a0b\u4e2d\u4ea7\u751f\u7684\u9519\u8bef\u4fe1\u606f\n        :type exc_val: Exception\n        :param exc_tb: \u8fd0\u884c\u8fc7\u7a0b\u4e2d\u4ea7\u751f\u7684\u9519\u8bef\u4f4d\u7f6e\n        :type exc_tb: TracebackType\n        ",
+        "children": {}
+      }
+    }
+  },
+  "('SpawnError', 'class')": {
+    "comment": "\n    \u5b50\u8fdb\u7a0b\u9519\u8bef\u7c7b\n    ",
+    "children": {
+      "('__init__', 'function')": {
+        "comment": null,
+        "children": {}
+      }
+    }
+  },
+  "('outputInfo', 'function')": {
+    "comment": "\n    \u8f93\u51fa\u4fe1\u606f\n\n    :param info: \u4fe1\u606f\u5185\u5bb9\n    :type info: str\n    :keyword color: \u989c\u8272,\u53ef\u4ee5\u662f\u5e03\u5c14\u503c(bool),\u4e5f\u53ef\u4ee5\u662fred, green, blue, yellow\u4e2d\u7684\u4e00\u4e2a\n    :type color: Literal[\"red\", \"green\", \"blue\", \"yellow\"] | str | bool\n    :keyword flag: \u662f\u5426\u8f93\u51fa\u4fe1\u606f\n    :type flag: bool\n    ",
+    "children": {}
+  },
+  "('strToBool', 'function')": {
+    "comment": "\n    \u6839\u636e\u5b57\u7b26\u4e32\u5b57\u9762\u610f\u601d\u8f6c\u6362\u4e3a\u5e03\u5c14\u503c\n\n    :param text: \u5b57\u7b26\u4e32\n    :type text: str\n    :keyword default: \u9ed8\u8ba4\u503c\n    :type default: bool\n    :return: \u5e03\u5c14\u503c\n    :rtype: bool\n    ",
+    "children": {}
+  },
+  "('pathTools', 'class')": {
+    "comment": "\n    \u6587\u4ef6\u8def\u5f84\u5de5\u5177\u7c7b\n    ",
+    "children": {
+      "('isFileExist', 'function')": {
+        "comment": "\n        \u68c0\u6d4b\u6587\u4ef6\u662f\u5426\u5b58\u5728,\u5982\u679c\u4e0d\u5b58\u5728\u5219\u62a5\u9519.\n\n        :param _path: \u6587\u4ef6\u8def\u5f84\n        :type _path: str | PathLike\n        :keyword kwargs: {note: \u9519\u8bef\u539f\u56e0\u6ce8\u89e3, willDo: [warn, error, stop] \u62a5\u9519\u65b9\u5f0f, fromError: ..., group: \u7ec4}\n        :type kwargs: Any\n        :return: \u6587\u4ef6\u662f\u5426\u5b58\u5728\n        :rtype: bool\n        :raise FileNotFoundError: \u5982\u679c\u6587\u4ef6\u4e0d\u5b58\u5728.\n        ",
+        "children": {}
+      },
+      "('createIfNotExist', 'function')": {
+        "comment": "\n        \u521b\u5efa\u6587\u4ef6\u5939,\u5982\u679c\u6587\u4ef6\u5939\u4e0d\u5b58\u5728\u5219\u521b\u5efa,\u5982\u679c\u5b58\u5728\u5219\u4e0d\u505a\u4efb\u4f55\u64cd\u4f5c.\n\n        :param _path: \u6587\u4ef6\u5939\u8def\u5f84\n        :type _path: str | PathLike[str]\n        ",
+        "children": {}
+      }
+    }
+  },
+  "('argSet', 'class')": {
+    "comment": "\n    \u53c2\u6570\u8bbe\u7f6e\u548c\u5b58\u50a8\u7c7b\n    \n    Attributes:\n        :ivar filePath: \u6587\u4ef6\u7edd\u5bf9\u8def\u5f84.\n        :ivar rootPath: \u9879\u76ee\u6839\u76ee\u5f55\u8def\u5f84.\n        :ivar fileName: \u6587\u4ef6\u540d.\n        :ivar moduleName: \u6a21\u5757\u540d.\n        :ivar dirPath: \u6a21\u5757\u76ee\u5f55\u8def\u5f84.\n        :ivar projectPath: \u9879\u76ee\u76ee\u5f55\u8def\u5f84.\n        :ivar newPath: \u4e0a\u4f20\u540e\u6587\u4ef6\u7684\u8def\u5f84.\n        :ivar jsonPath: args.json\u8def\u5f84.\n        :ivar argsDict: args.json\u5b57\u5178.\n        :ivar separator: \u8def\u5f84\u5206\u9694\u7b26.\n        :ivar executor: \u547d\u4ee4\u884c\u6267\u884c\u5668.\n        :ivar color: \u662f\u5426\u8fd0\u884c\u8f93\u51fa\u4fe1\u606f\u5e26\u6709\u8272\u5f69.\n        :ivar flagRestore: \u5f53\u51fa\u73b0\u9519\u8bef\u65f6\u662f\u5426\u8981\u8fd8\u539f\u521d\u59cb\u72b6\u6001.\n        :ivar flagDebug: \u662f\u5426\u5f00\u542fDebug\u6a21\u5f0f.\n        :ivar flagAuto: \u662f\u5426\u81ea\u52a8\u4e0a\u4f20.\n        :ivar flagIncrease: \u662f\u5426\u8fd0\u884c\u4e0a\u4f20\u5b8c\u540e\u81ea\u52a8\u5411args.json\u4e2d\u66f4\u65b0\u7248\u672c.\n        :ivar suffix: \u6587\u4ef6\u540e\u7f00.\n        :ivar pyVersion: python\u7248\u672c\u53f7.\n        :ivar cmakeVersion: cmake\u7248\u672c\u53f7.\n        \n    Methods:\n        :meth:`compliantArg`: \u8def\u5f84\u5408\u89c4\u6027\u68c0\u67e5.\n\n    ",
+    "children": {
+      "('__init__', 'function')": {
+        "comment": "\n        \u53c2\u6570\u8bbe\u7f6e\u548c\u5b58\u50a8\u7c7b,\u7528\u4e8e\u8bbe\u7f6e\u4e0a\u4f20\u53c2\u6570,\u5305\u62ec: \u6587\u4ef6\u8def\u5f84, \u4e0a\u4f20\u540e\u662f\u5426\u8fd8\u539f, \u662f\u5426\u5f00\u542fDebug\u6a21\u5f0f, \u662f\u5426\u8fd0\u884c\u8f93\u51fa\u4fe1\u606f\u5e26\u6709\u8272\u5f69, \u662f\u5426\u81ea\u52a8\u4e0a\u4f20, \u662f\u5426\u81ea\u589e\u7248\u672c\u53f7, \u6587\u4ef6\u540e\u7f00, \u4ee5\u53ca\u5176\u5b83\u5173\u952e\u5b57\u53c2\u6570.\n\n        py\u6587\u4ef6\u8fd0\u884c\u65f6\u671f\u671b\u7ed3\u6784::\n\n            /rootPath\n                /dirPath\n                    /projectPath\n                pyFile.py\n\n        :param fileAbsPath: \u6587\u4ef6\u7edd\u5bf9\u8def\u5f84\u3002\n        :type fileAbsPath: str\n        :keyword restore: \u5f53\u51fa\u73b0\u9519\u8bef\u65f6\u662f\u5426\u8981\u8fd8\u539f\u521d\u59cb\u72b6\u6001\u3002\n        :type restore: bool\n        :keyword debug: \u662f\u5426\u5f00\u542fDebug\u6a21\u5f0f\u3002\n        :type debug: bool\n        :keyword color: \u662f\u5426\u8fd0\u884c\u8f93\u51fa\u4fe1\u606f\u5e26\u6709\u8272\u5f69\u3002\n        :type color: bool\n        :keyword increase: \u662f\u5426\u8fd0\u884c\u4e0a\u4f20\u5b8c\u540e\u81ea\u52a8\u5411args.json\u4e2d\u66f4\u65b0\u7248\u672c, major: \u4e3b\u7248\u672c\u53f7([0].0.0), minor: \u526f\u7248\u672c\u53f7(0.[0].0), patch: \u8865\u4e01\u53f7(0.0.[0]), \u5982\u4e3aFalse\u5219\u4e0d\u81ea\u589e.\n        :type increase: str\n        :keyword kwargs: \u5176\u5b83\u5173\u952e\u5b57\u53c2\u6570,\u5305\u62ec: ignore, eleiminate\n        :type kwargs: ...\n        :raise ValueError: \u5982\u679c\u4f20\u5165\u7684\u6587\u4ef6\u8def\u5f84\u4e0d\u662f\u7edd\u5bf9\u8def\u5f84\u3002\n        ",
+        "children": {}
+      },
+      "('filePath', 'function')": {
+        "comment": "\n        \u6587\u4ef6\u7edd\u5bf9\u8def\u5f84.\n        :return: \u6587\u4ef6\u7edd\u5bf9\u8def\u5f84.\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('rootPath', 'function')": {
+        "comment": "\n        \u9879\u76ee\u6839\u76ee\u5f55\u8def\u5f84.\n\n        :return: \u9879\u76ee\u6839\u76ee\u5f55\u8def\u5f84.\n        :rtype: PathLike[str]\n        ",
+        "children": {}
+      },
+      "('fileName', 'function')": {
+        "comment": "\n        \u6587\u4ef6\u540d.\n\n        :return: \u6587\u4ef6\u540d\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('moduleName', 'function')": {
+        "comment": "\n        \u6a21\u5757\u540d.\n\n        :return: \u6a21\u5757\u540d\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('fileSuffix', 'function')": {
+        "comment": "\n        \u6587\u4ef6\u540e\u7f00.\n\n        :return: \u6587\u4ef6\u540e\u7f00\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('checkSuffix', 'function')": {
+        "comment": "\n        \u68c0\u67e5\u6587\u4ef6\u540e\u7f00\u662f\u5426\u5408\u89c4.\n\n        :param suffix: \u6587\u4ef6\u540e\u7f00\n        :type suffix: str | list[str]\n        :return: \u662f\u5426\u5408\u89c4\n        :rtype: bool\n        :raise NotImplementedError: \u7c7b\u578b\u4e0d\u652f\u6301.\n        ",
+        "children": {}
+      },
+      "('_', 'function')": {
+        "comment": null,
+        "children": {}
+      },
+      "('dirPath', 'function')": {
+        "comment": "\n        \u6a21\u5757\u76ee\u5f55\u8def\u5f84.\n\n        :return: \u6a21\u5757\u76ee\u5f55\u8def\u5f84\n        :rtype: str\n        :raise RuntimeError: \u5f53\u6587\u4ef6\u540e\u7f00\u4e3ac\u6216cpp\u65f6,\u4f1a\u629b\u51fa\u6b64\u9519\u8bef.\n        ",
+        "children": {}
+      },
+      "('projectPath', 'function')": {
+        "comment": "\n        \u9879\u76ee\u76ee\u5f55\u8def\u5f84.\n\n        :return: \u9879\u76ee\u76ee\u5f55\u8def\u5f84\n        :rtype: PathLike[str] | str\n        :raise RuntimeError: \u5f53\u6587\u4ef6\u540e\u7f00\u4e3ac\u6216cpp\u65f6,\u4f1a\u629b\u51fa\u6b64\u9519\u8bef.\n        ",
+        "children": {}
+      },
+      "('newPath', 'function')": {
+        "comment": null,
+        "children": {}
+      },
+      "('jsonPath', 'function')": {
+        "comment": "\n        args.json\u8def\u5f84.\n\n        :return: args.json\u8def\u5f84\n        :rtype: str | None\n        ",
+        "children": {}
+      },
+      "('argsDict', 'function')": {
+        "comment": "\n        args.json\u5b57\u5178.\n\n        :return: args.json\u5b57\u5178\n        :rtype: dict[str, Any]\n        ",
+        "children": {}
+      },
+      "('separator', 'function')": {
+        "comment": "\n        \u8def\u5f84\u5206\u9694\u7b26.\n\n        :return: \u8def\u5f84\u5206\u9694\u7b26\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('executor', 'function')": {
+        "comment": "\n        \u547d\u4ee4\u884c\u6267\u884c\u5668.\n\n        :return: \u547d\u4ee4\u884c\u6267\u884c\u5668\n        :rtype: instruct\n        ",
+        "children": {}
+      },
+      "('color', 'function')": {
+        "comment": "\n        \u5173\u952e\u5b57\u53c2\u6570color\u542f\u7528\u4fe1\u53f7.\n\n        :return: \u542f\u7528\u4fe1\u53f7\n        :rtype: bool\n        ",
+        "children": {}
+      },
+      "('flagRestore', 'function')": {
+        "comment": "\n        \u5173\u952e\u5b57\u53c2\u6570restore\u542f\u7528\u4fe1\u53f7.\n\n        :return: \u542f\u7528\u4fe1\u53f7\n        :rtype: bool\n        ",
+        "children": {}
+      },
+      "('flagDebug', 'function')": {
+        "comment": "\n        \u5173\u952e\u5b57\u53c2\u6570debug\u542f\u7528\u4fe1\u53f7.\n\n        :return: \u542f\u7528\u4fe1\u53f7\n        :rtype: bool\n        ",
+        "children": {}
+      },
+      "('flagAuto', 'function')": {
+        "comment": "\n        \u5173\u952e\u5b57\u53c2\u6570auto\u542f\u7528\u4fe1\u53f7.\n\n        :return: \u542f\u7528\u4fe1\u53f7\n        :rtype: bool\n        ",
+        "children": {}
+      },
+      "('flagIncrease', 'function')": {
+        "comment": "\n        \u5173\u952e\u5b57\u53c2\u6570increase\u542f\u7528\u4fe1\u53f7.\n\n        :return: \u542f\u7528\u4fe1\u53f7\n        :rtype: bool\n        ",
+        "children": {}
+      },
+      "('suffix', 'function')": {
+        "comment": "\n        \u6587\u4ef6\u540e\u7f00.\n\n        :return: \u6587\u4ef6\u540e\u7f00\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('pyVersion', 'function')": {
+        "comment": "\n        python\u7248\u672c\u53f7.\n\n        :return: python\u7248\u672c\u53f7\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('cmakeVersion', 'function')": {
+        "comment": "\n        CMake\u7248\u672c\u53f7.\n\n        :return: CMake\u7248\u672c\u53f7\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('compliantArg', 'function')": {
+        "comment": "\n        \u8def\u5f84\u5408\u89c4\u6027\u68c0\u67e5.\n\n        :param _path: \u6587\u4ef6\u8def\u5f84\n        :type _path: str | PathLike[str]\n        :param suffix: \u6587\u4ef6\u540e\u7f00\n        :type suffix: str | list[str]\n        :raise ValueError: \u540e\u7f00\u4e0d\u5408\u89c4.\n        ",
+        "children": {}
+      }
+    }
+  },
+  "('errorHandle', 'class')": {
+    "comment": null,
+    "children": {
+      "('__new__', 'function')": {
+        "comment": null,
+        "children": {}
+      },
+      "('__init__', 'function')": {
+        "comment": "\n        \u9519\u8bef\u5904\u7406\u7c7b\n\n        :param args: \u53c2\u6570\u8bbe\u7f6e\u548c\u5b58\u50a8\u7c7b\n        :type args: argSet\n        ",
+        "children": {}
+      },
+      "('args', 'function')": {
+        "comment": "\n        \u5c5e\u6027\u5b58\u50a8\u7c7b\n\n        :return: \u5c5e\u6027\u5b58\u50a8\u7c7b\n        :rtype: argSet\n        ",
+        "children": {}
+      },
+      "('_formatErrorGroup', 'function')": {
+        "comment": "\n        \u5c06\u9519\u8bef\u8bb0\u5f55\u5b57\u5178(dict)\u9012\u5f52\u7684\u7ec4\u88c5\u6210\u5d4c\u5957\u7684ExceptionGroup\u5b57\u5178.\n\n        :keyword _lastKey: \u4e0a\u4e00\u4e2a\u952e\n        :type _lastKey: list\n        :keyword _result: \u7ed3\u679c\n        :type _result: list\n        :return: \u5982\u679c_lastKey\u4e0d\u4e3a\u7a7a,\u5219\u8fd4\u56deExceptionGroup\u5b57\u5178,\u5426\u5219\u9012\u5f52\u7684\u6267\u884c_formatErrorGroup\u51fd\u6570.\n        :rtype: ExceptionGroup | dict\n        ",
+        "children": {}
+      },
+      "('logError', 'function')": {
+        "comment": "\n        \u9519\u8bef\u8bb0\u5f55.\n\n        :param error: \u9519\u8bef\n        :type error: Exception\n        :param group: \u5206\u81f3\u7ec4\n        :type group: str\n        ",
+        "children": {}
+      },
+      "('raiseErrorGroup', 'function')": {
+        "comment": "\n        \u5f15\u53d1\u9519\u8bef\u7ec4.\n        ",
+        "children": {}
+      },
+      "('raiseError', 'function')": {
+        "comment": null,
+        "children": {
+          "('rerr', 'function')": {
+            "comment": null,
+            "children": {}
+          }
+        }
+      },
+      "('formatFuncInfo', 'function')": {
+        "comment": "\n        \u683c\u5f0f\u5316\u51fd\u6570\u4fe1\u606f\n\n        :param func: \u51fd\u6570\n        :type func: Callable\n        :param line: \u884c\u53f7(\u4e00\u822c\u4e3acurrentframe().f_back.f_lineno)\n        :type line: int\n        :return: \u683c\u5f0f\u5316\u540e\u7684\u51fd\u6570\u4fe1\u606f\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('executeWithTry', 'function')": {
+        "comment": "\n        \u5728try-except\u4e2d\u6267\u884c\u6307\u4ee4.\n\n        :param instruction: \u6307\u4ee4\n        :type instruction: str\n        :keyword cwd: \u6267\u884c\u6307\u4ee4\u7684\u76ee\u5f55\n        :type cwd: str | PathLike\n        :keyword note: \u6307\u4ee4\u6ce8\u89e3\n        :type note: str\n        :keyword group: \u6307\u4ee4\u5206\u7ec4\n        :type group: str\n        :keyword describe: \u6307\u4ee4\u63cf\u8ff0\n        :type describe: str\n        :keyword color: \u662f\u5426\u5141\u8bb8\u8f93\u51fa\u5e26\u6709\u989c\u8272,\u6216\u8005\u6307\u5b9a\u989c\u8272\n        :type color: str\n        ",
+        "children": {}
+      }
+    }
+  },
+  "('actionSet', 'class')": {
+    "comment": "\n    \u64cd\u4f5c\u96c6\u5408\u7c7b\n\n    Attributes:\n        :ivar args: \u53c2\u6570\u8bbe\u7f6e\u548c\u5b58\u50a8\u7c7b.\n        :ivar eh: \u9519\u8bef\u5904\u7406\u7c7b.\n        :ivar vsList: \u7248\u672c\u53f7\u5217\u8868.\n    Methods:\n        :meth:`versionBack`: \u7248\u672c\u53f7\u56de\u9000.\n\n        :meth:`_jsonIncrease`: \u7248\u672c\u53f7\u5165\u53e3\u51fd\u6570.\n\n        :meth:`_kewargs`: \u83b7\u53d6\u5173\u952e\u5b57\u53c2\u6570.\n\n        :meth:`_warpCmake`: \u5305\u88c5CMakeLists.format\u51fd\u6570.\n\n        :meth:`_vsIncrease`: \u7248\u672c\u53f7\u81ea\u589e.\n\n        :meth:`_vsToList`: \u5c06\u7248\u672c\u53f7\u5b57\u7b26\u4e32\u8f6c\u6362\u4e3a\u5217\u8868.\n\n        :meth:`_listToVs`: \u5c06\u7248\u672c\u53f7\u5217\u8868\u8f6c\u6362\u4e3a\u5b57\u7b26\u4e32.\n\n        :meth:`_onlyKey`: \u5bf9\u4e8e\u53ea\u6709\u4e00\u4e2a\u952e\u7684\u5b57\u5178,\u8fd4\u56de\u8fd9\u4e2a\u952e.\n\n        :meth:`_jsonIncrease`: \u7248\u672c\u53f7\u5165\u53e3\u51fd\u6570.\n\n        :meth:`_increase`: \u7248\u672c\u53f7\u81ea\u589e\u4e3b\u51fd\u6570.\n\n        :meth: `spawnPyi`: \u751f\u6210pyi\u6587\u4ef6.\n\n        :meth: `spawnPyc`: \u751f\u6210pyc\u6587\u4ef6.\n\n        :meth: `spawnHtml`: \u751f\u6210html\u6587\u4ef6.\n\n        :meth: `spawnReadme`: \u751f\u6210readme\u6587\u4ef6.\n\n        :meth: `spawnSetup`: \u751f\u6210setup.py\u6587\u4ef6.\n\n        :meth: `spawnInit`: \u751f\u6210__init__.py\u6587\u4ef6.\n\n        :meth: `cmakeLists`: \u751f\u6210CMakeLists.txt\u6587\u4ef6.\n\n        :meth: `spawnPyproject`: \u751f\u6210pyproject.toml\u6587\u4ef6.\n\n        :meth: `spawnManifest`: \u751f\u6210MANIFEST.in\u6587\u4ef6.\n\n        :meth: `spawnLicense`: \u751f\u6210LICENSE\u6587\u4ef6.\n\n        :meth: `spawnC`: \u751f\u6210c\u6587\u4ef6.\n\n        :meth: `spawnPyd`: \u751f\u6210pyd\u6587\u4ef6.\n\n        :meth: `middleDo`: \u521d\u59cb\u5316\u64cd\u4f5c.\n\n        :meth: `checkRequestList`: \u68c0\u67e5\u662f\u5426\u4e0e\u9884\u8bbe\u6587\u4ef6\u7ed3\u6784\u76f8\u540c.\n    ",
+    "children": {
+      "('__init__', 'function')": {
+        "comment": "\n        \u64cd\u4f5c\u96c6\u5408\u7c7b\n\n        :param args: \u53c2\u6570\u8bbe\u7f6e\u548c\u5b58\u50a8\u7c7b\n        :type args: argSet\n        ",
+        "children": {}
+      },
+      "('args', 'function')": {
+        "comment": "\n        \u5c5e\u6027\u5b58\u50a8\u7c7b\n\n        :return: \u5c5e\u6027\u5b58\u50a8\u7c7b\n        :rtype: argSet\n        ",
+        "children": {}
+      },
+      "('eh', 'function')": {
+        "comment": "\n        \u9519\u8bef\u5904\u7406\u7c7b\n\n        :return: \u9519\u8bef\u5904\u7406\u7c7b\n        :rtype: errorHandle\n        ",
+        "children": {}
+      },
+      "('vsList', 'function')": {
+        "comment": "\n        \u8bbe\u7f6e\u7248\u672c\u53f7\u5217\u8868\n\n        :param value:\n        :return:\n        ",
+        "children": {}
+      },
+      "('_onlyKey', 'function')": {
+        "comment": "\n        \u5bf9\u4e8e\u53ea\u6709\u4e00\u4e2a\u952e\u7684\u5b57\u5178,\u8fd4\u56de\u8fd9\u4e2a\u952e.\n\n        :param _dict: \u5b57\u5178\n        :type _dict: dict\n        :return: \u5b57\u5178\u7684\u952e\n        :rtype: Any\n        ",
+        "children": {}
+      },
+      "('_vsIncrease', 'function')": {
+        "comment": "\n        \u7248\u672c\u53f7\u81ea\u589e.\n\n        :param pos: \u81ea\u589e\u4f4d\u7f6e: 0-\u4e3b\u7248\u672c\u53f7, 1-\u526f\u7248\u672c\u53f7, 2-\u8865\u4e01\u53f7\n        :type pos: int\n        :return: \u7248\u672c\u53f7\u5217\u8868\n        :rtype: list\n        ",
+        "children": {}
+      },
+      "('_vsToList', 'function')": {
+        "comment": "\n        \u5c06\u7248\u672c\u53f7\u5b57\u7b26\u4e32\u8f6c\u6362\u4e3a\u5217\u8868.\n\n        :param versionStr: \u7248\u672c\u53f7\u5b57\u7b26\u4e32\n        :type versionStr: str\n        :return: \u7248\u672c\u53f7\u5217\u8868\n        :rtype: list\n        ",
+        "children": {}
+      },
+      "('_listToVs', 'function')": {
+        "comment": "\n        \u5c06\u7248\u672c\u53f7\u5217\u8868\u8f6c\u6362\u4e3a\u5b57\u7b26\u4e32.\n\n        :param versionList: \u7248\u672c\u53f7\u5217\u8868\n        :type versionList: list\n        :return: \u7248\u672c\u53f7\u5b57\u7b26\u4e32\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('_increase', 'function')": {
+        "comment": "\n        \u7248\u672c\u53f7\u81ea\u589e\u4e3b\u51fd\u6570.\n\n        :param pos: \u81ea\u589e\u4f4d\u7f6e: 0-\u4e3b\u7248\u672c\u53f7, 1-\u526f\u7248\u672c\u53f7, 2-\u8865\u4e01\u53f7\n        :type pos: int\n        ",
+        "children": {}
+      },
+      "('_jsonIncrease', 'function')": {
+        "comment": "\n        \u7248\u672c\u53f7\u5165\u53e3\u51fd\u6570.\n\n        :param increase: \u662f\u5426\u81ea\u589e\u7248\u672c\u53f7,\u6216\u8005\u81ea\u589e\u4f4d\u7f6e,major: \u4e3b\u7248\u672c\u53f7, minor: \u526f\u7248\u672c\u53f7, patch: \u8865\u4e01\u53f7 , \u9ed8\u8ba4\u4e3apatch\n        :type increase: bool | str\n        ",
+        "children": {}
+      },
+      "('_', 'function')": {
+        "comment": null,
+        "children": {}
+      },
+      "('versionBack', 'function')": {
+        "comment": "\n        \u5c06\u7248\u672c\u53f7\u56de\u9000\u5230\u4e0a\u4e00\u4e2a\u7248\u672c.\n        ",
+        "children": {}
+      },
+      "('_kewargs', 'function')": {
+        "comment": "\n        \u83b7\u53d6\u5173\u952e\u5b57\u53c2\u6570.\n\n        :param file: \u6587\u4ef6\u540d\n        :type file: str\n        :return: \u5173\u952e\u5b57\u53c2\u6570\u5b57\u5178\n        :rtype: dict\n        ",
+        "children": {}
+      },
+      "('_warpCmake', 'function')": {
+        "comment": "\n        \u5305\u88c5CMakeLists.format\u51fd\u6570.\n\n        :return: \u5305\u88c5\u4e86CMakeLists.format\u7684partial\u51fd\u6570\n        :rtype: partial\n        ",
+        "children": {}
+      },
+      "('spawnPyi', 'function')": {
+        "comment": "\n        \u751f\u6210pyi\u6587\u4ef6.\n\n        \u8fc7\u7a0b::\n            1. \u751f\u6210stub\u6587\u4ef6: stubgen {fileName}\n            2. \u79fb\u9664\u7f13\u5b58\u6587\u4ef6: rd /s /q __pycache__\n            3. \u79fb\u52a8pyi\u6587\u4ef6: move out/{moduleName}/{moduleName}.pyi {projectPath}\n            4. \u5220\u9664out\u6587\u4ef6\u5939: rd /s /q out\n\n        :return: \u751f\u6210\u7684pyi\u6587\u4ef6\u8def\u5f84\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('spawnPyc', 'function')": {
+        "comment": "\n        \u751f\u6210pyc\u6587\u4ef6.\n\n        \u8fc7\u7a0b::\n            1. \u7f16\u8bd1py\u6587\u4ef6: python -m py_compile {fileName}\n            2. \u79fb\u52a8pyc\u6587\u4ef6: move __pycache__/{fileName}.pyc {projectPath}\n            3. \u5220\u9664\u7f13\u5b58\u6587\u4ef6: rd /s /q __pycache__\n            4. \u91cd\u547d\u540dpyc\u6587\u4ef6: ren {fileName}.pyc {fileName}.cpython-39.pyc\n\n        :return: \u751f\u6210\u7684pyc\u6587\u4ef6\u8def\u5f84\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('spawnHtml', 'function')": {
+        "comment": "\n        \u751f\u6210html\u6587\u6863.\n\n        \u8fc7\u7a0b::\n            1. \u751f\u6210html\u6587\u6863: pdoc -d=markdown --output {dirPath} {filePath}\n            2. \u79fb\u9664index.html\u548csearch.js\u6587\u4ef6\n\n        :return: \u751f\u6210\u7684html\u6587\u6863\u8def\u5f84\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('spawnREADME', 'function')": {
+        "comment": "\n        \u751f\u6210README.md\u6587\u4ef6.\n\n        \u8fc7\u7a0b::\n            1. \u751f\u6210html\u6587\u6863: self.spawnHtml()\n            2. \u8f6c\u6362html\u4e3amarkdown: pandoc -f html -t markdown {htmlPath} -o {readmePath}\n            3. \u5220\u9664html\u6587\u4ef6: del {htmlPath}\n\n        :return: \u751f\u6210\u7684README.md\u6587\u4ef6\u8def\u5f84\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('spawnLicense', 'function')": {
+        "comment": "\n        \u751f\u6210License.txt\u6587\u4ef6.\n        ",
+        "children": {}
+      },
+      "('spawnManifest', 'function')": {
+        "comment": null,
+        "children": {}
+      },
+      "('spawnInit', 'function')": {
+        "comment": "\n        \u751f\u6210__init__.py\u6587\u4ef6.\n        ",
+        "children": {}
+      },
+      "('spawnPyproject', 'function')": {
+        "comment": "\n        \u751f\u6210pyproject.toml\u6587\u4ef6.\n\n        :param filePath: \u751f\u6210pyproject.toml\u6587\u4ef6\u7684\u8def\u5f84,\u9ed8\u8ba4\u4e3aNone\n        :type filePath: str | PathLike[str]\n        ",
+        "children": {}
+      },
+      "('spawnSetup', 'function')": {
+        "comment": "\n        \u751f\u6210setup.py\u6587\u4ef6.\n        ",
+        "children": {}
+      },
+      "('spawnC', 'function')": {
+        "comment": "\n        \u751f\u6210C\u6587\u4ef6.\n\n        \u8fc7\u7a0b::\n            1. \u4f7f\u7528setuptools\u5c06py\u6587\u4ef6\u7f16\u8bd1\u4e3aC\u6587\u4ef6: python setup.py build_ext --inplace\n\n        :return: \u751f\u6210\u7684C\u6587\u4ef6\u8def\u5f84\n        :rtype: str\n        ",
+        "children": {}
+      },
+      "('spawnPyd', 'function')": {
+        "comment": "\n        \u751f\u6210pyd\u6587\u4ef6, \u539f\u6587\u4ef6\u4e3aC++\u6587\u4ef6\u65f6\u9700\u8981\u6307\u5b9acppFile=True, \u5426\u5219\u9ed8\u8ba4\u4e3aFalse.\n\n        \u8fc7\u7a0b::\n\n            1. \u6267\u884ccmake pybind11 build\n            2. \u91cd\u547d\u540dC\u6587\u4ef6\u4e3aCpp\u6587\u4ef6(\u5982\u679ccppFile=True\u5219\u4e0d\u6267\u884c\u8fd9\u4e00\u6b65)\n            3. \u6267\u884ccmake build\n            4. \u91cd\u547d\u540d\u751f\u6210\u7684pyd\u6587\u4ef6\n            5. \u79fb\u9664\u6b8b\u7559build\u6587\u4ef6\u5939\n\n        :keyword toPath: \u751f\u6210\u5230\u6307\u5b9a\u8def\u5f84,\u9ed8\u8ba4\u4e3a\u9879\u76ee\u8def\u5f84\n        :type toPath: str | PathLike[str]\n        :keyword cppFile: \u539f\u6587\u4ef6\u662f\u5426\u4e3aC++\u6587\u4ef6,\u9ed8\u8ba4\u4e3aFalse\n        :type cppFile: bool\n        :return: \u751f\u6210\u7684pyd\u6587\u4ef6\u8def\u5f84\n        :rtype: str | PathLike[str]\n        ",
+        "children": {}
+      },
+      "('CMakeLists', 'function')": {
+        "comment": "\n        \u751f\u6210CMakeLists.txt\u6587\u4ef6\n\n        :param fileName: C/Cpp\u6587\u4ef6\u540d\n        :type fileName: str\n        :keyword toPath: \u751f\u6210\u5230\u6307\u5b9a\u8def\u5f84,\u9ed8\u8ba4\u4e3a\u9879\u76ee\u8def\u5f84\n        ",
+        "children": {}
+      },
+      "('middleDo', 'function')": {
+        "comment": "\n        \u521d\u59cb\u5316\u64cd\u4f5c.\n\n        :keyword copy: \u662f\u5426\u590d\u5236py\u6e90\u6587\u4ef6\u5230\u6307\u5b9a\u8def\u5f84,\u9ed8\u8ba4\u4e3aFalse\n        :type copy: bool\n        ",
+        "children": {}
+      },
+      "('checkRequestList', 'function')": {
+        "comment": "\n        \u68c0\u67e5\u9884\u8bbe\u9700\u6c42\u6587\u4ef6\u7ed3\u6784\u662f\u5426\u5b58\u5728.\n\n        :param requestList: \u9884\u8bbe\u9700\u6c42\u6587\u4ef6\u7ed3\u6784\u5217\u8868.\n        :type requestList: list\n        ",
+        "children": {}
+      }
+    }
+  },
+  "('upload', 'class')": {
+    "comment": null,
+    "children": {
+      "('__init__', 'function')": {
+        "comment": "\n        --restore=bool       \u5f53\u51fa\u73b0\u9519\u8bef\u65f6\u662f\u5426\u8981\u8fd8\u539f\u521d\u59cb\u72b6\u6001\u3002\n        --debug=bool         \u662f\u5426\u5f00\u542fDebug\u6a21\u5f0f\u3002\n        --color=bool         \u662f\u5426\u8fd0\u884c\u8f93\u51fa\u4fe1\u606f\u5e26\u6709\u8272\u5f69\u3002\n        --ignore=bool        \u662f\u5426\u5c06Error\u964d\u7ea7\u4e3awarn\u4ee5\u4fdd\u8bc1\u7a0b\u5e8f\u8fd0\u884c\u3002\n        --eliminate          \u6392\u9664\u65e0\u5173\u7d27\u8981\u7684\u9519\u8bef\u4fe1\u606f, \u4f8b\u5982: '\u6587\u4ef6\u540d\u3001\u76ee\u5f55\u540d\u6216\u5377\u6807\u8bed\u6cd5\u4e0d\u6b63\u786e\u3002'\n\n        :param fileAbsPath: \u6587\u4ef6\u7edd\u5bf9\u8def\u5f84\u3002\n        :type fileAbsPath: str\n        :keyword restore: \u5f53\u51fa\u73b0\u9519\u8bef\u65f6\u662f\u5426\u8981\u8fd8\u539f\u521d\u59cb\u72b6\u6001\u3002\n        :type restore: bool\n        :keyword debug: \u662f\u5426\u5f00\u542fDebug\u6a21\u5f0f\u3002\n        :type debug: bool\n        :keyword color: \u662f\u5426\u8fd0\u884c\u8f93\u51fa\u4fe1\u606f\u5e26\u6709\u8272\u5f69\u3002\n        :type color: bool\n        :keyword auto: \u662f\u5426\u5728\u6253\u5305\u5e76\u751f\u6210dist\u6587\u4ef6\u5939\u540e\u5f39\u51facmd\u8c03\u8bd5\u6846\n        :type auto: bool\n        :keyword increase: \u662f\u5426\u542f\u7528\u7248\u672c\u81ea\u589e(\u5982\u679cpy\u6587\u4ef6\u6240\u5728\u6587\u4ef6\u5939\u4e2d\u6709args.json\u6587\u4ef6\u7684\u60c5\u51b5\u4e0b)\n        :type increase: bool\n        :keyword kwargs: \u5176\u5b83\u5173\u952e\u5b57\u53c2\u6570,\u5305\u62ec: ignore, eleiminate\n        :type kwargs: ...\n        :raise ValueError: \u5982\u679c\u4f20\u5165\u7684\u6587\u4ef6\u8def\u5f84\u4e0d\u662f\u7edd\u5bf9\u8def\u5f84\u3002\n        ",
+        "children": {}
+      },
+      "('args', 'function')": {
+        "comment": "\n        \u8fd4\u56de\u53c2\u6570\u5bf9\u8c61.\n\n        :return: \u53c2\u6570\u5bf9\u8c61.\n        :rtype: argSet\n        ",
+        "children": {}
+      },
+      "('actionSet', 'function')": {
+        "comment": "\n        \u8fd4\u56de\u64cd\u4f5c\u96c6\u5bf9\u8c61.\n\n        :return: \u64cd\u4f5c\u96c6\u5bf9\u8c61.\n        :rtype: actionSet\n        ",
+        "children": {}
+      },
+      "('tryDec', 'function')": {
+        "comment": "\n        \u5728try-except\u4e2d\u6267\u884c\u51fd\u6570,\u5e76\u5728\u51fa\u73b0\u9519\u8bef\u65f6\u8fd8\u539f\u6587\u4ef6.\n\n        :param func: \u8981\u6267\u884c\u7684\u51fd\u6570.\n        :type func: Callable\n        :keyword copy: \u662f\u5426\u590d\u5236py\u6e90\u6587\u4ef6\u5230\u6307\u5b9a\u8def\u5f84,\u9ed8\u8ba4\u4e3aFalse\n        :type copy: bool\n        ",
+        "children": {}
+      },
+      "('_successDo', 'function')": {
+        "comment": "\n        \u6210\u529f\u6267\u884c\u540e\u6267\u884c\u7684\u64cd\u4f5c.\n        ",
+        "children": {}
+      },
+      "('_commonPart', 'function')": {
+        "comment": "\n        \u5bf9\u4e8epy\u6587\u4ef6\u7684\u5171\u540c\u64cd\u4f5c.\n        ",
+        "children": {}
+      },
+      "('pyc', 'function')": {
+        "comment": "pyc\u6587\u4ef6\u6253\u5305",
+        "children": {}
+      },
+      "('pyd', 'function')": {
+        "comment": "pyd\u6587\u4ef6\u6253\u5305",
+        "children": {}
+      },
+      "('normal', 'function')": {
+        "comment": "\u666e\u901apy\u6587\u4ef6\u6253\u5305",
+        "children": {}
+      },
+      "('cToPyd', 'function')": {
+        "comment": "\u5c06C\u6216Cpp\u6587\u4ef6\u8f6c\u6362\u4e3apyd\u6587\u4ef6",
+        "children": {}
+      },
+      "('build', 'function')": {
+        "comment": "\n        \u6839\u636e\u4f20\u5165\u7684\u6253\u5305\u7c7b\u578b,\u6267\u884c\u76f8\u5e94\u7684\u6700\u7ec8\u6253\u5305\u64cd\u4f5c.\n\n        :param Type: \u6253\u5305\u7c7b\u578b,\u53ef\u9009\u503c: pyc, pyd, normal, cToPyd.(\u9ed8\u8ba4\u503c: pyd)\n        :type Type: str\n        ",
+        "children": {}
+      }
+    }
+  },
+  "('argParser', 'function')": {
+    "comment": "\n    \u5305\u88c5\u4e86argparse\u7684\u547d\u4ee4\u884c\u53c2\u6570\u89e3\u6790\u5668,\u7528\u4e8e\u89e3\u6790\u547d\u4ee4\u884c\u53c2\u6570\u3002\n\n    :return: \u4e00\u4e2a\u5305\u542b\u547d\u4ee4\u884c\u53c2\u6570\u7684\u5bf9\u8c61\u3002\n    :rtype: Namespace\n    ",
+    "children": {}
+  }
+}

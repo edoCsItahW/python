@@ -15,6 +15,7 @@
 # -------------------------<Lenovo>----------------------------
 from re import findall, DOTALL
 from typing import Literal
+from ast import dump, parse
 
 
 annotation1 = """This is a test annotation."""
@@ -146,23 +147,23 @@ def anlyzeAnnotation(comment: str, *, mode: Literal["class", "func"] = "func"):
 
 
 if __name__ == '__main__':
-    commentDict = {
-        "common": annotation1,
-        "multiline": annotation2,
-        "multilineHead": annotation3,
-        "typicalClass": classAnnotation1,
-        "codeExampleClass": classAnnotation4,
-        "simplifiedClass": classAnnotation2,
-        "noHeaderClass": classAnnotation3,
-        "typicalFunc": defAnnotation1,
-        "codeExampleFunc": defAnnotation2,
-        "noHeaderFunc": defAnnotation3,
-    }
-
-    for name, comment in commentDict.items():
-        print(f"{name}:\n")
-
-        anlyzeAnnotation(comment, mode="func")
-        print("\n")
-    # print(classAnnotation1.replace("\n", "|"))
+    # commentDict = {
+    #     "common": annotation1,
+    #     "multiline": annotation2,
+    #     "multilineHead": annotation3,
+    #     "typicalClass": classAnnotation1,
+    #     "codeExampleClass": classAnnotation4,
+    #     "simplifiedClass": classAnnotation2,
+    #     "noHeaderClass": classAnnotation3,
+    #     "typicalFunc": defAnnotation1,
+    #     "codeExampleFunc": defAnnotation2,
+    #     "noHeaderFunc": defAnnotation3,
+    # }
+    #
+    # for name, comment in commentDict.items():
+    #     print(f"{name}:\n")
+    #
+    #     anlyzeAnnotation(comment, mode="func")
+    #     print("\n")
+    print(dump(parse("if __name__ == '__main__':\n    print('Hello, world!')"), indent=4))
 
