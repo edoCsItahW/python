@@ -1692,7 +1692,7 @@ class actionSet:
 
         if toPath is None: toPath = self.args.projectPath
 
-        self.eh.executeWithTry(ins1 := r"cmake -B build -S . -Dpybind11_DIR=F:\ProgramFiles\Anaconda3\Lib\site-packages\pybind11\share\cmake\pybind11 -Wno-dev", cwd=toPath, note=f"[ErrorWarning]cmake build出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyd, currentframe().f_lineno)}", group="生成pyd", describe="spawnPyd -> cmake构建")
+        self.eh.executeWithTry(ins1 := r"cmake -B build -S . -Dpybind11_DIR=E:\ProgramFiles\Anaconda\Lib\site-packages\pybind11\share\cmake\pybind11 -Wno-dev", cwd=toPath, note=f"[ErrorWarning]cmake build出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyd, currentframe().f_lineno)}", group="生成pyd", describe="spawnPyd -> cmake构建")
 
         tempFunc = lambda x: path.join(toPath, x)
 
@@ -2015,15 +2015,15 @@ def argParser() -> Namespace:
 
 
 if __name__ == '__main__':
-    # test = True  # 调试用
-    test = False
+    test = True  # 调试用
+    # test = False
     # pyinstaller -F uploadTools.py -n upload -i upload_1.ico  # 生成exe文件
 
     if test:
         warn(
             "正在运行测试版!", SyntaxWarning)
 
-        ins = upload(r"D:\xst_project_202212\codeSet\Python\test\linkedList.cpp", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。", suffix=["c", "cpp"])
+        ins = upload(r"E:\codeSpace\codeSet\C\test\test.c", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。", suffix=["c", "cpp"])
         ins.build("cToPyd")
         pass
 

@@ -17,11 +17,11 @@
 from __future__ import annotations
 
 from collections.abc import Container
-from functools import singledispatch
+from functools import singledispatch, wraps
 from textTools import getWidth
 from functools import cache
 from threading import Thread, Event
-from typing import Union, Iterable, Literal, TypeGuard, Callable, Sequence
+from typing import Union, Iterable, Literal, TypeGuard, Callable, Sequence, Any
 from types import EllipsisType
 from queue import Queue as tQueue
 from numpy import ndarray, array
@@ -29,6 +29,7 @@ from math import floor, sqrt
 from time import sleep
 from sys import stdout
 from re import findall
+from inspect import getmembers, isclass, currentframe
 
 __all__ = [
     "backlist",
@@ -45,7 +46,9 @@ __all__ = [
     "waiter",
     "Table",
     "Arrange",
-    "getFuncVars"
+    "getFuncVars",
+    "GsingleDispatch",
+    "singleDispatchMethod"
 ]
 
 
@@ -479,6 +482,101 @@ class Table:
 def getFuncVars(func: Callable):
     varTuple, varCount = (funcCode := func.__code__).co_varnames, funcCode.co_argcount
     return varTuple[:varCount]
+
+
+class _funcWarp:
+    """
+    单分发器.
+
+    Attributes:
+        :ivar _func: 被装饰的函数.
+        :ivar _rulesDict: 规则字典.
+        :ivar _pos: 进行对比的参数位置.
+
+    Methods:
+        _checkRule: 验证规则.
+
+        register: 注册规则.
+
+        __call__: 执行函数.
+    """
+
+    def __init__(self, func: Callable):
+        self._func = func
+        self._rulesDict = {}
+        self._pos = None
+
+    @staticmethod
+    def _checkRule(value: Any, _type: type):
+        if isinstance(value, type):
+            raise ValueError(
+                f"参数'{value}'不能是类型,如要验证类型,请使用'_type'参数!")
+
+        if _type is None and value is not None:
+            return lambda x: x == value
+
+        elif _type is not None and value is None:
+            return lambda x: isinstance(x, _type)
+
+        else:
+            return lambda x: x is None
+
+    def register(self, pos: int | str = 0, *, value: Any = None, Type: type = None):
+        if pos is not None:
+            if self._pos is not None and self._pos != pos:
+                raise ValueError(
+                    f"进行对比的参数位置不一致: '{self._pos}'和'{pos}'冲突!")
+            else:
+                self._pos = pos
+
+        def getFunc(func: Callable):
+            wraps(func)
+
+            self._rulesDict[self._checkRule(value, Type)] = func
+
+        return getFunc
+
+    def __call__(self, *args, **kwargs):
+        for rule, func in self._rulesDict.items():
+            if rule(args[self._pos] if isinstance(self._pos, int) else kwargs[self._pos]):
+
+                return func(*args, **kwargs)
+
+        return self._func(*args, **kwargs)
+
+
+def GsingleDispatch(func: Callable) -> _funcWarp:
+    """
+    广义单分发器.
+
+    :param func: 被装饰的函数.
+    :return: _funcWarp实例.
+    """
+    wraps(func)
+
+    return _funcWarp(func)
+
+
+class singleDispatchMethod:
+    """
+    广义单分发器.
+
+    Methods:
+        __init__: 初始化.
+
+        register: 注册规则.
+
+        __call__: 执行函数.
+    """
+
+    def __init__(self, func: Callable):
+        self._funcWarp = _funcWarp(func)
+
+    def register(self, pos: int | str = 0, *, value: Any = None, Type: type = None):
+        return self._funcWarp.register(pos, value=value, Type=Type)
+
+    def __call__(self, *args, **kwargs):
+        return self._funcWarp(*args, **kwargs)
 
 
 if __name__ == '__main__':

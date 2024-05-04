@@ -15,11 +15,15 @@
 # -------------------------<Lenovo>----------------------------
 from bs4 import BeautifulSoup, Tag
 from cssutils import parseFile
+from typing import Callable, Any
 from os import PathLike
 from functools import cached_property
+from pypiOrigin.conFunc.confunc import GsingleDispatch
 from warnings import warn
-from ast import parse, Module, ImportFrom, alias, ClassDef, Name, Load, FunctionDef, arguments, arg, Constant, NodeVisitor, Assign, Attribute, Return, Store, If, Compare, Eq, Pass, Call, Expr
+from ast import parse, Module, ImportFrom, alias, ClassDef, Name, Load, FunctionDef, arguments, arg, Constant, \
+    NodeVisitor, Assign, Attribute, Return, Store, If, Compare, Eq, Pass, Call, Expr
 from astor import to_source
+from PyQt6.QtWidgets import QWidget
 
 
 class htmlParser:
@@ -219,9 +223,14 @@ class qtFunc(NodeVisitor):
     def AST(self, value):
         self._AST = value
 
+    def toClass(self, tag: str, toClass: QWidget):
+        pass
+
     def html(self):
         self.AST.body.append(ImportFrom(module='sys', names=[alias(name='argv')], level=0))
-        self.AST.body.append(ImportFrom(module='PyQt6.QtWidgets', names=[alias(name='QApplication'), alias(name='QMainWindow')], level=0))
+        self.AST.body.append(
+            ImportFrom(module='PyQt6.QtWidgets', names=[alias(name='QApplication'), alias(name='QMainWindow')],
+                       level=0))
 
         self.AST.body.append(ClassDef(
             name='mainWindow',
@@ -246,7 +255,7 @@ class qtFunc(NodeVisitor):
                 FunctionDef(
                     name='app',
                     args=arguments(args=[arg(arg='self')],
-                                   defaults=[],),
+                                   defaults=[], ),
                     decorator_list=[Name(id='property', ctx=Load())],
                     body=[Return(value=Attribute(value=Name(id='self', ctx=Load()), attr='_app', ctx=Load()))],
                     returns=Name(id='QApplication', ctx=Load())
@@ -258,8 +267,12 @@ class qtFunc(NodeVisitor):
         self.AST.body.append(If(
             test=Compare(left=Name(id='__name__', ctx=Load()), ops=[Eq()], comparators=[Constant(value='__main__')]),
             body=[
-                Assign(targets=[Name(id='app', ctx=Store())], value=Call(func=Name(id='QApplication', ctx=Load()), args=[Name(id='argv', ctx=Load())], keywords=[])),
-                Expr(value=Call(func=Name(id='exit'), args=[Call(func=Attribute(value=Name(id='app', ctx=Load()), attr='exec', ctx=Load()), args=[], keywords=[])], keywords=[])),
+                Assign(targets=[Name(id='app', ctx=Store())],
+                       value=Call(func=Name(id='QApplication', ctx=Load()), args=[Name(id='argv', ctx=Load())],
+                                  keywords=[])),
+                Expr(value=Call(func=Name(id='exit'), args=[
+                    Call(func=Attribute(value=Name(id='app', ctx=Load()), attr='exec', ctx=Load()), args=[],
+                         keywords=[])], keywords=[])),
             ],
             orelse=[]
         ))
@@ -291,7 +304,7 @@ def splitAttr(obj: object, *, level: int = 0, laskKey: str = None):
 if __name__ == '__main__':
     # ins = htmlAst(htmlParser("./static/html.html").elements)
     # qtCovert(ins())
-    ins = qtFunc()
-    ins.html()
-    print(to_source(ins.AST))
+    # ins = qtFunc()
+    # ins.html()
+    # print(to_source(ins.AST))
     pass

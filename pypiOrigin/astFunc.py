@@ -309,6 +309,53 @@ class astFunc:
             type_params=type_params,
         )
 
+    @staticmethod
+    def arguments(posonlyargs: list = None, args: list = None, vararg: str = None, kwonlyargs: list = None, kw_defaults: list = None, kwarg: str = None, defaults: list = None) -> arguments:
+        """
+                Example::
+
+                     def func(arg: int, *, kwarg: str = 'default', none = None, ):
+                         return arg
+
+
+                     arguments(
+                         posonlyargs=[],
+                         args=[
+                             arg(
+                                 arg='arg',
+                                 annotation=Name(id='int', ctx=Load()),
+                             )
+                         ],
+                         kwonlyargs=[],
+                         kw_defaults=[],
+                         defaults=[]
+                     )
+
+                :param posonlyargs: 位置参数列表
+                :param args: 位置参数列表
+                :param vararg: 变长参数名
+                :param kwonlyargs: 关键字参数列表
+                :param kw_defaults: 关键字参数默认值列表
+                :param kwarg: 关键字参数名
+                :param defaults: 位置参数默认值列表
+                :return: arguments
+                """
+        if posonlyargs is None: posonlyargs = []
+        if args is None: args = []
+        if kwonlyargs is None: kwonlyargs = []
+        if kw_defaults is None: kw_defaults = []
+        if defaults is None: defaults = []
+
+        return arguments(
+            posonlyargs=posonlyargs,
+            args=args,
+            vararg=vararg,
+            kwonlyargs=kwonlyargs,
+            kw_defaults=kw_defaults,
+            kwarg=kwarg,
+            defaults=defaults,
+        )
+
 
 if __name__ == '__main__':
     testCode = """def func(arg: int):
