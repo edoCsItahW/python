@@ -214,7 +214,7 @@ class reTemplate:
    
    {self.space}{self.description()}
    
-   {self.space}{}
+   {self.space}
    \n"""
 
     @property
