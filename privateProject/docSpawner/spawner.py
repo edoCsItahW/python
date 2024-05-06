@@ -18,7 +18,7 @@ from ast import parse, FunctionDef, ClassDef, AST, Expr, Constant, dump, Module,
 from functools import cached_property, wraps
 from astor import to_source
 from typing import Any, Callable
-from re import findall, sub
+from re import findall, sub, DOTALL
 
 
 class engine:
@@ -215,7 +215,7 @@ class reTemplate:
     def template(self):
         return f"""{'###' if self._level == 0 else f'{self.space}*'} {self.funcName}
    {self.space}> {self.description().replace(self.lineBreak, '').strip()}
-   
+   {f'{self.lineBreak}{self.space}{example}' if (example := self.example()) else ''}
    {self.space}{self.classTemp if self.funcType == 'class' else self.funcTemp}
    \n"""
 
@@ -250,11 +250,11 @@ class reTemplate:
         if comment is None: return
 
         if 'example' in comment.lower():
-            return findall(r"(?<=Example:|example:)(?::).*?(?=:|$|Attributes|Methods)", comment)
+            return findall(r"(?<=Example:|example:)(?::).*?(?=:|$|Attributes|Methods)", comment, DOTALL)
 
 
 if __name__ == '__main__':
-    parser = engine(filePath=r"E:\codeSpace\codeSet\Python\pypiOrigin\uploadTools\uploadTools.py")
+    parser = engine(filePath=r"E:\codeSpace\codeSet\Python\test\annotationTest.py")
     ins = docParser(parser.comments)
     ins.contents()
     ins.detail()

@@ -12,6 +12,8 @@ class Bot:
         self._botName, self._host, self._port = botName, host, port
         self._plugins = {}
 
+        self.bindOn()
+
     @property
     def botName(self):
         return self._botName
@@ -43,14 +45,65 @@ class Bot:
     def registerPlugins(self, plugin: Any):
         self.bot.loadPlugin(plugin)
 
-    @On(bot, 'spawn')
-    def handleSpawn(self, *args):
+    def bindOn(self):
+        On(self.bot, 'spawn')(self.handleSpawn)
+        On(self.bot, 'message')(self.handleMessage)
+
+    @staticmethod
+    def handleSpawn(*args):
         print("spawned")
 
-    @On(bot, 'message')
-    def handleMessage(self, *args):
-        print(args)
+    @staticmethod
+    def handleMessage(*args):
+        print("message")
 
+
+class Mineflayer:
+    def __init__(self, botName: str, *, host: str = '127.0.0.1', port: int = 25565):
+        self._botName, self._host, self._port = botName, host, port
+
+        self.bindOn()
+
+    @property
+    def botName(self):
+        return self._botName
+
+    @property
+    def host(self):
+        return self._host
+
+    @property
+    def port(self):
+        return self._port
+
+    @cached_property
+    def bot(self): return mineflayer.createBot({'host': self.host, 'port': self.port, 'username': self.botName})
+
+    def __enter__(self):
+        return self.bot
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # self.bot.end()
+        pass
+
+    def bindOn(self):
+        On(self.bot, 'spawn')(self.handleSpawn)
+        On(self.bot, 'message')(self.handleMessage)
+
+    @staticmethod
+    def handleSpawn(*args):
+        print("spawned")
+
+    @staticmethod
+    def handleMessage(*args):
+        print("message")
+
+# bot = mineflayer.createBot({
+#     'host': 'localhost',
+#     'port': 25565,
+#     'username': 'Bot'
+# })
+#
 # @On(bot, 'spawn')
 # def handle(*args):
 #     print("I spawned 👋")
@@ -59,7 +112,7 @@ class Bot:
 #     @On(bot, 'chat')
 #     def handleMsg(this, sender, message, *args):
 #         print("Got message", sender, message)
-#         if sender and (sender != BOT_USERNAME):
+#         if sender and (sender != 'bot'):
 #             bot.chat('Hi, you said ' + message)
 #             if 'come' in message:
 #                 player = bot.players[sender]
@@ -71,7 +124,7 @@ class Bot:
 #
 #                 pos = target.position
 #                 bot.pathfinder.setMovements(movements)
-#                 bot.pathfinder.setGoal(pathfinder.goals.GoalNear(pos.x, pos.y, pos.z, RANGE_GOAL))
+#                 bot.pathfinder.setGoal(pathfinder.goals.GoalNear(pos.x, pos.y, pos.z, 1))
 #
 #
 # @On(bot, "end")
@@ -80,6 +133,8 @@ class Bot:
 
 
 if __name__ == '__main__':
-    bot = Bot('Bot')
-    bot.registerPlugins(pathfinder.pathfinder)
-    bot.bot
+    # bot = Bot('Bot')
+    # bot.registerPlugins(pathfinder.pathfinder)
+    # bot.bot.chat("hi")
+    with Mineflayer('bot') as bot:
+        bot.chat('hi')

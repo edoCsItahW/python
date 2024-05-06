@@ -20,13 +20,27 @@ from ast import dump, parse
 
 annotation1 = """This is a test annotation."""
 
+def annotationA():
+    """This is a test annotation."""
+
 # 换行注释
 annotation2 = """
     This is a multiline test annotation.
     """
 
+def annotationB():
+    """
+    This is a multiline test annotation.
+    """
+
 # 换行头注释
 annotation3 = """
+    This is a multiline test annotation.
+    This is the second line of the annotation.
+    """
+
+def annotationC():
+    """
     This is a multiline test annotation.
     This is the second line of the annotation.
     """
@@ -42,6 +56,20 @@ classAnnotation1 = """
     Methods::
         :meth:`method1`: explains method1
         
+        :meth:`method2`: explains method2
+    """
+
+def annotationD():
+    """
+    This is header of this test annotation.
+
+    Attributes:
+        :ivar arg1: explaintion of arg1
+        :ivar arg2: explaintion of arg2
+
+    Methods::
+        :meth:`method1`: explains method1
+
         :meth:`method2`: explains method2
     """
 
@@ -64,6 +92,25 @@ Methods::
     :meth:`method2`: explains method2
 """
 
+def annotationE():
+    """
+    This is a test annotation.
+
+    Example::
+
+        >>> print("Hello, world!")
+        Hello, world!
+
+    Attributes:
+        :ivar arg1: explaintion of arg1
+        :ivar arg2: explaintion of arg2
+
+    Methods::
+        :meth:`method1`: explains method1
+
+        :meth:`method2`: explains method2
+    """
+
 # 简化类注释
 classAnnotation2 = """
     This is header of this test annotation.
@@ -78,6 +125,20 @@ classAnnotation2 = """
         method2: explains method2
     """
 
+def annotationF():
+    """
+        This is header of this test annotation.
+
+        Attributes:
+            :ivar arg1: explaintion of arg1
+            :ivar arg2: explaintion of arg2
+
+        Methods::
+            method1: explains method1
+
+            method2: explains method2
+        """
+
 # 无头类注释
 classAnnotation3 = """
     Attributes:
@@ -89,6 +150,18 @@ classAnnotation3 = """
         
         method2: explains method2
     """
+
+def annotationG():
+    """
+        Attributes:
+            :ivar arg1: explaintion of arg1
+            :ivar arg2: explaintion of arg2
+
+        Methods::
+            method1: explains method1
+
+            method2: explains method2
+        """
 
 # 典型函数注释
 defAnnotation1 = """
@@ -105,6 +178,22 @@ defAnnotation1 = """
     :raises TypeError: explaintion of type error
     """
 
+
+def annotationH():
+    """
+        This is header of this test annotation.
+
+        :param arg1: explaintion of arg1
+        :type arg1: str
+        :param arg2: explaintion of arg2
+        :type arg2: int
+        :keyword arg3: explaintion of arg3
+        :type arg3: bool
+        :return: explaintion of return value
+        :rtype: str
+        :raises TypeError: explaintion of type error
+        """
+
 # 包含代码示例的函数注释
 defAnnotation2 = """
     This is header of this test annotation.
@@ -120,8 +209,29 @@ defAnnotation2 = """
     :type arg2: int
     """
 
+def annotationI():
+    """
+        This is header of this test annotation.
+
+        Example::
+
+            >>> print("Hello, world!")
+            Hello, world!
+
+        :param arg1: explaintion of arg1
+        :type arg1: str
+        :param arg2: explaintion of arg2
+        :type arg2: int
+        """
+
 # 无头函数注释
 defAnnotation3 = """
+    :param arg1: explaintion of arg1
+    :type arg1: str
+    """
+
+def annotationJ():
+    """
     :param arg1: explaintion of arg1
     :type arg1: str
     """
