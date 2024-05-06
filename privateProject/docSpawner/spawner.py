@@ -18,7 +18,7 @@ from ast import parse, FunctionDef, ClassDef, AST, Expr, Constant, dump, Module,
 from functools import cached_property, wraps
 from astor import to_source
 from typing import Any, Callable
-from re import findall
+from re import findall, sub
 
 
 class engine:
@@ -176,7 +176,7 @@ def join(func: Callable):
     @wraps(func)
     def wrapper(*args, **kwargs):
         res = func(*args, **kwargs)
-        return ''.join(res) if isinstance(res, list) else res
+        return '无' if res is None else ''.join(res) if isinstance(res, list) else res
 
     return wrapper
 
@@ -207,19 +207,20 @@ class reTemplate:
     def space(self):
         return " " * 3 * self._level
 
+    @cached_property
+    def lineBreak(self):
+        return '\n'
+
     @property
     def template(self):
         return f"""{'###' if self._level == 0 else f'{self.space}*'} {self.funcName}
-   {self.space}> description: 
+   {self.space}> {self.description().replace(self.lineBreak, '').strip()}
    
-   {self.space}{self.description()}
-   
-   {self.space}
+   {self.space}{self.classTemp if self.funcType == 'class' else self.funcTemp}
    \n"""
 
     @property
     def classTemp(self):
-        # TODO: 类注释模板
         return f""""""
 
     @property
@@ -228,15 +229,28 @@ class reTemplate:
         return f""""""
 
     @join
-    def description(self):
-        if self.comment is None:
-            return "无"
+    def description(self, comment: str = None):
+        comment = self.comment if comment is None else comment
 
-        elif '\n' not in self.comment:
-            return findall('.*', self.comment)
+        if comment is None: return
 
-        elif not len(findall(r"\n\s+\n", self.comment)):
-            return findall(r"(?:\n?)\S+(?:\n?)", self.comment)
+        try:
+            res = (text := sub(r"(?<=\S)\s(?=\S)", '(#s#)', comment).replace(' ', ''))[:text.index('\n\n')].replace('(#s#)', ' ')
+
+            if all(t not in res for t in ['Attributes:', 'Methods:', ':param', ':return', 'Example:', 'example:', ':raises']):
+                return res
+
+        except ValueError:
+            return comment
+
+    @join
+    def example(self, comment: str = None):
+        comment = self.comment if comment is None else comment
+
+        if comment is None: return
+
+        if 'example' in comment.lower():
+            return findall(r"(?<=Example:|example:)(?::).*?(?=:|$|Attributes|Methods)", comment)
 
 
 if __name__ == '__main__':

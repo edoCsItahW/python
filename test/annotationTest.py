@@ -13,7 +13,7 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
-from re import findall, DOTALL
+from re import findall, DOTALL, sub
 from typing import Literal
 from ast import dump, parse
 
@@ -130,40 +130,48 @@ defAnnotation3 = """
 def anlyzeAnnotation(comment: str, *, mode: Literal["class", "func"] = "func"):
     # print(findall(r"(?:.?).*?\.(?:.?)", comment))
     # ^(?:.+\n)*?\r?\n?$
+    try:
+        text = sub(r"(?<=\S)\s(?=\S)", '|', comment).replace(' ', '')
+        print(text[:text.index('\n\n')].replace('|', ' '))
 
-    if "example:" in comment.lower():
-        print(findall(r"(?<=Example:|example:)(?::).*?(?=:|$|Attributes|Methods)", comment, DOTALL))
+    except ValueError:
+        print(comment)
 
-    match mode:
-        case "class":
-            if "Attributes:" in comment:
-                print(findall(r"(?<=Attributes:)(?:\n).*?(?:\n.*?\n)", comment))
-
-            if "Methods:" in comment:
-                print(findall(r"(?<=Methods:)(?::)(?:\n).*(?=$)", comment, DOTALL))
-
-        case "func":
-            print(findall(r":(param|type|keyword|raise)(.*)(?=$)", comment, DOTALL))
+    # if "example:" in comment.lower():
+    #     print(findall(r"(?<=Example:|example:)(?::).*?(?=:|$|Attributes|Methods)", comment, DOTALL))
+    #
+    # match mode:
+    #     case "class":
+    #         if "Attributes:" in comment:
+    #             print(findall(r"(?<=Attributes:)(?:\n).*?(?:\n.*?\n)", comment))
+    #
+    #         if "Methods:" in comment:
+    #             print(findall(r"(?<=Methods:)(?::)(?:\n).*(?=$)", comment, DOTALL))
+    #
+    #     case "func":
+    #         print(findall(r":(param|type|keyword|raise)(.*)(?=$)", comment, DOTALL))
 
 
 if __name__ == '__main__':
-    # commentDict = {
-    #     "common": annotation1,
-    #     "multiline": annotation2,
-    #     "multilineHead": annotation3,
-    #     "typicalClass": classAnnotation1,
-    #     "codeExampleClass": classAnnotation4,
-    #     "simplifiedClass": classAnnotation2,
-    #     "noHeaderClass": classAnnotation3,
-    #     "typicalFunc": defAnnotation1,
-    #     "codeExampleFunc": defAnnotation2,
-    #     "noHeaderFunc": defAnnotation3,
-    # }
-    #
-    # for name, comment in commentDict.items():
-    #     print(f"{name}:\n")
-    #
-    #     anlyzeAnnotation(comment, mode="func")
-    #     print("\n")
-    print(dump(parse("if __name__ == '__main__':\n    print('Hello, world!')"), indent=4))
+    commentDict = {
+        "common": annotation1,
+        "multiline": annotation2,
+        "multilineHead": annotation3,
+        "typicalClass": classAnnotation1,
+        "codeExampleClass": classAnnotation4,
+        "simplifiedClass": classAnnotation2,
+        "noHeaderClass": classAnnotation3,
+        "typicalFunc": defAnnotation1,
+        "codeExampleFunc": defAnnotation2,
+        "noHeaderFunc": defAnnotation3,
+    }
+
+    for name, comment in commentDict.items():
+        print(f"{name}:\n")
+
+        anlyzeAnnotation(comment, mode="func")
+        print("\n")
+    # print(dump(parse("if __name__ == '__main__':\n    print('Hello, world!')"), indent=4))
+    # text = sub(r"(?<=\S)\s(?=\S)", '|', defAnnotation2).replace(' ', '')
+    # print(text[:text.index('\n\n')].replace('|', ' '))
 
