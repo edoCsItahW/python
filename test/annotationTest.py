@@ -17,21 +17,24 @@ from re import findall, DOTALL, sub
 from typing import Literal
 from ast import dump, parse
 
-
 annotation1 = """This is a test annotation."""
+
 
 def annotationA():
     """This is a test annotation."""
+
 
 # 换行注释
 annotation2 = """
     This is a multiline test annotation.
     """
 
+
 def annotationB():
     """
     This is a multiline test annotation.
     """
+
 
 # 换行头注释
 annotation3 = """
@@ -39,11 +42,13 @@ annotation3 = """
     This is the second line of the annotation.
     """
 
+
 def annotationC():
     """
     This is a multiline test annotation.
     This is the second line of the annotation.
     """
+
 
 # 典型类注释
 classAnnotation1 = """
@@ -59,6 +64,7 @@ classAnnotation1 = """
         :meth:`method2`: explains method2
     """
 
+
 def annotationD():
     """
     This is header of this test annotation.
@@ -72,6 +78,7 @@ def annotationD():
 
         :meth:`method2`: explains method2
     """
+
 
 # 包含示例的类注释
 classAnnotation4 = """
@@ -92,6 +99,7 @@ Methods::
     :meth:`method2`: explains method2
 """
 
+
 def annotationE():
     """
     This is a test annotation.
@@ -111,6 +119,7 @@ def annotationE():
         :meth:`method2`: explains method2
     """
 
+
 # 简化类注释
 classAnnotation2 = """
     This is header of this test annotation.
@@ -124,6 +133,7 @@ classAnnotation2 = """
         
         method2: explains method2
     """
+
 
 def annotationF():
     """
@@ -139,6 +149,7 @@ def annotationF():
             method2: explains method2
         """
 
+
 # 无头类注释
 classAnnotation3 = """
     Attributes:
@@ -151,6 +162,7 @@ classAnnotation3 = """
         method2: explains method2
     """
 
+
 def annotationG():
     """
         Attributes:
@@ -162,6 +174,7 @@ def annotationG():
 
             method2: explains method2
         """
+
 
 # 典型函数注释
 defAnnotation1 = """
@@ -194,6 +207,7 @@ def annotationH():
         :raises TypeError: explaintion of type error
         """
 
+
 # 包含代码示例的函数注释
 defAnnotation2 = """
     This is header of this test annotation.
@@ -209,26 +223,29 @@ defAnnotation2 = """
     :type arg2: int
     """
 
+
 def annotationI():
     """
-        This is header of this test annotation.
+    This is header of this test annotation.
 
-        Example::
+    Example::
 
-            >>> print("Hello, world!")
-            Hello, world!
+        >>> print("Hello, world!")
+        Hello, world!
 
-        :param arg1: explaintion of arg1
-        :type arg1: str
-        :param arg2: explaintion of arg2
-        :type arg2: int
-        """
+    :param arg1: explaintion of arg1
+    :type arg1: str
+    :param arg2: explaintion of arg2
+    :type arg2: int
+    """
+
 
 # 无头函数注释
 defAnnotation3 = """
     :param arg1: explaintion of arg1
     :type arg1: str
     """
+
 
 def annotationJ():
     """
@@ -241,7 +258,7 @@ def anlyzeAnnotation(comment: str, *, mode: Literal["class", "func"] = "func"):
     # print(findall(r"(?:.?).*?\.(?:.?)", comment))
     # ^(?:.+\n)*?\r?\n?$
     try:
-        text = sub(r"(?<=\S)\s(?=\S)", '|', comment).replace(' ', '')
+        text = sub(r"(?<=Attributes:).*?(?=$|Methods)", '|', comment).replace(' ', '')
         print(text[:text.index('\n\n')].replace('|', ' '))
 
     except ValueError:
@@ -264,16 +281,16 @@ def anlyzeAnnotation(comment: str, *, mode: Literal["class", "func"] = "func"):
 
 if __name__ == '__main__':
     commentDict = {
-        "common": annotation1,
-        "multiline": annotation2,
-        "multilineHead": annotation3,
-        "typicalClass": classAnnotation1,
+        "common":           annotation1,
+        "multiline":        annotation2,
+        "multilineHead":    annotation3,
+        "typicalClass":     classAnnotation1,
         "codeExampleClass": classAnnotation4,
-        "simplifiedClass": classAnnotation2,
-        "noHeaderClass": classAnnotation3,
-        "typicalFunc": defAnnotation1,
-        "codeExampleFunc": defAnnotation2,
-        "noHeaderFunc": defAnnotation3,
+        "simplifiedClass":  classAnnotation2,
+        "noHeaderClass":    classAnnotation3,
+        "typicalFunc":      defAnnotation1,
+        "codeExampleFunc":  defAnnotation2,
+        "noHeaderFunc":     defAnnotation3,
     }
 
     for name, comment in commentDict.items():
@@ -284,4 +301,3 @@ if __name__ == '__main__':
     # print(dump(parse("if __name__ == '__main__':\n    print('Hello, world!')"), indent=4))
     # text = sub(r"(?<=\S)\s(?=\S)", '|', defAnnotation2).replace(' ', '')
     # print(text[:text.index('\n\n')].replace('|', ' '))
-

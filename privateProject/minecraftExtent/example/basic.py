@@ -1,6 +1,6 @@
 from javascript import require, On
 from functools import cached_property
-from typing import Any
+from typing import Any, Callable
 
 
 mineflayer = require('mineflayer')
@@ -59,10 +59,11 @@ class Bot:
 
 
 class Mineflayer:
-    def __init__(self, botName: str, *, host: str = '127.0.0.1', port: int = 25565):
+    def __init__(self, botName: str, *, host: str = '127.0.0.1', port: int = 25565, autoBind: bool = True):
         self._botName, self._host, self._port = botName, host, port
+        self._auotBind = autoBind
 
-        self.bindOn()
+        if self._autoBindFlag: self.bindOn()
 
     @property
     def botName(self):
@@ -76,6 +77,10 @@ class Mineflayer:
     def port(self):
         return self._port
 
+    @property
+    def _autoBindFlag(self):
+        return self._auotBind
+
     @cached_property
     def bot(self): return mineflayer.createBot({'host': self.host, 'port': self.port, 'username': self.botName})
 
@@ -86,9 +91,14 @@ class Mineflayer:
         # self.bot.end()
         pass
 
-    def bindOn(self):
-        On(self.bot, 'spawn')(self.handleSpawn)
-        On(self.bot, 'message')(self.handleMessage)
+    def bindOn(self, callbackDict: dict[str, Callable] = None):
+        if self._autoBindFlag:
+            for func in filter(lambda x: x.startswith('handle'), dir(self)):
+                On(self.bot, func.replace('handle', '').lower())(getattr(self, func))
+
+        elif callbackDict:
+            for event, callback in callbackDict.items():
+                On(self.bot, event)(callback)
 
     @staticmethod
     def handleSpawn(*args):
