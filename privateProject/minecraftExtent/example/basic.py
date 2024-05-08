@@ -1,6 +1,8 @@
 from javascript import require, On
+from javascript.proxy import Proxy
 from functools import cached_property
 from typing import Any, Callable
+from scatteredFile.argParse import command, interpreter
 
 
 mineflayer = require('mineflayer')
@@ -58,6 +60,10 @@ class Bot:
         print("message")
 
 
+def getStrFromProxy(proxy: Proxy):
+    return proxy.valueOf()
+
+
 class Mineflayer:
     def __init__(self, botName: str, *, host: str = '127.0.0.1', port: int = 25565, autoBind: bool = True):
         self._botName, self._host, self._port = botName, host, port
@@ -106,7 +112,8 @@ class Mineflayer:
 
     @staticmethod
     def handleMessage(*args):
-        print("message")
+        print(getStrFromProxy(args[1]))
+
 
 # bot = mineflayer.createBot({
 #     'host': 'localhost',

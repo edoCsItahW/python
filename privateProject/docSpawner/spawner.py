@@ -18,7 +18,8 @@ from argparse import ArgumentParser, Namespace
 from warnings import warn
 from typing import Any, Callable, Literal
 from astor import to_source
-from ast import parse, FunctionDef, ClassDef, AST, Expr, Constant, dump, Module, Assign, AnnAssign, Name, Load, If, Compare
+from copy import deepcopy
+from ast import parse, FunctionDef, ClassDef, AST, Expr, Constant, dump, Module, Assign, AnnAssign, Name, Load, If, Compare, ImportFrom, NodeVisitor
 from re import findall, sub, DOTALL
 from os import PathLike, path
 
@@ -47,6 +48,13 @@ class engine:
     def ast(self):
         with open(self.filePath, 'r', encoding='utf-8') as file:
             return parse(file.read())
+
+    @cached_property
+    def codeWithoutImport(self):
+        for node in (ast := deepcopy(self.ast)).body:
+            if isinstance(node, ImportFrom):
+                ast.body.remove(node)
+        return ast
 
     @property
     def comments(self):
@@ -119,7 +127,23 @@ class engine:
     def modifiesAst(self, node: FunctionDef, *, commentDict: dict = None):
         node.body = self.getCommentExp(node, commentDict=commentDict) + [Expr(value=Constant(value=Ellipsis))]
 
+    def checkUse(self, name: str):
+        v = visitor(name)
+
+        v.visit(self.codeWithoutImport)
+
+        return v.exit
+
+    def removeUnuse(self):
+        for node in self.ast.body:
+            if isinstance(node, ImportFrom):
+                node.names = [i for i in node.names if self.checkUse(i.name)]
+
+        self.ast.body = [i for i in self.ast.body if not isinstance(i, ImportFrom) or i.names]
+
     def pyi(self, *, filePath: str | PathLike = None):
+        self.removeUnuse()
+
         pyi = to_source(self.ast)
 
         if filePath:
@@ -128,6 +152,38 @@ class engine:
 
         else:
             return pyi
+
+
+class visitor(NodeVisitor):
+    def __init__(self, name: str = None):
+        self._name = name
+        self.exit = False
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+
+    def visit_FunctionDef(self, node):
+        if node.name == self.name:
+            self.exit = True
+
+        self.generic_visit(node)
+
+    def visit_ClassDef(self, node):
+        if node.name == self.name:
+            self.exit = True
+
+        self.generic_visit(node)
+
+    def visit_Name(self, node):
+        if node.id == self.name:
+            self.exit = True
+
+        self.generic_visit(node)
 
 
 class docParser:
@@ -331,9 +387,9 @@ class reTemplate:
 
 
 def handlePath(filePath: str | PathLike[str], *, default: str | PathLike[str], suffix: Literal['pyi', 'md']):
-    moduleName, defSuffix = path.splitext(path.basename(filePath))
+    moduleName, defSuffix = path.splitext(path.basename(default))
 
-    if defSuffix != 'py':
+    if defSuffix != '.py':
         raise ValueError(
             f"文件后缀必须为.py!")
 
@@ -370,26 +426,26 @@ def argParser() -> Namespace:
 if __name__ == '__main__':
     # test = True
     test = False
+    # pyinstaller -F spawner.py -n spawnTools -i E:\codeSpace\codeSet\Python\pypiOrigin\uploadTools\upload_1.ico
 
     if test:
         warn(
             f"正在运行测试版!")
 
-        ins = docParser(engine(filePath=r"E:\codeSpace\codeSet\Python\pypiOrigin\uploadTools\uploadTools.py").comments)
-        ins.contents()
-        ins.detail()
-        with open(r"E:\codeSpace\codeSet\Python\test.md", "w", encoding="utf-8") as file:
-            file.write(ins.markdown)
-
+        ins = docParser((eng := engine(filePath=r"E:\codeSpace\codeSet\Python\pypiOrigin\uploadTools\uploadTools.py")).comments)
+        # ins.contents()
+        # ins.detail()
+        # with open(r"E:\codeSpace\codeSet\Python\test.md", "w", encoding="utf-8") as file:
+        #     file.write(ins.markdown)
+        eng.pyi(filePath=r"E:\codeSpace\codeSet\Python\test.pyi")
     else:
         args = argParser()
         ins = docParser((eng := engine(filePath=args.file)).comments)
 
-        toPath = handlePath(args.toPath, default=args.file, suffix=args.type)
+        toPath = handlePath(args.toPath, default=args.file, suffix='md' if (t := args.type) == 'markdown' else 'pyi')
 
         match args.type:
             case 'markdown':
                 ins.toMarkdown(toPath)
             case 'pyi':
                 eng.pyi(filePath=toPath)
-

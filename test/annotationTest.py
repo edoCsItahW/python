@@ -15,7 +15,7 @@
 # -------------------------<Lenovo>----------------------------
 from re import findall, DOTALL, sub
 from typing import Literal
-from ast import dump, parse
+from ast import dump, parse, NodeVisitor
 
 annotation1 = """This is a test annotation."""
 
@@ -279,25 +279,44 @@ def anlyzeAnnotation(comment: str, *, mode: Literal["class", "func"] = "func"):
     #         print(findall(r":(param|type|keyword|raise)(.*)(?=$)", comment, DOTALL))
 
 
+class visitor(NodeVisitor):
+    def __init__(self, ast):
+        super().__init__()
+        self.ast = ast
+
+    def visit_FunctionDef(self, node):
+        print(node.name)
+        self.generic_visit(node)
+
+    def visit_ClassDef(self, node):
+        print(node.name)
+        self.generic_visit(node)
+
+    def visit_Name(self, node):
+        print(node.id)
+
+
 if __name__ == '__main__':
-    commentDict = {
-        "common":           annotation1,
-        "multiline":        annotation2,
-        "multilineHead":    annotation3,
-        "typicalClass":     classAnnotation1,
-        "codeExampleClass": classAnnotation4,
-        "simplifiedClass":  classAnnotation2,
-        "noHeaderClass":    classAnnotation3,
-        "typicalFunc":      defAnnotation1,
-        "codeExampleFunc":  defAnnotation2,
-        "noHeaderFunc":     defAnnotation3,
-    }
-
-    for name, comment in commentDict.items():
-        print(f"{name}:\n")
-
-        anlyzeAnnotation(comment, mode="func")
-        print("\n")
+    # commentDict = {
+    #     "common":           annotation1,
+    #     "multiline":        annotation2,
+    #     "multilineHead":    annotation3,
+    #     "typicalClass":     classAnnotation1,
+    #     "codeExampleClass": classAnnotation4,
+    #     "simplifiedClass":  classAnnotation2,
+    #     "noHeaderClass":    classAnnotation3,
+    #     "typicalFunc":      defAnnotation1,
+    #     "codeExampleFunc":  defAnnotation2,
+    #     "noHeaderFunc":     defAnnotation3,
+    # }
+    #
+    # for name, comment in commentDict.items():
+    #     print(f"{name}:\n")
+    #
+    #     anlyzeAnnotation(comment, mode="func")
+    #     print("\n")
     # print(dump(parse("if __name__ == '__main__':\n    print('Hello, world!')"), indent=4))
     # text = sub(r"(?<=\S)\s(?=\S)", '|', defAnnotation2).replace(' ', '')
     # print(text[:text.index('\n\n')].replace('|', ' '))
+    print(dump(ps := parse("from os import path, Pathlike\nfrom typing import Literal\nfrom re import findall\ndef func(a: Pathlike | Literal['a']) -> int: a = findall()"), indent=4))
+    visitor(ps).visit(ps)
