@@ -1,12 +1,14 @@
 from javascript import require, On
 from javascript.proxy import Proxy
-from functools import cached_property
+from functools import cached_property, partial
 from typing import Any, Callable
 from scatteredFile.argParse import command, interpreter
+from scatteredFile.debuger import debuger
 
 
 mineflayer = require('mineflayer')
 pathfinder = require('mineflayer-pathfinder')
+viewer = require('prismarine-viewer')
 
 
 class Bot:
@@ -65,11 +67,13 @@ def getStrFromProxy(proxy: Proxy):
 
 
 class Mineflayer:
-    def __init__(self, botName: str, *, host: str = '127.0.0.1', port: int = 25565, autoBind: bool = True):
+    def __init__(self, botName: str, *, host: str = '127.0.0.1', port: int = 25565, autoBind: bool = True, _viewer: bool = True):
         self._botName, self._host, self._port = botName, host, port
         self._auotBind = autoBind
+        self.viewer = viewer
 
         if self._autoBindFlag: self.bindOn()
+        if self.viewer: self.createViewer()
 
     @property
     def botName(self):
@@ -105,6 +109,12 @@ class Mineflayer:
         elif callbackDict:
             for event, callback in callbackDict.items():
                 On(self.bot, event)(callback)
+
+    def createViewer(self):
+        if self.viewer:
+            viewer(self.bot, {"port": 3007, "firstPerson": True})
+
+            print(f"viewer开启于'{self.host}:{3007}'")
 
     @staticmethod
     def handleSpawn(*args):
@@ -153,5 +163,11 @@ if __name__ == '__main__':
     # bot = Bot('Bot')
     # bot.registerPlugins(pathfinder.pathfinder)
     # bot.bot.chat("hi")
-    with Mineflayer('bot') as bot:
-        bot.chat('hi')
+    parser = interpreter()
+
+    bot = Mineflayer('bot')
+
+    def response(_bot: Mineflayer, *args):
+        bot.bot.chat(''.join(args))
+
+    parser.register(partial(response, bot))

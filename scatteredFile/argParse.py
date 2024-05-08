@@ -22,8 +22,9 @@ __all__ = [
 from abc import ABC, abstractmethod
 from typing import final, overload
 from types import FunctionType
-from functools import singledispatchmethod
+from functools import singledispatchmethod, partial
 from warnings import warn
+from inspect import isfunction
 
 
 class command(ABC):
@@ -64,15 +65,18 @@ class interpreter:
         :param commandObj:
         :return:
         """
-        if issubclass(_command, command):
-            self.commands[_command.__class__.__name__] = _command
-            return
-
-        elif isinstance(_command, FunctionType):
+        if isfunction(_command):
             self.commands[_command.__name__] = _command
 
-        raise TypeError(
-            f"只能注册函数或者继承于'{command.__class__.__name__}'类的子类!")
+        elif isinstance(_command, partial):
+            self.commands[_command.func.__name__] = _command
+
+        elif issubclass(_command, command):
+            self.commands[_command.__class__.__name__] = _command
+            return
+        else:
+            raise TypeError(
+                f"只能注册函数或者继承于'{command.__class__.__name__}'类的子类!")
 
     @register.register(str)
     def _(self, _command: str, commandObj: command):
