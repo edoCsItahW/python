@@ -20,6 +20,62 @@ from numpy import array, ndarray
 from functools import cached_property
 from copy import deepcopy
 from random import choice
+from datetime import time, datetime
+from typing import Literal, override
+
+
+class task:
+    def __init__(self, name: str, start: time, end: time, day: Literal["Mon", "Tue", "Wen", "Thu", "Fri", "Sat", "Sun"] | time, *, weight: float = None, constant: bool = False):
+        self._name = name
+        self._start = start
+        self._end = end
+        self._weight = weight
+        self._flagConstant = constant
+        self._day = day
+
+    @property
+    def name(self): return self._name
+
+    @property
+    def start(self): return self._start
+
+    @property
+    def end(self): return self._end
+
+    @property
+    def weight(self): return self._weight
+
+    @property
+    def day(self): return self._day
+
+    @cached_property
+    def durationSecond(self): return datetime.combine(datetime.today(), self.end) - datetime.combine(datetime.today(), self.start)
+
+    @cached_property
+    def durationHour(self): return self.durationSecond.total_seconds() / 3600
+
+    @cached_property
+    def durationMinute(self): return self.durationSecond.total_seconds() / 60
+
+    @cached_property
+    def time(self): return self.durationSecond * self.weight
+
+    def __repr__(self): return f"<Task: {self.name}>"
+
+
+class allocation:
+    def __init__(self):
+        self._keys = ["Mon", "Tue", "Wen", "Thu", "Fri", "Sat", "Sun"]
+        self._dayTable = {k: [] for k in self._keys}
+
+    @property
+    def dayTable(self): return self._dayTable
+
+    @dayTable.setter
+    def dayTable(self, value): self._dayTable = value
+
+    def addTask(self, name: str, start: time, end: time, day: Literal["Mon", "Tue", "Wen", "Thu", "Fri", "Sat", "Sun"], *, weight: float = None, constant: bool = False):
+        self.dayTable[day].append(task(name, start, end, day, weight=weight, constant=constant))
 
 
 class visualize:
@@ -93,7 +149,6 @@ class visualize:
 
 
 if __name__ == '__main__':
-    # ins = visualize(Mon=[85, 50, 60, 60, 60], Tue=[60, 60, 60], Wen=[85, 75, 50, 60, 60], Thu=[75, 70, 60, 60, 60], Fri=[210], Sat=[450], Sun=[270])
-    # ins.insertTask()
-    # print(ins.taskTable, ins.tFreeTimeDict)
+    ins = allocation()
+    ins.addTask("1", time(8, 30), time(11, 50), "Mon", constant=True)
     pass
