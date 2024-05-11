@@ -26,9 +26,12 @@ class DnsTimeOutError(Exception):
 
 def getIp(url: str):
     res = instruct(output=False, ignore=True, eliminate="文件名、目录名或卷标语法不正确。")(f"nslookup {url}")
+
     ip = findall(r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b", res)
+
     try:
-        return ip[1]
+        print(f"ip: {ip[1]}")
+        return ip[0]
 
     except IndexError as e:
         e.add_note(f"ip: {ip}")
@@ -41,4 +44,4 @@ def packet_callback(packet):
 
 
 if __name__ == '__main__':
-    sniff(prn=packet_callback, store=0, count=0, filter=f"host {getIp('yujuo.cn')}")
+    sniff(prn=packet_callback, store=0, count=0, filter=f"host {getIp('www.python.org')}")

@@ -21,7 +21,8 @@ from functools import cached_property
 from copy import deepcopy
 from random import choice
 from datetime import time, datetime
-from typing import Literal, override
+from typing import Literal
+from abc import abstractproperty
 
 
 class task:
