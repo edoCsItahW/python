@@ -7,10 +7,23 @@
 #  purposes is prohibited without the author's permission. If you have any questions or require
 #  permission, please contact the author: 2207150234@st.sziit.edu.cn
 
-# -------------------------<Lenovo>----------------------------
-# 传建时间: 2024/5/2 下午7:21
+# -------------------------<edocsitahw>----------------------------
+# 传建时间: 2024/5/12 上午10:57
 # 当前项目名: Python
 # 编码模式: utf-8
 # 注释: 
-# -------------------------<Lenovo>----------------------------
+# -------------------------<edocsitahw>----------------------------
+from scatteredFile.flagParser import flag
 
+
+RESTORE = flag("restore")
+
+DEBUG = flag("debug")
+
+COLOR = flag("color")
+
+AUTO = flag("auto")
+
+INCREASE = flag("increase")
+
+IGNORE = flag("ignore")

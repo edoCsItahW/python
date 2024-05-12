@@ -8,9 +8,15 @@
 #  permission, please contact the author: 2207150234@st.sziit.edu.cn
 
 # -------------------------<Lenovo>----------------------------
-# 传建时间: 2024/5/2 下午7:21
+# 传建时间: 2024/5/2 下午4:35
 # 当前项目名: Python
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
+from setuptools import setup
+from Cython.Build import cythonize
+# python setup.py build_ext --inplace
 
+setup(
+    ext_modules=cythonize("cubicEquation.py")
+)
