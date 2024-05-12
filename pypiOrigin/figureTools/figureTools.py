@@ -247,7 +247,7 @@ class imgManger:
             pixel = pixel if (l := len(str(pixel))) == 3 else "0" * (3 - l) + str(pixel)
             try:
                 r, g, b = self.pixels("RGB")[i % self.h, i // self.w]
-                print(ansiManger().f_otherColor("00", RGB=(r, g, b)), end="\n" if i % self.h == self.h - 1 else "")
+                print(ansiManger().fOtherColor("00", RGB=(r, g, b)), end="\n" if i % self.h == self.h - 1 else "")
             except (ValueError, IndexError):
                 print(pixel, end="\n" if i % self.h == self.h - 1 else "")
 

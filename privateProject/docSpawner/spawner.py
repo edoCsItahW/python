@@ -393,7 +393,7 @@ def handlePath(filePath: str | PathLike[str], *, default: str | PathLike[str], s
         raise ValueError(
             f"文件后缀必须为.py!")
 
-    if path.isfile(filePath):
+    if "." in filePath:
         _, orgSuffix = path.splitext(path.basename(filePath))
         if orgSuffix != f".{suffix}":
             raise ValueError(
@@ -432,12 +432,14 @@ if __name__ == '__main__':
         warn(
             f"正在运行测试版!")
 
-        ins = docParser((eng := engine(filePath=r"E:\codeSpace\codeSet\Python\pypiOrigin\uploadTools\uploadTools.py")).comments)
+        ins = docParser((eng := engine(filePath=r"E:\codeSpace\codeSet\Python\pypiOrigin\netTools\netTools.py")).comments)
         # ins.contents()
         # ins.detail()
         # with open(r"E:\codeSpace\codeSet\Python\test.md", "w", encoding="utf-8") as file:
         #     file.write(ins.markdown)
-        eng.pyi(filePath=r"E:\codeSpace\codeSet\Python\test.pyi")
+        # eng.pyi(filePath=r"E:\codeSpace\codeSet\Python\test.pyi")
+        toPath = handlePath(r"E:\codeSpace\codeSet\Python\README.md", default=r"E:\codeSpace\codeSet\Python\pypiOrigin\netTools\netTools.py", suffix='md')
+        ins.toMarkdown(toPath)
     else:
         args = argParser()
         ins = docParser((eng := engine(filePath=args.file)).comments)

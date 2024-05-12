@@ -112,12 +112,14 @@ class CMDError(Exception):
     """
     CMD错误类
     """
+
     def __init__(self, *args):
         self.args = args
 
 
 class winAuto:
-    def __init__(self, *args: str, cwd: str | PathLike[str] = r"C:\Window\System32", init: str = None, waitTime: int | float = 0.5):
+    def __init__(self, *args: str, cwd: str | PathLike[str] = r"C:\Window\System32", init: str = None,
+                 waitTime: int | float = 0.5):
         """
         自动弹出cmd窗口并执行指令
 
@@ -234,7 +236,9 @@ class cmd:
     """
     用于弹出cmd窗口并进行按键模拟
     """
-    def __new__(cls, *args: str, cwd: str | PathLike[str] = r"C:\Window\System32", init: list = None, waitTime: int | float = 0.5) -> winAuto:
+
+    def __new__(cls, *args: str, cwd: str | PathLike[str] = r"C:\Window\System32", init: list = None,
+                waitTime: int | float = 0.5) -> winAuto:
         """
 
         :param args: 指令,这些指令将被用'&'连接并执行
@@ -294,7 +298,8 @@ class instruct:
         self._flagColor = color
         self._eleiminate = eliminate
 
-    def __call__(self, instruction: str, *, cwd: PathLike | str = None, output: bool = None, encoding: Literal["gbk", "utf-8"] = "gbk", note: str = ""):
+    def __call__(self, instruction: str, *, cwd: PathLike | str = None, output: bool = None,
+                 encoding: Literal["gbk", "utf-8"] = "gbk", note: str = ""):
         """
         执行器
 
@@ -338,7 +343,8 @@ class instruct:
                     f"你忽略了错误'{self._eleiminate}',而且没有将错误降级为警告,这导致一个错误被忽略了,带来的后果是返回了None而不是你期望的结果!")
 
     @staticmethod
-    def _execute(instruction: str, *, cwd: PathLike | str = None, encoding: Literal["gbk", "utf-8"] = "gbk") -> tuple[str, str]:
+    def _execute(instruction: str, *, cwd: PathLike | str = None, encoding: Literal["gbk", "utf-8"] = "gbk") -> tuple[
+        str, str]:
         """
         执行器内核
 
@@ -368,6 +374,7 @@ class jsonFile:
     """
     json文件操作类
     """
+
     def __init__(self, jsonDict: dict):
         """
         :param jsonDict: 外层类传入的字典
@@ -470,7 +477,9 @@ class jsonOpen:
     """
     json文件操作类
     """
-    def __init__(self, file: str | bytes | PathLike[str] | PathLike[bytes], mode: Literal["r+", "+r", "w+", "+w", "a+", "+a", "w", "a", "r"]):  # type: ignore
+
+    def __init__(self, file: str | bytes | PathLike[str] | PathLike[bytes],
+                 mode: Literal["r+", "+r", "w+", "+w", "a+", "+a", "w", "a", "r"]):  # type: ignore
         """
         与open相同
 
@@ -563,11 +572,13 @@ class SpawnError(Exception):
     """
     子进程错误类
     """
+
     def __init__(self, *args):
         self.args = args
 
 
-def outputInfo(info: str, *, color: Literal["red", "green", "blue", "yellow"] | str | bool = "green", flag: bool = True):
+def outputInfo(info: str, *, color: Literal["red", "green", "blue", "yellow"] | str | bool = "green",
+               flag: bool = True):
     """
     输出信息
 
@@ -622,6 +633,7 @@ class pathTools:
     """
     文件路径工具类
     """
+
     @staticmethod
     def isFileExist(_path: str | PathLike, **kwargs) -> bool:
         """
@@ -683,7 +695,10 @@ class argSet:
         :meth:`compliantArg`: 路径合规性检查.
 
     """
-    def __init__(self, fileAbsPath: str | PathLike[str], *, restore: bool = True, debug: bool = False, color: bool = True, auto: bool = True, increase: bool = True, suffix: Literal["py", "c", "cpp"] | list[str] = "py", **kwargs):
+
+    def __init__(self, fileAbsPath: str | PathLike[str], *, restore: bool = True, debug: bool = False,
+                 color: bool = True, auto: bool = True, increase: bool = True,
+                 suffix: Literal["py", "c", "cpp"] | list[str] = "py", **kwargs):
         """
         参数设置和存储类,用于设置上传参数,包括: 文件路径, 上传后是否还原, 是否开启Debug模式, 是否运行输出信息带有色彩, 是否自动上传, 是否自增版本号, 文件后缀, 以及其它关键字参数.
 
@@ -806,7 +821,9 @@ class argSet:
 
         if self.checkSuffix(self.suffix):
             errorHandle.raiseError(
-                RuntimeError, f"正常情况下将c转换为pyd文件时,不会需要使用到dirPath,但'dirPath'依然被函数'{currentframe().f_back.f_code.co_name}'调用了!", willDo="warn")
+                RuntimeError,
+                f"正常情况下将c转换为pyd文件时,不会需要使用到dirPath,但'dirPath'依然被函数'{currentframe().f_back.f_code.co_name}'调用了!",
+                willDo="warn")
 
         else:
             pathTools.createIfNotExist(root)
@@ -826,7 +843,9 @@ class argSet:
 
         if self.checkSuffix(self.suffix):
             errorHandle.raiseError(
-                RuntimeError, f"正常情况下将c转换为pyd文件时,不会需要使用到dirPath,但'projectPath'依然被函数'{currentframe().f_back.f_code.co_name}'调用了!", willDo="warn")
+                RuntimeError,
+                f"正常情况下将c转换为pyd文件时,不会需要使用到dirPath,但'projectPath'依然被函数'{currentframe().f_back.f_code.co_name}'调用了!",
+                willDo="warn")
 
         else:
 
@@ -845,7 +864,8 @@ class argSet:
         return self._newPath
 
     @newPath.setter
-    def newPath(self, value): self._newPath = value
+    def newPath(self, value):
+        self._newPath = value
 
     @cached_property
     def jsonPath(self) -> PathLike[str] | str | None:
@@ -1097,6 +1117,7 @@ class errorHandle:
         :type group: str
         :raise ValueError: 入参错误
         """
+
         def rerr(err, fe):
             if fe:
                 raise err from fe
@@ -1148,7 +1169,8 @@ class errorHandle:
         """
         return f"from {func.__name__} in {line}"
 
-    def executeWithTry(self, instruction: str, *, cwd: str | PathLike = None, note: str = "", group: str = "其它", describe: str = None, color: str = "yellow") -> None:
+    def executeWithTry(self, instruction: str, *, cwd: str | PathLike = None, note: str = "", group: str = "其它",
+                       describe: str = None, color: str = "yellow") -> None:
         """
         在try-except中执行指令.
 
@@ -1233,6 +1255,7 @@ class actionSet:
 
         :meth: `checkRequestList`: 检查是否与预设文件结构相同.
     """
+
     def __init__(self, args: argSet):
         """
         操作集合类
@@ -1349,10 +1372,12 @@ class actionSet:
 
             if "uploadLog" in contentDict:
 
-                contentDict['uploadLog'].append({datetime.now().strftime("[%Y-%m-%d %H:%M:%S]"): {contentDict["version"]: True}})
+                contentDict['uploadLog'].append(
+                    {datetime.now().strftime("[%Y-%m-%d %H:%M:%S]"): {contentDict["version"]: True}})
 
             else:
-                contentDict.update([("uploadLog", [{datetime.now().strftime("[%Y-%m-%d %H:%M:%S]"): {contentDict["version"]: True}}])])
+                contentDict.update(
+                    [("uploadLog", [{datetime.now().strftime("[%Y-%m-%d %H:%M:%S]"): {contentDict["version"]: True}}])])
 
             file.write(contentDict)
 
@@ -1406,8 +1431,8 @@ class actionSet:
             argsDict["version"] = self._listToVs(self.vsList)
 
             if "uploadLog" in argsDict:
-
-                (vDict := (timeDict := argsDict["uploadLog"][-1])[self._onlyKey(timeDict)])[self._onlyKey(vDict)] = False
+                (vDict := (timeDict := argsDict["uploadLog"][-1])[self._onlyKey(timeDict)])[
+                    self._onlyKey(vDict)] = False
 
             file.write(argsDict)
 
@@ -1421,7 +1446,6 @@ class actionSet:
         :rtype: dict
         """
         if self.args.jsonPath and self.args.flagIncrease:
-
             self._jsonIncrease(self.args.argsDict["increase"] if "increase" in self.args.argsDict else None)
 
         text = f"""[tool.poetry.scripts]\nfiles = ["{file}"]"""
@@ -1432,7 +1456,7 @@ class actionSet:
             "name":       _ if (_ := self.args.argsDict["name"]) else '',
             "email":      _ if (_ := self.args.argsDict["email"]) else '',
             "desc":       _ if (_ := self.args.argsDict["desc"]) else '',
-            "addFile":       text if file else '',
+            "addFile":    text if file else '',
             "moduleName": _ if (_ := self.args.argsDict["proName"]) else self.args.moduleName,
         }
 
@@ -1444,7 +1468,8 @@ class actionSet:
         :return: 包装了CMakeLists.format的partial函数
         :rtype: partial
         """
-        return partial(CMakeLists.format, self.args.cmakeVersion, self.args.moduleName.upper(), self.args.pyVersion, self.args.moduleName)
+        return partial(CMakeLists.format, self.args.cmakeVersion, self.args.moduleName.upper(), self.args.pyVersion,
+                       self.args.moduleName)
 
     def spawnPyi(self) -> str | PathLike[str]:
         """
@@ -1459,31 +1484,34 @@ class actionSet:
         :return: 生成的pyi文件路径
         :rtype: str
         """
-        self.eh.executeWithTry(ins1 := f"stubgen {self.args.fileName}", cwd=self.args.projectPath,
+        self.eh.executeWithTry(ins1 := f"spawnTools {self.args.newPath} {self.args.projectPath} -t=pyi",
                                note=f"[ErrorWarning]生成pyi文件出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyi, currentframe().f_lineno)}",
                                group="生成pyi", describe="spawnPyi -> 生成pyi文件.")
-
-        pathTools.isFileExist(cacheFile := path.join(self.args.projectPath, ".mypy_cache"),
-                              note=f"该文件夹由spawnPyi的'{ins1}'指令生成", willDo="warn",
-                              fromError=SpawnError("生成pyi文件失败?"), group="生成pyi")
-
-        self.eh.executeWithTry(ins2 := f"rd /s /q {cacheFile}", cwd=self.args.projectPath,
-                               describe="spawnPyi -> 移除缓存文件",
-                               group="生成pyi",
-                               note=f"[ErrorWarning]移除pyi缓存文件夹出现问题: '{ins2}' {errorHandle.formatFuncInfo(self.spawnPyi, currentframe().f_lineno)}")
-
-        self.eh.executeWithTry(
-            ins3 := f"move {path.join(self.args.projectPath, 'out', self.args.moduleName, f'{self.args.moduleName}.pyi')} {self.args.projectPath}",
-            note=f"[ErrorWarning]移动pyi文件出现问题: '{ins3}' {errorHandle.formatFuncInfo(self.spawnPyi, currentframe().f_lineno)}",
-            group="生成pyi", describe="spawnPyi -> 移动pyi文件")
-
-        pathTools.isFileExist(ins4 := path.join(self.args.projectPath, "out"),
-                              note=f"该文件由spawnPyi的'{ins4}'指令生成",
-                              willDo="log", fromError=SpawnError("生成pyi文件失败?"), group="生成pyi")
-
-        self.eh.executeWithTry(ins5 := "rd /s /q out", cwd=self.args.projectPath,
-                               note=f"[ErrorWarning]删除out文件夹出现问题: '{ins5}' {errorHandle.formatFuncInfo(self.spawnPyi, currentframe().f_lineno)}",
-                               group="生成pyi", describe="spawnPyi -> 删除out文件夹")
+        # self.eh.executeWithTry(ins1 := f"stubgen {self.args.fileName}", cwd=self.args.projectPath,
+        #                        note=f"[ErrorWarning]生成pyi文件出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyi, currentframe().f_lineno)}",
+        #                        group="生成pyi", describe="spawnPyi -> 生成pyi文件.")
+        #
+        # pathTools.isFileExist(cacheFile := path.join(self.args.projectPath, ".mypy_cache"),
+        #                       note=f"该文件夹由spawnPyi的'{ins1}'指令生成", willDo="warn",
+        #                       fromError=SpawnError("生成pyi文件失败?"), group="生成pyi")
+        #
+        # self.eh.executeWithTry(ins2 := f"rd /s /q {cacheFile}", cwd=self.args.projectPath,
+        #                        describe="spawnPyi -> 移除缓存文件",
+        #                        group="生成pyi",
+        #                        note=f"[ErrorWarning]移除pyi缓存文件夹出现问题: '{ins2}' {errorHandle.formatFuncInfo(self.spawnPyi, currentframe().f_lineno)}")
+        #
+        # self.eh.executeWithTry(
+        #     ins3 := f"move {path.join(self.args.projectPath, 'out', self.args.moduleName, f'{self.args.moduleName}.pyi')} {self.args.projectPath}",
+        #     note=f"[ErrorWarning]移动pyi文件出现问题: '{ins3}' {errorHandle.formatFuncInfo(self.spawnPyi, currentframe().f_lineno)}",
+        #     group="生成pyi", describe="spawnPyi -> 移动pyi文件")
+        #
+        # pathTools.isFileExist(ins4 := path.join(self.args.projectPath, "out"),
+        #                       note=f"该文件由spawnPyi的'{ins4}'指令生成",
+        #                       willDo="log", fromError=SpawnError("生成pyi文件失败?"), group="生成pyi")
+        #
+        # self.eh.executeWithTry(ins5 := "rd /s /q out", cwd=self.args.projectPath,
+        #                        note=f"[ErrorWarning]删除out文件夹出现问题: '{ins5}' {errorHandle.formatFuncInfo(self.spawnPyi, currentframe().f_lineno)}",
+        #                        group="生成pyi", describe="spawnPyi -> 删除out文件夹")
 
         return path.join(self.args.projectPath, f"{self.args.moduleName}.pyi")
 
@@ -1544,14 +1572,24 @@ class actionSet:
         :return: 生成的html文档路径
         :rtype: str
         """
-        self.eh.executeWithTry(ins1 := f"pdoc -d=markdown --output {self.args.dirPath} {self.args.filePath}", note=f"[ErrorWarning]生成html文档出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnHtml, currentframe().f_lineno)}", group="生成html", describe="spawnHtml -> 生成html文档")
+        self.eh.executeWithTry(ins1 := f"pdoc -d=markdown --output {self.args.dirPath} {self.args.filePath}",
+                               note=f"[ErrorWarning]生成html文档出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnHtml, currentframe().f_lineno)}",
+                               group="生成html", describe="spawnHtml -> 生成html文档")
 
-        pathTools.isFileExist(html := path.join(self.args.dirPath, f"{self.args.moduleName}.html"), note=f"该文件由: '{ins1}'指令生成 {errorHandle.formatFuncInfo(self.spawnHtml, currentframe().f_lineno)}", willDo="log", fromError=SpawnError("生成html文档错误?"), group="生成html")
+        pathTools.isFileExist(html := path.join(self.args.dirPath, f"{self.args.moduleName}.html"),
+                              note=f"该文件由: '{ins1}'指令生成 {errorHandle.formatFuncInfo(self.spawnHtml, currentframe().f_lineno)}",
+                              willDo="log", fromError=SpawnError("生成html文档错误?"), group="生成html")
 
         for name in ['index.html', 'search.js']:
-            self.eh.executeWithTry(ins2 := f"{'del' if '.' in name else 'rd /s /q'} {path.join(self.args.dirPath, name)}", note=f"[ErrorWarning]删除文件出现问题: '{ins2}' {errorHandle.formatFuncInfo(self.spawnHtml, currentframe().f_lineno)}", group="生成html", describe="spawnHtml -> 移除剩余文件")
+            self.eh.executeWithTry(
+                ins2 := f"{'del' if '.' in name else 'rd /s /q'} {path.join(self.args.dirPath, name)}",
+                note=f"[ErrorWarning]删除文件出现问题: '{ins2}' {errorHandle.formatFuncInfo(self.spawnHtml, currentframe().f_lineno)}",
+                group="生成html", describe="spawnHtml -> 移除剩余文件")
 
-        return path1 if path.exists(path1 := path.join(self.args.dirPath, f"{self.args.moduleName}.html")) else path.join(self.args.dirPath, self.args.moduleName, f"{self.args.moduleName}.html")
+        return path1 if path.exists(
+            path1 := path.join(self.args.dirPath, f"{self.args.moduleName}.html")) else path.join(self.args.dirPath,
+                                                                                                  self.args.moduleName,
+                                                                                                  f"{self.args.moduleName}.html")
 
     def spawnREADME(self) -> str | PathLike[str]:
         """
@@ -1565,16 +1603,20 @@ class actionSet:
         :return: 生成的README.md文件路径
         :rtype: str
         """
-        htmlPath = self.spawnHtml()
-
+        # htmlPath = self.spawnHtml()
+        #
+        # self.eh.executeWithTry(
+        #     ins1 := f"pandoc -f html -t markdown {htmlPath} -o {(readmePath := path.join(self.args.dirPath, 'README.md'))}",
+        #     note=f"[ErrorWarning]转换html为markdown出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnREADME, currentframe().f_lineno)}",
+        #     group="生成README", describe="spawnREADME -> 转换html为markdown")
+        #
+        # self.eh.executeWithTry(ins2 := f"del {htmlPath}",
+        #                        note=f"[ErrorWarning]删除html文件出现问题: '{htmlPath}' {errorHandle.formatFuncInfo(self.spawnREADME, currentframe().f_lineno)}",
+        #                        group="生成README", describe="spawnREADME -> 删除html文件")
         self.eh.executeWithTry(
-            ins1 := f"pandoc -f html -t markdown {htmlPath} -o {(readmePath := path.join(self.args.dirPath, 'README.md'))}",
-            note=f"[ErrorWarning]转换html为markdown出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnREADME, currentframe().f_lineno)}",
-            group="生成README", describe="spawnREADME -> 转换html为markdown")
-
-        self.eh.executeWithTry(ins2 := f"del {htmlPath}",
-                               note=f"[ErrorWarning]删除html文件出现问题: '{htmlPath}' {errorHandle.formatFuncInfo(self.spawnREADME, currentframe().f_lineno)}",
-                               group="生成README", describe="spawnREADME -> 删除html文件")
+            ins1 := f"spawnTools {self.args.newPath} {(readmePath := path.join(self.args.dirPath, 'README.md'))}",
+            note=f"[ErrorWarning]生成markdown出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnREADME, currentframe().f_lineno)}",
+            group="生成README", describe="spawnREADME -> 生成markdown")
 
         return readmePath
 
@@ -1638,7 +1680,8 @@ class actionSet:
 
         try:
             with open(path.join(self.args.dirPath, "pyproject.toml"), "w", encoding="utf-8") as file:
-                file.write(pyproject.format(**self._kewargs(filePath.replace(self.args.separator, self.args.separator * 2) if filePath else filePath)))
+                file.write(pyproject.format(**self._kewargs(
+                    filePath.replace(self.args.separator, self.args.separator * 2) if filePath else filePath)))
 
         except Exception as e:
             e.add_note(f"生成pyproject失败 {errorHandle.formatFuncInfo(self.spawnPyproject, currentframe().f_lineno)}")
@@ -1656,19 +1699,21 @@ class actionSet:
             with open(setupPath, "w", encoding="utf-8") as file:
                 file.write(setup.format(self.args.fileName))
 
-    def spawnC(self) -> str | PathLike[str]:
-        """
-        生成C文件.
+    # def spawnC(self) -> str | PathLike[str]:
+    #     """
+    #     生成C文件.
+    #
+    #     过程::
+    #         1. 使用setuptools将py文件编译为C文件: python setup.py build_ext --inplace
+    #
+    #     :return: 生成的C文件路径
+    #     :rtype: str
+    #     """
+    #     self.eh.executeWithTry(ins1 := "python setup.py build_ext --inplace", cwd=self.args.projectPath,
+    #                            note=f"[ErrorWarning]C文件生成出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyc, currentframe().f_lineno)}",
+    #                            group="生成C", describe="spawnC -> 生成C文件")
 
-        过程::
-            1. 使用setuptools将py文件编译为C文件: python setup.py build_ext --inplace
-
-        :return: 生成的C文件路径
-        :rtype: str
-        """
-        self.eh.executeWithTry(ins1 := "python setup.py build_ext --inplace", cwd=self.args.projectPath, note=f"[ErrorWarning]C文件生成出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyc, currentframe().f_lineno)}", group="生成C", describe="spawnC -> 生成C文件")
-
-        return path.join(self.args.projectPath, f"{self.args.moduleName}.c")
+        # return path.join(self.args.projectPath, f"{self.args.moduleName}.c")
 
     def spawnPyd(self, *, toPath: str | PathLike[str] = None, cppFile: bool = False) -> str | PathLike[str]:
         """
@@ -1692,24 +1737,49 @@ class actionSet:
 
         if toPath is None: toPath = self.args.projectPath
 
-        self.eh.executeWithTry(ins1 := r"cmake -B build -S . -Dpybind11_DIR=E:\ProgramFiles\Anaconda\Lib\site-packages\pybind11\share\cmake\pybind11 -Wno-dev", cwd=toPath, note=f"[ErrorWarning]cmake build出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyd, currentframe().f_lineno)}", group="生成pyd", describe="spawnPyd -> cmake构建")
+        # self.eh.executeWithTry(
+        #     ins1 := r"cmake -B build -S . -Dpybind11_DIR=E:\ProgramFiles\Anaconda\Lib\site-packages\pybind11\share\cmake\pybind11 -Wno-dev",
+        #     cwd=toPath,
+        #     note=f"[ErrorWarning]cmake build出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyd, currentframe().f_lineno)}",
+        #     group="生成pyd", describe="spawnPyd -> cmake构建")
+        #
+        # tempFunc = lambda x: path.join(toPath, x)
+        #
+        # if not cppFile:
+        #     rename(cPath := tempFunc(f"{self.args.moduleName}.c"), tempFunc(newName := f"{self.args.moduleName}.cpp"))
+        #
+        #     self.CMakeLists(newName)  # 更名为Cpp
+        #
+        # self.eh.executeWithTry(ins2 := "cmake --build build --config Release", cwd=toPath,
+        #                        note=f"[ErrorWarning]cmake生成pyd出现问题: '{ins2}' {errorHandle.formatFuncInfo(self.spawnPyd, currentframe().f_lineno)}",
+        #                        group="生成pyd", describe="spawnPyd -> 生成pyd")
+        #
+        # rename(path.join(toPath, "build", "Release", f"{self.args.moduleName}.cp311-win_amd64.pyd"),
+        #        finPath := path.join(toPath, f"{self.args.moduleName}.pyd"))
+        #
+        # self.eh.executeWithTry(ins3 := f"rd /s /q build", cwd=toPath,
+        #                        note=f"[ErrorWarning]移除cmake build文件夹出现问题: '{ins3}' {errorHandle.formatFuncInfo(self.spawnPyd, currentframe().f_lineno)}",
+        #                        group="生成pyd", describe="spawnPyd -> 移除残留build文件夹")
+        #
+        # None if cppFile else rename(path.join(toPath, newName), cPath)
+        #
+        # remove(path.join(toPath, "CMakeLists.txt"))
 
-        tempFunc = lambda x: path.join(toPath, x)
+        self.eh.executeWithTry(ins1 := "python setup.py build_ext --inplace", cwd=self.args.projectPath,
+                               note=f"[ErrorWarning]pyd文件生成出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.spawnPyd, currentframe().f_lineno)}",
+                               group="生成C", describe="spawnPyd -> 生成pyd文件")
 
-        if not cppFile:
-            rename(cPath := tempFunc(f"{self.args.moduleName}.c"), tempFunc(newName := f"{self.args.moduleName}.cpp"))
+        if not path.exists(path.join(self.args.projectPath, f"{self.args.moduleName}.cp311-win_amd64.pyd")):
 
-            self.CMakeLists(newName)  # 更名为Cpp
+            rename(path.join(self.args.projectPath, "build", "lib.win-amd64-cpython-311", self.args.moduleName, f"{self.args.moduleName}.cp311-win_amd64.pyd"), finPath := path.join(toPath, f"{self.args.moduleName}.pyd"))
 
-        self.eh.executeWithTry(ins2 := "cmake --build build --config Release", cwd=toPath, note=f"[ErrorWarning]cmake生成pyd出现问题: '{ins2}' {errorHandle.formatFuncInfo(self.spawnPyd, currentframe().f_lineno)}", group="生成pyd", describe="spawnPyd -> 生成pyd")
+            self.eh.executeWithTry(ins3 := f"rd /s /q build", cwd=self.args.projectPath,
+                                   note=f"[ErrorWarning]移除cmake build文件夹出现问题: '{ins3}' {errorHandle.formatFuncInfo(self.spawnPyd, currentframe().f_lineno)}",
+                                   group="生成pyd", describe="spawnPyd -> 移除残留build文件夹")
 
-        rename(path.join(toPath, "build", "Release", f"{self.args.moduleName}.cp311-win_amd64.pyd"), finPath := path.join(toPath, f"{self.args.moduleName}.pyd"))
+            return finPath
 
-        self.eh.executeWithTry(ins3 := f"rd /s /q build", cwd=toPath, note=f"[ErrorWarning]移除cmake build文件夹出现问题: '{ins3}' {errorHandle.formatFuncInfo(self.spawnPyd, currentframe().f_lineno)}", group="生成pyd", describe="spawnPyd -> 移除残留build文件夹")
-
-        None if cppFile else rename(path.join(toPath, newName), cPath)
-
-        remove(path.join(toPath, "CMakeLists.txt"))
+        rename(path.join(self.args.projectPath, f"{self.args.moduleName}.cp311-win_amd64.pyd"), finPath := path.join(toPath, f"{self.args.moduleName}.pyd"))
 
         return finPath
 
@@ -1737,7 +1807,10 @@ class actionSet:
 
         try:
             if copy:
-                self.eh.executeWithTry(ins1 := f"copy /Y {self.args.fileName} {self.args.newPath}", cwd=self.args.rootPath, note=f"[ErrorWarning]复制py源文件出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.middleDo, currentframe().f_lineno)}", group="初始化", describe="middleDo -> 复制py文件")
+                self.eh.executeWithTry(ins1 := f"copy /Y {self.args.fileName} {self.args.newPath}",
+                                       cwd=self.args.rootPath,
+                                       note=f"[ErrorWarning]复制py源文件出现问题: '{ins1}' {errorHandle.formatFuncInfo(self.middleDo, currentframe().f_lineno)}",
+                                       group="初始化", describe="middleDo -> 复制py文件")
 
             else:
                 rename(self.args.filePath, self.args.newPath)
@@ -1766,13 +1839,15 @@ class actionSet:
 
 class upload:
     typeDict = {  # 上传类型与文件后缀对应关系
-        "pyc": "py",
-        "pyd": "py",
+        "pyc":    "py",
+        "pyd":    "py",
         "normal": "py",
         "ctopyd": ["c", "cpp"],
     }
 
-    def __init__(self, fileAbsPath: str | PathLike[str], *, restore: bool = True, debug: bool = False, color: bool = True, auto: bool = True, increase: bool = True, suffix: Literal["py", "c", "cpp"] | list[str] = "py", **kwargs):
+    def __init__(self, fileAbsPath: str | PathLike[str], *, restore: bool = True, debug: bool = False,
+                 color: bool = True, auto: bool = True, increase: bool = True,
+                 suffix: Literal["py", "c", "cpp"] | list[str] = "py", **kwargs):
         """
         --restore=bool       当出现错误时是否要还原初始状态。
         --debug=bool         是否开启Debug模式。
@@ -1796,7 +1871,8 @@ class upload:
         :type kwargs: ...
         :raise ValueError: 如果传入的文件路径不是绝对路径。
         """
-        self._args = argSet(fileAbsPath, restore=restore, debug=debug, color=color, auto=auto, increase=increase, suffix=suffix, **kwargs)
+        self._args = argSet(fileAbsPath, restore=restore, debug=debug, color=color, auto=auto, increase=increase,
+                            suffix=suffix, **kwargs)
         self._actionSet = actionSet(self._args)
 
         self._common = [
@@ -1808,22 +1884,22 @@ class upload:
         ]
 
         self._pyd = [
-            path.join(self.args.projectPath, f"{self.args.moduleName}.pyd"),
-            path.join(self.args.projectPath, f"{self.args.moduleName}.pyi")
-        ] + self._common
+                        path.join(self.args.projectPath, f"{self.args.moduleName}.pyd"),
+                        path.join(self.args.projectPath, f"{self.args.moduleName}.pyi")
+                    ] + self._common
 
         self._pyc = [
-            path.join(self.args.projectPath, f"{self.args.moduleName}.pyc"),
-            path.join(self.args.projectPath, f"{self.args.moduleName}.pyi")
-        ] + self._common
+                        path.join(self.args.projectPath, f"{self.args.moduleName}.pyc"),
+                        path.join(self.args.projectPath, f"{self.args.moduleName}.pyi")
+                    ] + self._common
 
         self._normal = [
-            path.join(self.args.projectPath, f"{self.args.moduleName}.py"),
-        ] + self._common
+                           path.join(self.args.projectPath, f"{self.args.moduleName}.py"),
+                       ] + self._common
 
         self.requestDict = {
-            self.pyd: self._pyd,
-            self.pyc: self._pyc,
+            self.pyd:    self._pyd,
+            self.pyc:    self._pyc,
             self.normal: self._normal
         }
 
@@ -1866,12 +1942,16 @@ class upload:
             None if copy else rename(self.args.newPath, self.args.filePath)
 
             if self.args.flagRestore:
-                self.actionSet.eh.executeWithTry(ins2 := f"rd /s /q {self.args.dirPath}", note=f"[ErrorWarning]还原过程清空出现问题: '{ins2}' {errorHandle.formatFuncInfo(self._commonPart, currentframe().f_lineno)}", group="还原", describe="tryDec -> 还原文件")
+                self.actionSet.eh.executeWithTry(ins2 := f"rd /s /q {self.args.dirPath}",
+                                                 note=f"[ErrorWarning]还原过程清空出现问题: '{ins2}' {errorHandle.formatFuncInfo(self._commonPart, currentframe().f_lineno)}",
+                                                 group="还原", describe="tryDec -> 还原文件")
 
                 if self.actionSet.vsList and self.args.flagIncrease:  # vsList在self.args.jsonPath为假时就为None
                     self.actionSet.versionBack()
 
-                errorHandle.raiseError(e.__class__, e.args[0], note=f"[ErrorWarning]tryDec执行函数'{func.__name__}'出现问题", willDo="log", group="构建")
+                errorHandle.raiseError(e.__class__, e.args[0],
+                                       note=f"[ErrorWarning]tryDec执行函数'{func.__name__}'出现问题", willDo="log",
+                                       group="构建")
 
         else:
             None if copy else None if not self.args.newPath else rename(self.args.newPath, self.args.filePath)
@@ -1900,10 +1980,13 @@ class upload:
 
             executor.sendInstruct(token, waitTime=2)
 
-            executor.sendInstruct(f"pause & pip uninstall {self.args.moduleName} & pip install -i https://test.pypi.org/simple {self.args.moduleName}=={'.'.join(map(str, self.actionSet.vsList))}", waitTime=30)
+            executor.sendInstruct(
+                f"pause & pip uninstall {self.args.moduleName} & pip install -i https://test.pypi.org/simple {self.args.moduleName}=={'.'.join(map(str, self.actionSet.vsList))}",
+                waitTime=30)
 
         else:
-            print(f"现在你可以运行`cd {self.args.dirPath}`并输入`python -m twine upload --repository testpypi dist/*`以开始上传.\n#您的token:'{token}'")
+            print(
+                f"现在你可以运行`cd {self.args.dirPath}`并输入`python -m twine upload --repository testpypi dist/*`以开始上传.\n#您的token:'{token}'")
 
     def _commonPart(self) -> None:
         """
@@ -1923,7 +2006,9 @@ class upload:
         """pyc文件打包"""
         self._commonPart()
 
-        pathTools.isFileExist(pyc := self.actionSet.spawnPyc(), note=f"该文件由spawnPyc生成 {errorHandle.formatFuncInfo(self._commonPart, currentframe().f_lineno)}", willDo="log", fromError=SpawnError("生成pyc文件错误!"), group="生成pyc")
+        pathTools.isFileExist(pyc := self.actionSet.spawnPyc(),
+                              note=f"该文件由spawnPyc生成 {errorHandle.formatFuncInfo(self._commonPart, currentframe().f_lineno)}",
+                              willDo="log", fromError=SpawnError("生成pyc文件错误!"), group="生成pyc")
 
         self.actionSet.spawnPyproject(pyc)
 
@@ -1939,13 +2024,17 @@ class upload:
 
         self.actionSet.spawnSetup()
 
-        pathTools.isFileExist(self.actionSet.spawnC(), note=f"该文件由: spawnC生成", willDo="log", fromError=SpawnError("生成C文件错误?"), group="生成C")
+        # pathTools.isFileExist(self.actionSet.spawnC(), note=f"该文件由: spawnC生成", willDo="log",
+        #                       fromError=SpawnError("生成C文件错误?"), group="生成C")
 
-        self.actionSet.CMakeLists(f"{self.args.moduleName}.c")
+        # self.actionSet.CMakeLists(f"{self.args.moduleName}.c")
 
         self.actionSet.spawnPyproject(self.actionSet.spawnPyd())
 
-        for p in map(lambda x: path.join(self.args.projectPath, x), [f"{self.args.moduleName}.{s}" for s in ('c', 'html')] + ["setup.py"]):
+        for p in map(lambda x: path.join(self.args.projectPath, x),
+                     [f"{self.args.moduleName}.{s}" for s in ('c',
+                                                              # 'html'
+                                                              )] + ["setup.py"]):
             remove(p)
 
     def normal(self):
@@ -1986,8 +2075,9 @@ class upload:
             case "ctopyd":
                 self.tryDec(self.cToPyd)
 
-            case _: raise ValueError(
-                f"位置参数'Type'必须是['pyc', 'pyd', 'normal', 'cToPyd']中所有,而你的输入'{Type}'")
+            case _:
+                raise ValueError(
+                    f"位置参数'Type'必须是['pyc', 'pyd', 'normal', 'cToPyd']中所有,而你的输入'{Type}'")
 
         self._successDo() if Type.lower() != "ctopyd" else None
 
@@ -2000,31 +2090,41 @@ def argParser() -> Namespace:
     :rtype: Namespace
     """
 
-    parser = ArgumentParser(prog="PYPI软件包上传工具", description="一个用于上传python软件包的工具.", epilog="**\nfileAbsolutePath, *, restore = True, debug = False, color = True, **kwargs\n**")
+    parser = ArgumentParser(prog="PYPI软件包上传工具", description="一个用于上传python软件包的工具.",
+                            epilog="**\nfileAbsolutePath, *, restore = True, debug = False, color = True, **kwargs\n**")
     parser.add_argument("file", help="你需要上传的python文件的绝对路径,获取需要转换为pyd文件的C文件绝对路径。")
-    parser.add_argument("-T", "--type", default="pyd", choices=['pyc', 'pyd', 'normal', 'cToPyd'], help="打包的模式,pyc: 通过pyc文件打包, pyd: 通过pyd文件打包, normal: 通过py文件打包, cToPyd: 将C文件转换为pyd文件.(默认值: pyd)")
-    parser.add_argument("-R", "--restore", default="True", choices=["True", "False"], help="当出现错误时是否要还原初始状态。(默认值: True)")
-    parser.add_argument("-C", "--color", default="True", choices=["True", "False"], help="是否运行输出信息带有色彩。(默认值: True)")
-    parser.add_argument("-D", "--debug", default="False", choices=["True", "False"], help="是否开启debug模式。(默认值: False)")
-    parser.add_argument("--increase", default="True", choices=["True", "False"], help="是否启用版本自增(如果py文件所在文件夹中有args.json文件的情况下)(默认值: True)")
-    parser.add_argument("-A", "--auto", default="True", choices=["True", "False"], help="是否在打包并生成dist文件夹后弹出cmd调试框。(默认值: True)")
-    parser.add_argument("-I", "--ignore", default="True", choices=["True", "False"], help="是否将Error降级为warn以保证程序运行。(默认值: True)")
-    parser.add_argument("-E", "--eliminate", default=(eDef := "文件名、目录名或卷标语法不正确。"), help="排除无关紧要的错误信息, 例如: '文件名、目录名或卷标语法不正确。'(默认值: '文件名、目录名或卷标语法不正确。')")
+    parser.add_argument("-T", "--type", default="pyd", choices=['pyc', 'pyd', 'normal', 'cToPyd'],
+                        help="打包的模式,pyc: 通过pyc文件打包, pyd: 通过pyd文件打包, normal: 通过py文件打包, cToPyd: 将C文件转换为pyd文件.(默认值: pyd)")
+    parser.add_argument("-R", "--restore", default="True", choices=["True", "False"],
+                        help="当出现错误时是否要还原初始状态。(默认值: True)")
+    parser.add_argument("-C", "--color", default="True", choices=["True", "False"],
+                        help="是否运行输出信息带有色彩。(默认值: True)")
+    parser.add_argument("-D", "--debug", default="False", choices=["True", "False"],
+                        help="是否开启debug模式。(默认值: False)")
+    parser.add_argument("--increase", default="True", choices=["True", "False"],
+                        help="是否启用版本自增(如果py文件所在文件夹中有args.json文件的情况下)(默认值: True)")
+    parser.add_argument("-A", "--auto", default="True", choices=["True", "False"],
+                        help="是否在打包并生成dist文件夹后弹出cmd调试框。(默认值: True)")
+    parser.add_argument("-I", "--ignore", default="True", choices=["True", "False"],
+                        help="是否将Error降级为warn以保证程序运行。(默认值: True)")
+    parser.add_argument("-E", "--eliminate", default=(eDef := "文件名、目录名或卷标语法不正确。"),
+                        help="排除无关紧要的错误信息, 例如: '文件名、目录名或卷标语法不正确。'(默认值: '文件名、目录名或卷标语法不正确。')")
     parser.add_argument("-V", "--version", help="版本")
     return parser.parse_args()
 
 
 if __name__ == '__main__':
-    test = True  # 调试用
-    # test = False
+    # test = True  # 调试用
+    test = False
     # pyinstaller -F uploadTools.py -n upload -i upload_1.ico  # 生成exe文件
 
     if test:
         warn(
             "正在运行测试版!", SyntaxWarning)
 
-        ins = upload(r"E:\codeSpace\codeSet\C\test\test.c", debug=True, ignore=True, eliminate="文件名、目录名或卷标语法不正确。", suffix=["c", "cpp"])
-        ins.build("cToPyd")
+        ins = upload(r"E:\codeSpace\codeSet\Python\pypiOrigin\logTools\logTools.py", debug=True, ignore=True,
+                     eliminate="文件名、目录名或卷标语法不正确。", suffix="py")
+        ins.build("pyd")
         pass
 
     else:

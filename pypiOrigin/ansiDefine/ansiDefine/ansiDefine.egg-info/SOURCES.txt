@@ -1,0 +1,11 @@
+LICENSE.txt
+MANIFEST.in
+README.md
+pyproject.toml
+ansiDefine/__init__.py
+ansiDefine/ansiDefine.pyd
+ansiDefine/ansiDefine.pyi
+ansiDefine.egg-info/PKG-INFO
+ansiDefine.egg-info/SOURCES.txt
+ansiDefine.egg-info/dependency_links.txt
+ansiDefine.egg-info/top_level.txt

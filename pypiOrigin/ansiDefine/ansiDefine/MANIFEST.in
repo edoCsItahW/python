@@ -1,0 +1,2 @@
+recursive-include ansiDefine *.pyi
+recursive-include ansiDefine *.pyd

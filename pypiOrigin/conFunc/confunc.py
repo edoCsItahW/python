@@ -13,7 +13,6 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
-# coding=utf-8
 from __future__ import annotations
 
 from collections.abc import Container
@@ -34,7 +33,6 @@ from inspect import getmembers, isclass, currentframe
 __all__ = [
     "backlist",
     "decrypt",
-    "find_factors",
     "partitem",
     "pathFinder",
     "returnAllpath",
@@ -52,44 +50,14 @@ __all__ = [
 ]
 
 
-# source: docstring
-def find_factors(n: int) -> tuple:
-    """
-    寻找质因数.
-
-    :param n: 目标数字.
-    :type n: int
-    :return: 由质数和因数构成的元组.
-    :retype: tuple
-    """
-
-    # 计算 n 的平方根
-    a = int(sqrt(n))
-
-    # 如果 n 的平方根是整数，则直接返回结果
-    if a * a == n:
-        return a, a
-
-    # 向下搜索
-    for b in range(a, 0, -1):
-        if n % b == 0:
-            return min(b, n // b), max(b, n // b)
-
-    # 向上搜索
-    for b in range(a + 1, n):
-        if n % b == 0:
-            return min(b, n // b), max(b, n // b)
-
-    # 如果都没有找到，则说明 n 是质数
-    return 1, n
-
-
-def supcount(aimstr: str | list, *args: int | str | float):
+def supcount(aimstr: str | list, *args: int | str | float) -> dict[str, int]:
     """
     计算除第一个参数以外的参数在第一个参数里出现的次数
 
-    :data aimstr: 目标变量
+    :param aimstr: 目标变量
     :type aimstr: Union[str, list]
+    :param args: 除第一个参数以外的参数
+    :type args: Union[str, list]
     :return: 对应参数在目标变量中出现的个数.
     :retype: dict
     """
@@ -109,16 +77,20 @@ class pathFinder:
     该类不能单独运行,需要借助外部函数returnAllpath来启动,递归和输出.
 
     Attributes:
-        size: 棋盘的尺寸限定为正方形.
-        pos: 起始位置.(默认为(1, 1)并且父类的位置就是子类的起始位置)
-        x: 起始位置的x坐标
-        y: 起始位置的y坐标
-        all: 将传递给子类的历史位置
-        lastlist: 不包含当前位置的路径历史
-    Methods:
-        logtimes: 测试工具,启用将导入heartrate模块,这个模块会打开一个浏览器,浏览器会显示栈和每步代码执行的次数.
-        nextpos: 计算并排除超出范围和在历史路径中的下一步的可能位置,也作为到达重点和陷入死路的判断条件.
-        logRes_CreateLast: 该方法将会对nextpos的列表做判断,为空则记录,不为空则为每一个路径创建一个实例.
+        :ivar size: 棋盘的尺寸限定为正方形.
+        :ivar pos: 起始位置.(默认为(1, 1)并且父类的位置就是子类的起始位置)
+        :ivar x: 起始位置的x坐标
+        :ivar y: 起始位置的y坐标
+        :ivar all: 将传递给子类的历史位置
+        :ivar lastlist: 不包含当前位置的路径历史
+
+    Methods::
+        :meth:`logtimes`: 测试工具,启用将导入heartrate模块,这个模块会打开一个浏览器,浏览器会显示栈和每步代码执行的次数.
+
+        :meth:`nextpos`: 计算并排除超出范围和在历史路径中的下一步的可能位置,也作为到达重点和陷入死路的判断条件.
+
+        :meth:`logRes_CreateLast`: 该方法将会对nextpos的列表做判断,为空则记录,不为空则为每一个路径创建一个实例.
+
     """
 
     def __init__(self, size: int, *, bepos: tuple = (1, 1), lastlist: TypeGuard[list[int]] = None):
