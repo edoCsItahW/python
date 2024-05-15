@@ -16,10 +16,12 @@
 from __future__ import annotations
 
 from collections.abc import Container
+from deprecated import deprecated
 from functools import singledispatch, wraps
 from textTools import getWidth
 from functools import cache
 from threading import Thread, Event
+from warnings import warn
 from typing import Union, Iterable, Literal, TypeGuard, Callable, Sequence, Any
 from types import EllipsisType
 from queue import Queue as tQueue
@@ -151,6 +153,7 @@ def returnAllpath(size: int, outtype: int = 0):
         return globals()['finall']
 
 
+@deprecated(reason="This function is deprecated, please use python standard library itertools.islice instead")
 def splitList(aimlist: list, part: int) -> list[list]:
     """
     分割列表.
@@ -162,6 +165,9 @@ def splitList(aimlist: list, part: int) -> list[list]:
     :return: 分割后的多个列表.
     :retype: list
     """
+
+    warn("这个函数已经被弃用,请使用python标准库itertools中的islice函数替代", DeprecationWarning, stacklevel=2)
+
     long = len(aimlist)
     wigth = floor(long / part)
     return [aimlist[i:i + wigth] for i in range(0, long, wigth if wigth else 1)]
