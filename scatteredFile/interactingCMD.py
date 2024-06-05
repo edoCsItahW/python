@@ -123,10 +123,10 @@ def pragramExit(_socket: socket):
 
 
 if __name__ == '__main__':
-    Dispatch("WScript.Shell").Run(r"cmd.exe /k python E:\codeSpace\codeSet\Python\server.py")
-    sleep(1)
+    # Dispatch("WScript.Shell").Run(r"cmd.exe /k python E:\codeSpace\codeSet\Python\server.py")
+    # sleep(1)
     # pid = PID('edge.exe')
     # print(pid.getPort())
-    with Interacting(host='127.0.0.1', port=8081) as s:
+    with Interacting(host='127.0.0.1', port=25565) as s:#9999) as s:
         register(lambda: pragramExit(s.socket))
         s.cycleInput()

@@ -167,13 +167,13 @@ class MC:
 
 class RCON:
     """
-    /gamemode 0 ：生存。
+    /gamemode survival ：生存。
 
-    /gamemode 1 ：创造。
+    /gamemode creative ：创造。
 
-    /gamemode 2 ：冒险。
+    /gamemode spectator ：冒险。
 
-    /gamemode 3 ：旁观。
+    /gamemode  ：旁观。
 
     /kill ：自杀。
 
@@ -325,6 +325,10 @@ class RCON:
         closeFlag = True
         while closeFlag:
             if (ins := input('Minecraft RCON> /')).lower() != 'exit':
+
+                if ins.split(" ")[0].lower() == "op":
+                    warn("You can't use 'op' command!")
+
                 print(self.send(ins))
             else:
                 print('退出程序')

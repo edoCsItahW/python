@@ -7,10 +7,16 @@
 #  purposes is prohibited without the author's permission. If you have any questions or require
 #  permission, please contact the author: 2207150234@st.sziit.edu.cn
 
-# -------------------------<Lenovo>----------------------------
-# 传建时间: 2024/5/2 下午7:21
+# -------------------------<edocsitahw>----------------------------
+# 传建时间: 2024/5/23 下午5:39
 # 当前项目名: Python
 # 编码模式: utf-8
-# 注释: 
-# -------------------------<Lenovo>----------------------------
+# 注释: minecraft-protocol\src\client\autoVersion.js
+# -------------------------<edocsitahw>----------------------------
+from debug import
+
+
+def export(client, options):
+    client.wait_connect = True
+
 

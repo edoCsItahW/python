@@ -7,22 +7,11 @@
 #  purposes is prohibited without the author's permission. If you have any questions or require
 #  permission, please contact the author: 2207150234@st.sziit.edu.cn
 
-# -------------------------<Lenovo>----------------------------
-# 传建时间: 2024/4/24 上午11:17
-# 当前项目名: python
+# -------------------------<edocsitahw>----------------------------
+# 传建时间: 2024/5/23 下午4:36
+# 当前项目名: Python
 # 编码模式: utf-8
-# 注释: 
-# -------------------------<Lenovo>----------------------------
-class Node:
-    @property
-    def data(self) -> int: ...
-
-    @property
-    def next(self) -> 'Node': ...
-
-    @staticmethod
-    def create(data: int) -> 'Node': ...
-
-def append(head: Node, data: int) -> Node: ...
-
-def printList(head: Node) -> None: ...
+# 注释: minecraft-protocol\src\client.js
+# -------------------------<edocsitahw>----------------------------
+class Client:
+    pass

@@ -16,6 +16,22 @@
 from socket import socket, AF_INET, SOCK_STREAM
 from subprocess import getoutput
 from functools import cached_property
+from threading import Thread
+from queue import Queue
+from privateProject.minecraftExtent.temp import RCON
+from re import sub, match
+
+
+def commendFormat(cmd: str, sender: str) -> str:
+    cmd = cmd.replace("\\", "")
+
+    if "@s" in cmd and cmd[cmd.index("@s") + 1] != "[":
+        cmd = cmd.replace("@s", sender)
+
+    if "@a" in cmd and cmd[cmd.index("@a") + 1] != "[":
+        cmd = cmd.replace("@a", "@a[name=!baseBot]")
+
+    return cmd
 
 
 class server:
@@ -23,6 +39,7 @@ class server:
         self._host = host
         self._port = port
         self._client = None
+        self._queue = Queue()
 
     @property
     def host(self):
@@ -37,8 +54,15 @@ class server:
         return socket(AF_INET, SOCK_STREAM)
 
     @property
+    def queue(self): return self._queue
+
+    @property
     def client(self):
         return self._client
+
+    @property
+    def rcon(self):
+        return self._rcon
 
     @client.setter
     def client(self, value):
@@ -58,15 +82,49 @@ class server:
         print("等待客户端连接...")
         self.client, addr = self.socket.accept()
         print(f"连接来自: {addr}")
+    #
+    # def inputLoop(self):
+    #     while cmd := input(">>"):
+    #         print(cmd)
 
     def receive(self):
-        while (out := self.client.recv(1024).decode().lower()) != "exit":
+        # thread = Thread(target=self.inputLoop)
+        # thread.start()
+        with RCON() as rcon:
+            rcon.send("title @a 2s 100 4s")
 
-            if out == 0:
-                break
+            while (out := self.client.recv(1024).decode()).lower() != "exit":
 
-            print(res := getoutput(out))
-            self.client.send(res.encode())
+                if out == 0:
+                    break
+
+                # print(res := getoutput(out))
+                if '\\' in out:
+
+                    sender = match(r'<[^>]+> ', out)
+
+                    if sender:
+                        sender = sender.group(0)
+                    else:
+                        sender = out[out.index('>')+1:]
+
+                    print(f"COMMAND: {(cmd := out.replace(sender, ''))}")
+
+                    sender = sender.replace('<', '').replace('>', '')
+
+                    if cmd.startswith(r"\op"):
+                        rcon.send(f"tell {sender} You haven't permission to execute this command!")
+                    else:
+                        res = rcon.send(commendFormat(cmd, sender))
+
+                        rcon.send(rf"tell {sender} {res}")
+
+                        self.client.send((f"SERVER: {res}" if res else "失败或无返回").encode("gbk"))
+                else:
+                    print(f"MESSAGE: {out}")
+
+                    if "joined the game" in out:
+                        rcon.send(f'title @a title {{"text": "欢迎{out.split()[0]}!", "color": "gold", "bold": true}}')
 
 
 if __name__ == '__main__':
