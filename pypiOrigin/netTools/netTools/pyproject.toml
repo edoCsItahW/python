@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netTools"
+version = "1.0.6"
+authors = [
+  { name="Xiao Songtao", email="2257699870@qq.com" },
+]
+description = "Integrated with some network tools."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[tool.poetry.scripts]
+files = ["E:\\codeSpace\\codeSet\\Python\\pypiOrigin\\netTools\\netTools\\netTools\\netTools.pyd"]
+
+[project.urls]
+"Homepage" = "https://github.com/edoCsItahW/python/pypiOrigin/netTools"
+"Bug Tracker" = "https://github.com/edoCsItahW/python/issues"

@@ -310,4 +310,5 @@ class BColorSymbol:
 
 
 if __name__ == '__main__':
+    perview()
     pass

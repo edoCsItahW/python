@@ -1,0 +1,2 @@
+recursive-include netTools *.pyi
+recursive-include netTools *.pyd
