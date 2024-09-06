@@ -283,7 +283,7 @@ class reTemplate:
 
     @property
     def template(self):
-        return f"""{f'{self.space}*' if self._level else '###'} {self.funcName} {'' if self._level else f'{{#{self.funcName}}}'}{f'{self.lineBreak}   {self.space}> {des.replace(self.lineBreak, "").strip()}' if (des := self.description()) != '无' else ''}{f'{self.lineBreak}   * Example: {"" if ">>>" in example else "```python"}{self.lineBreak}{self.space}{example}{"" if ">>>" in example else "```"}' if (example := self.example()) != '无' else ''}{f'{self.lineBreak}   {self.space}{res}' if len(res := (self.classTemp if self.funcType == "class" else self.funcTemp)) else ''}\n"""
+        return f"""{f'{self.space}*' if self._level else '###'} {self.funcName} {'' if self._level else f'{{#{self.funcName}}}'}{f'{self.lineBreak}   {self.space}> {des.replace(self.lineBreak, "").strip()}' if (des := self.description()) != '无' else ''}{f'{self.lineBreak}   * Example: {f"{self.lineBreak}```python" if ">>>" in example else ""}{self.lineBreak}{self.space}{example}{"```" if ">>>" in example else ""}' if (example := self.example()) != '无' else ''}{f'{self.lineBreak}   {self.space}{res}' if len(res := (self.classTemp if self.funcType == "class" else self.funcTemp)) else ''}\n"""
 
     @property
     def classTemp(self):

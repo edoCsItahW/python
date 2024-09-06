@@ -494,6 +494,9 @@ class _funcWarp:
             return lambda x: x == value
 
         elif _type is not None and value is None:
+            if _type == type:  # 如果_type传入了type,则验证规则为有值即可
+                return lambda x: True
+
             return lambda x: isinstance(x, _type)
 
         else:
@@ -526,6 +529,52 @@ class _funcWarp:
 def GsingleDispatch(func: Callable) -> _funcWarp:
     """
     广义单分发器.
+
+    Example::
+
+        对比函数传入的参数中的第一个参数的值::
+
+            >>> @GsingleDispatch
+            >>> def func(x: int, y: int):
+            >>>     return x + y
+            >>>
+            >>> # 对比函数传入的参数中的第一个参数的值
+            >>> @func.register(0, value=1)
+            >>> def _(x: int, y: int):
+            >>>     return x - y
+            >>>
+            >>> @func.register(0, value=2)
+            >>> def _(x: int, y: int):
+            >>>     return x * y
+            >>>
+            >>> func(1, 2)
+            1
+            >>> func(1, 3)
+            2
+            >>> func(2, 2)
+
+        对比函数传入的参数中的第一个参数的类型::
+
+            >>> # 对比函数传入的参数中的第一个参数的类型
+            >>> @GsingleDispatch
+            >>> def func(x: int, y: int):
+            >>>     return x + y
+            >>>
+            >>> @func.register(0, Type=int)
+            >>> def _(x: int, y: int):
+            >>>     return x - y
+            >>>
+            >>> @func.register(0, Type=str)
+            >>> def _(x: str, y: int):
+            >>>     return x + str(y)
+            >>>
+            >>> func(1, 2)
+            1
+            >>> func("1", 2)
+            '12'
+            >>> func(1, 3)
+            -2
+            >>> func("1", 3)
 
     :param func: 被装饰的函数.
     :return: _funcWarp实例.

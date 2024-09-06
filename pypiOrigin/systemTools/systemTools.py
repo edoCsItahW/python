@@ -547,9 +547,9 @@ class instruct:
 
         :keyword output: 是否运行输出结果.
         :type output: bool
-        :keyword ignore: 是否将所有(原本将会抛出错误)错误(Error)降级为警告(Warning)以保证程序不中断.
+        :keyword ignore: 是否将所有(原本将会抛出的)错误(Error)降级为警告(Warning)以保证程序不中断.
         :type ignore: bool
-        :keyword color: 档为布尔类型(bool)是决定输出是否带有ANSI色彩,为字符串(str)时决定输出什么颜色.
+        :keyword color: 为布尔类型(bool)时决定输出是否带有ANSI色彩,为字符串(str)时决定输出什么颜色.
         :type color: bool
         :keyword eliminate: 是否排除某些会被误认为错误的无关紧要的警告,例如: '文件名、目录名或卷标语法不正确。'
         """
@@ -634,18 +634,22 @@ class jsonFile:
     def __init__(self, jsonDict: dict):
         self._json = jsonDict
 
-        if not isinstance(self._json, dict):
-            raise TypeError(f"参数`jsonDict`必须为字典(dict)类型,你的输入类型: '{type(self._json)}'")
+        if not isinstance(self._json, (list, dict)):
+            raise TypeError(
+                f"参数`jsonDict`必须为列表或字典(list, dict)类型,你的输入类型: '{type(self._json).__name__}'")
 
     @property
     def jsonData(self):
         return self._json
 
     @jsonData.setter
-    def jsonData(self, value: dict):
+    def jsonData(self, value: dict | list):
 
-        if not isinstance(self._json, dict):
-            raise TypeError(f"参数`jsonDict`必须为字典(dict)类型,你的输入类型: '{type(value)}'")
+        if isinstance(self._json, (dict, list)):
+            self._json = value
+        else:
+            raise TypeError(
+                f"参数`jsonDict`必须为列表或字典(list, dict)类型,你的输入类型: '{type(value).__name__}'")
 
     def _pairParser(self, key: Any, value: Any):
         if key in self.jsonData:
@@ -671,7 +675,7 @@ class jsonFile:
         for t in __m:
             self._pairParser(*t)
 
-    def read(self):
+    def read(self) -> list | dict:
         return self.jsonData
 
     def write(self, __d: dict = None):
@@ -686,9 +690,9 @@ class jsonFile:
 
 
 class jsonOpen:
-    def __init__(self, file: str | bytes | PathLike[str] | PathLike[bytes], mode: Literal["r+", "+r", "w+", "+w", "a+", "+a", "w", "a", "r"]):  # type: ignore
+    def __init__(self, file: str | bytes | PathLike[str] | PathLike[bytes], mode: Literal["r+", "+r", "w+", "+w", "a+", "+a", "w", "a", "r"], *, encoding: str = "utf-8"):  # type: ignore
         """
-        与open相同
+        与open相同,但是使用write模式打开时不会覆盖源文件,而是以read模式打开
 
         >>> with jsonOpen(file, "r") as file:
         >>>     file.read()  # type: dict
@@ -700,9 +704,15 @@ class jsonOpen:
         """
         self._filePath = path.abspath(file)
         self._mode = mode
+        self._code = encoding
         self._jsonfile: jsonFile = None
 
-        if not path.exists(self._filePath): raise FileNotFoundError(f"找不到文件: '{self._filePath}'")
+        if not path.exists(self._filePath):
+            if 'w' in self._mode:
+                with open(self._filePath, "w", encoding=self._code) as file:
+                    file.write("{}")
+            else:
+                raise FileNotFoundError(f"找不到文件: '{self._filePath}'")
 
     @property
     def _file(self):
@@ -715,7 +725,7 @@ class jsonOpen:
 
     def __enter__(self):
 
-        with open(self._filePath, "r") as File:
+        with open(self._filePath, "r", encoding=self._code) as File:
             self._file = jsonFile(load(File))
 
             return self._file
@@ -724,7 +734,8 @@ class jsonOpen:
 
         if any([exc_type, exc_val, exc_tb]):
             exc_tb: TracebackType
-            warn(f"一个错误被捕获了: {exc_type}({exc_val}), line {exc_tb.tb_lineno}")
+            warn(
+                f"一个错误被捕获了: {exc_type}({exc_val}), line {exc_tb.tb_lineno}")
 
         if self._mode != "r":
             with open(self._filePath, self._mode) as file:

@@ -493,7 +493,10 @@ class baseSQL:
 
         tablelist = [i[0] for i in self._cursor.fetchall()]
 
-        print(self._to_show(self.COLUMN[0], tablelist, spendtime=time() - start)) if show else None
+        if tablelist:
+            print(self._to_show(self.COLUMN[0], tablelist, spendtime=time() - start)) if show else None
+        else:
+            print(self._empty_feedback(spendtime=time() - start))
 
         return tablelist
 
@@ -1406,6 +1409,13 @@ class baseSQL:
 
 
 if __name__ == '__main__':
-    # sql = baseSQL("root", "135246qq", "quesinfo", tableName="politics")
+    sql = baseSQL("root", "135246qq", "temp")
     # sql.executeOhter(_input=True, allowprint=True, circulate=True)
+    # sql.createTable("users", True, username=(('v', 50), False, False, False), age=(('i', ),), email=(('v', 50),))
+    # sql.createTable("orders", False, ordername=(('v', 50), False, False, False), orderid=(('i', ),), count=(('i', ),), date=(('d', ),))
+    # sql.dropDB("test1")
+    # sql.insert("users", username="v", age=20, email="v@v.v")
+    # sql.insert("orders", ordername="v", orderid=1, count=2, date="2022-01-01")
+    sql.selectColumn("users", ("username", ))
+    sql.selectColumn("orders", ("count", ))
     pass
