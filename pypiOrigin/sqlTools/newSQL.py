@@ -13,246 +13,449 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<edocsitahw>----------------------------
-from typing import Callable, Final, final
-from functools import wraps
-from pymysql import Error, connect
 from pymysql.cursors import Cursor
-from enum import Enum
+from functools import wraps
+from functools import partial, singledispatch
+from tabulate import tabulate
+from warnings import warn
+from pymysql import Error, connect, Connection
+from typing import Callable, final, Self, TypedDict, Protocol, Any, Optional, Literal, NoReturn, Final
+from string import ascii_uppercase
+from random import choice, randint
+from types import FunctionType as function, TracebackType
+from time import time
+from abc import ABC, abstractmethod
+from typeSup import *
+
+
+class _funcWarp:
+    """
+    单分发器.
+
+    Attributes:
+        :ivar _func: 被装饰的函数.
+        :ivar _rulesDict: 规则字典.
+        :ivar _pos: 进行对比的参数位置.
+
+    Methods:
+        _checkRule: 验证规则.
+
+        register: 注册规则.
+
+        __call__: 执行函数.
+    """
+
+    def __init__(self, func: Callable):
+        self._func = func
+        self._rulesDict: dict[Callable, Callable] = {}
+        self._pos: Optional[int | str] = None
+
+    @staticmethod
+    def _checkRule(value: Any, _type: type) -> Callable[[Any], bool]:
+        if isinstance(value, type):
+            raise ValueError(
+                f"参数'{value}'不能是类型,如要验证类型,请使用'_type'参数!")
+
+        if _type is None and value is not None:
+            return lambda x: x == value
+
+        elif _type is not None and value is None:
+            # 如果_type传入了type,则验证规则为有值即可
+            if _type == type: return lambda x: True
+
+            return lambda x: isinstance(x, _type)
+
+        else:
+            return lambda x: x is None
+
+    def register(self, pos: int | str = 0, *, value: Optional[Any] = None, type_: Optional[type] = None):
+        if pos is not None:
+            if self._pos is not None and self._pos != pos:
+                raise ValueError(
+                    f"进行对比的参数位置不一致: '{self._pos}'和'{pos}'冲突!")
+
+            else:
+                self._pos = pos
+
+        def getFunc(func: Callable):
+            wraps(func)
+
+            self._rulesDict[self._checkRule(value, type_)] = func
+
+        return getFunc
+
+    def __call__(self, *args, **kwargs):
+        for rule, func in self._rulesDict.items():
+            if rule(args[self._pos] if isinstance(self._pos, int) else kwargs[self._pos]):
+                return func(*args, **kwargs)
+
+        return self._func(*args, **kwargs)
+
+
+def GsingleDispatch(func: Callable) -> _funcWarp:
+    """
+    广义单分发器.
+
+    Example::
+
+        对比函数传入的参数中的第一个参数的值::
+
+            >>> @GsingleDispatch
+            >>> def func(x: int, y: int):
+            >>>     return x + y
+            >>>
+            >>> # 对比函数传入的参数中的第一个参数的值
+            >>> @func.register(0, value=1)
+            >>> def _(x: int, y: int):
+            >>>     return x - y
+            >>>
+            >>> @func.register(0, value=2)
+            >>> def _(x: int, y: int):
+            >>>     return x * y
+            >>>
+            >>> func(1, 2)
+            1
+            >>> func(1, 3)
+            2
+            >>> func(2, 2)
+
+        对比函数传入的参数中的第一个参数的类型::
+
+            >>> # 对比函数传入的参数中的第一个参数的类型
+            >>> @GsingleDispatch
+            >>> def func(x: int, y: int):
+            >>>     return x + y
+            >>>
+            >>> @func.register(0, Type=int)
+            >>> def _(x: int, y: int):
+            >>>     return x - y
+            >>>
+            >>> @func.register(0, Type=str)
+            >>> def _(x: str, y: int):
+            >>>     return x + str(y)
+            >>>
+            >>> func(1, 2)
+            1
+            >>> func("1", 2)
+            '12'
+            >>> func(1, 3)
+            -2
+            >>> func("1", 3)
+
+    :param func: 被装饰的函数.
+    :return: _funcWarp实例.
+    """
+    wraps(func)
+    return _funcWarp(func)
 
 
 def stderr(msg: str) -> None:
     print(f"\033[31m{msg}\033[0m")
 
 
-def errorf(errorindex: str = "10000") -> Callable:
-    """
-    用于将baseSql的错误输出转换为mysql格式的装饰器.
+def stdout(msg: str, *, allow: bool = True, **kwargs) -> None:
+    if allow:
+        print(msg, **kwargs)
 
-    :param errorindex: 错误的状态码,由于无法获取,该值需要手动设定.
-    :type errorindex: str
-    :return: 装饰后的函数.
-    :retype: Callable
+
+@final
+class Feedback:
+    """
+    定义反馈类,用于处理mysql的反馈信息.
     """
 
-    def getfunc(func: Callable) -> Callable:
-        @wraps(func)
-        def warp(*args, **kwargs) -> Callable:
+    @staticmethod
+    def normal(rowcount: int, *, spendtime: float = 0.00) -> str:
+        return f"{rowcount} row{'s' if rowcount != 1 else ''} in set ({spendtime:.3f} sec)"
+
+    @staticmethod
+    def query(rowcount: int, *, spendtime: float = 0.00) -> str:
+        return f"Query OK, {rowcount} rows affected ({spendtime:.3f} sec)"
+
+    @staticmethod
+    def empty(*, spendtime: float = 0.00) -> str:
+        return f"Empty set ({spendtime:.3f} sec)"
+
+    @staticmethod
+    def alter(rowcount: int) -> str:
+        return f"Records: {rowcount}  Duplicates: 0  Warnings: 0"
+
+    @staticmethod
+    def useDb() -> str:
+        return "Database changed"
+
+
+def result(res: Result, fbFn: Callable[..., str] | function = None) -> Callable[..., Any]:
+    def getfunc(fn: Callable) -> Callable:
+        @wraps(fn)
+        def warp(*_args, **_kwargs) -> Any:
+            start = time()
+
             try:
-                return func(*args, **kwargs)
+                _ = fn(*_args, **_kwargs)
+
             except Error as e:
-                if isinstance(e.args, tuple):
-                    stderr(f"ERROR {e.args[0]} ({errorindex}): {e.args[1]}")
-                else:
-                    stderr(f"Other Error: {e}")
+                stderr(
+                    f"ERROR {e.args[0]} ({''.join(str(r if (r := randint(0, 9)) % 2 else choice(ascii_uppercase)) for _ in range(5))}): {e.args[1]}")
+
+            except Exception as e:
+                raise e from RuntimeError
+
+            else:
+                res['spendtime'] = time() - start
+
+                if res['result'].__len__():
+                    print(tabulate(res["result"], headers=res["header"] or (), tablefmt="grid"))
+
+                if fbFn:
+                    print(fbFn(
+                        *[r for i in fbFn.__code__.co_varnames[:fbFn.__code__.co_argcount] if
+                          (r := res.get(i)) or r == 0],
+                        **{k: r for k in fbFn.__code__.co_varnames[fbFn.__code__.co_argcount:] if
+                           (r := res.get(k)) or r == 0}
+                    ))
+
+                return _
+            finally:
+                for k in res:
+                    res.setdefault(k, None)
 
         return warp
 
     return getfunc
 
 
-class Type(Enum):
-    """
-    定义数据类型枚举.
-    """
-    VARCHAR = "varchar"
-    INT = "int"
-    CHAR = "char"
-    DATE = "date"
-    FLOAT = "float"
-    TIME = "time"
-    BOOLEAN = "boolean"
+@GsingleDispatch
+def remap(data: dict, mapping: dict[str, str | tuple[str, str]], *, default: Any = '') -> NoReturn:
+    raise NotImplementedError(
+        f"Type {type(data)} is not supported")
 
 
-class Feedback:
-    """
-    定义反馈类,用于处理mysql的反馈信息.
-    """
-    @staticmethod
-    def normal(listlen: int, *, spendtime: float = 0.00) -> str:
-        """
-        返回mysql中展示表的反馈(这其中并没有换行符,你需要根据实际的数据库反馈来在使用的字符串前后添加换行符).
+@remap.register(0, type_=None)
+def _(data: None, mapping: dict[str, str | tuple[str, str]], *, default: CanBeStr = '') -> dict[str, CanBeStr]:
+    return { k: default for k in mapping}
 
-        :param listlen: 数据表的行数
-        :type listlen: int
-        :param spendtime: 运行耗时
-        :type spendtime: float
-        :return: 返回填充后的字符串.
-        :retype: str
-        """
-        return f"{listlen} row{'s' if listlen != 1 else ''} in set ({spendtime:.3f} sec)"
 
-    @staticmethod
-    def option(cursor: Cursor, spendtime: float = 0.00) -> str:
-        """
-        返回mysql中操作命令的反馈(这其中并没有换行符,你需要根据实际的数据库反馈来在使用的字符串前后添加换行符).
+@remap.register(0, type_=dict)
+def _(data: dict, mapping: dict[str, str | tuple[str, str]], *, default: CanBeStr = '') -> dict[str, CanBeStr]:
+    return {k: (
+        (
+            (
+                f" {mapping[k][0]} {mapping[k][1]}"
+                if isinstance(mapping[k], tuple) and len(mapping[k]) >= 2 else  #
+                " " + mapping[k]
+            )
+            if r else  #
+            default
+        )
+        if isinstance(r, bool) else  #
+        (
+            f" {mapping[k][0]} {r}"
+            if isinstance(mapping[k], tuple) and len(mapping[k]) >= 2 else  #
+            r
+        )
+    )
+    if (r := data.get(k)) else  #
+    default
+            for k in mapping}
 
-        :param spendtime: 运行耗时.
-        :type spendtime: float
-        :return: 填充后的字符串.
-        :retype: str
-        """
-        return f"Query OK, {cursor.rowcount} rows affected ({spendtime:.3f} sec)"
 
-    @staticmethod
-    def empty(*, spendtime: float = 0.00) -> str:
-        """
-        mysql对于空表的反馈.
+def execute(conn: Connection, cur: Cursor, res: Result, cmd: str, *, allow: bool = True) -> None:
+    stdout(cmd + ('' if cmd.endswith(';') else ';'), allow=allow) if allow else ...
 
-        :param spendtime: 运行耗时.
-        :type spendtime: float
-        :return: 填充后的字符串.
-        :retype: str
-        """
-        return f"Empty set ({spendtime:.3f} sec)"
+    cur.execute(cmd)
 
-    @staticmethod
-    def alter(cursor: Cursor) -> str:
-        """
-        mysql中修改列的反馈.
+    ... if conn.get_autocommit() else conn.commit()
 
-        :return: 填充后的字符串.
-        :retype: str
-        """
-        return f"Records: {cursor.rowcount}  Duplicates: 0  Warnings: 0"
+    res['result'] = cur.fetchall()
+
+    if cur.description: res['header'] = [i[0] for i in cur.description]
+
+    res['rowcount'] = cur.rowcount
+
+
+FlagOrStr = Optional[bool | str | None]
+
+
+class Database:
+    instance: Self = None
+    _res: Result = {'header': None, 'result': None, 'rowcount': None}
+
+    def __new__(cls, *args, **kwargs):
+        if not cls.instance:
+            cls.instance = super().__new__(cls)
+
+        return cls.instance
+
+    def __init__(self, conn: Connection, cur: Cursor, database: Optional[str] = None, *, table: str = None):
+        self._conn = conn
+        self._cur = cur
+        self.table = table
+        self.database = database
+        self._execute: Callable[[str], None] = partial(execute, conn, cur, self._res)
+
+    @result(_res, Feedback.normal)
+    def show(self):
+        self._execute("SHOW DATABASES")
+
+    @result(_res, Feedback.useDb)
+    def use(self, database: str = None):
+        database = database or self.database
+
+        self._execute(f"USE {database}")
+
+        self.database = database
+
+    @result(_res, Feedback.query)
+    def create(self, dbName: str, *, cfg: DBCreateCfg = None, exists: FlagOrStr | Literal['IF NOT EXISTS'] = False,
+               charset: FlagOrStr = None, collate: FlagOrStr = None):
+        cfg = remap({
+            **(cfg or {}),
+            'exists':  exists,
+            'charset': charset,
+            'collate': collate
+        },
+            {
+                'exists':  "IF NOT EXISTS",
+                'charset': ('CHARACTER SET', 'utf8mb4'),
+                'collate': ('COLLATE', 'utf8mb4_unicode_ci')
+            })
+
+        self._execute(f"CREATE DATABASE{cfg['exists']} {dbName}{cfg['charset']}{cfg['collate']}")
+
+    @result(_res, Feedback.query)
+    def drop(self, dbName: str, *, cfg: DBDropCfg = None, exists: FlagOrStr | Literal['IF EXISTS'] = False):
+        cfg = remap({**(cfg or {}), 'exists': exists}, {'exists': "IF EXISTS"})
+
+        self._execute(f"DROP DATABASE {dbName}{cfg['exists']}")
+
+
+class ArgumentError(Exception):
+    def __init__(self, *args):
+        super().__init__(*args or ("Invalid arguments",))
+
+
+class Table:
+    instance: Self = None
+    _res: Result = {'header': None, 'result': None, 'rowcount': None}
+
+    def __new__(cls, *args, **kwargs):
+        if not cls.instance:
+            cls.instance = super().__new__(cls)
+
+        return cls.instance
+
+    def __init__(self, conn: Connection, cur: Cursor, *, table: str = None):
+        self._conn = conn
+        self._cur = cur
+        self._table = table
+        self._execute: Callable[[str], None] = partial(execute, conn, cur, self._res)
+
+    @property
+    def table(self):
+        if not self._table:
+            raise ValueError(
+                "'table' is not defined") from ArgumentError
+
+        return self._table
+
+    @table.setter
+    def table(self, value: str):
+        self._table = value
+
+    @result(_res, Feedback.normal)
+    def describe(self):
+        self._execute(f"DESCRIBE {self.table}")
+
+    @result(_res, Feedback.query)
+    def create(self, tbName: str, **kwargs):
+        ...
 
 
 class MySQL:
-    """
-        包装了pyMySql部分功能的类.
+    _instance: Self = None
 
-        Attributes:
-            _user: 用户名.
-            _password: 用户密码.
-            _database: 数据库名
-            _host: 主机名.
-            _connect: 链接.
-            _cursor: 执行指针.
-            datatype: 部分数据类型.
-            tbName: 数据表名称.
-
-        Methods::
-            _show_feedback: 返回mysql中展示表的反馈.\n
-            _op_feedback: 返回mysql中操作命令的反馈.\n
-            _empty_feedback: mysql对于空表的反馈.\n
-            _alter_feedback: mysql中修改列的反馈.\n
-            _security_check: 某些操作将导致不可逆的后果,使用该函数进行警告,并且检查返回的布尔值以决定是否继续.\n
-            _checkParam: 当某些参数不能为空时使用该函数进行检测.\n
-            _to_show: 表格化单列输出.\n
-            _mutlishow: 表格化多列输出.\n
-            _checkDict: 对输入数据进行数据库的兼容性修改.\n
-            COLUMN: 获取数据表表头(要求在之前有查询表操作).\n
-            DATABASE: 获取和显示所有数据库.\n
-            TABLE: 获取和显示数据库的所有数据表.\n
-            getColumn: 获取表头,与方法COLUMN不同的是,COLUMN需要先查表,而该函数自动进行查表.\n
-            showTableFrame: 获取和显示数据表结构.\n
-            showTableContent: 获取和显示数据表内容.\n
-            selectColumn: 获取和展示选择数据表的某列.\n
-            createDB: 创建数据库.\n
-            dropDB: 删除数据库.\n
-            createTable: 创建数据表.\n
-            dropTable: 删除数据表.\n
-            insert: 向数据表添加数据.\n
-            updata: 修改数据表中数据.\n
-            delete: 删除数据表中当个或所有数据.\n
-            column_add: 为数据表添加一列.\n
-            column_drop: 删除数据表中的某一列.\n
-            column_modify: 修改数据表中某一列的定义.\n
-            column_default: 修改数据表中某一列的默认值.\n
-            column_dropDef: 删除数据表中某一列的默认值.\n
-            column_change: 使用change方式对某一列的定义进行修改.\n
-            tbName_modify: 修改数据表的名称.\n
-            executeOther: 执行其它命令(MySql移植).\n
-            to_csv: 将数据表导出为csv文件.\n
-            csv_to_mysql: 导入csv文件为数据表.\n
-            table_to_DataFrame: 将数据表导出为DataFrame.\n
-            checkId: 遍历数据表的id索引值,检测id是否连续以判断是缺漏数据.\n
-            randomChoice: 返回随机选择数据表中的数据
-        """
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs) -> 'MySQL':
         if not cls._instance:
             cls._instance = super().__new__(cls)
+
         return cls._instance
 
-    def __init__(self, user: str, password: str, database: str = None, *, host: str = 'localhost',
-                 tableName: str = None):
+    def __init__(self, user: str, password: str, database: Optional[str] = None, *, host: str = 'localhost',
+                 table: str = None, **kwargs) -> None:
         self._database = database
-        self._connect = connect(host=host, user=user, password=password, database=database)
+        self._connect = connect(host=host, user=user, password=password, database=database, **kwargs)
         self._cursor = self._connect.cursor()
-        self._tbName = tableName
+        self._table = table
 
-    @final
-    def _singleForm(self, title: str, conlist: list[str], *, spendtime: float = None) -> str:
-        """
-        在数据库只返回单个列的值的情况下,将返回的列表数据转换为可以被打印的表格的形式.
+    def __enter__(self) -> Self:
+        self._connect.connect()
 
-        :param title: 该表的表头,例如`SHOW DATABASES;`输出的表头为'Database'.
-        :type title: str
-        :param conlist: 内容列表.
-        :type conlist: list
-        :param spendtime: 消耗的时间,这将显示在例如'Query OK, 0 row affected (spendtime sec)',可以使用time的time()函数在指针执行前后进行计时以获得.
-        :type spendtime: float
-        :return: 返回转换后的字符串.
-        :retype: str
-        """
-        from textTools import getWidth
-        conlist = [str(i).strip() for i in conlist]
+        return self
 
-        maxlen = max(getWidth(title), max(getWidth(i) for i in conlist))
+    def __exit__(self, exc_type, exc_val, exc_tb: TracebackType) -> None:
+        self._cursor.close()
+        self._connect.close()
 
-        line = "+" + "-" * (maxlen + 2) + "+"
+        if any((exc_type, exc_val, exc_tb)):
+            warn(  # 退出上下文异常
+                f"Exception occurred: {exc_type}({exc_val}), line {exc_tb.tb_lineno}")
 
-        head = f"{line}\n| {title:<{maxlen - getWidth(title)}} |\n{line}\n"
+    @property
+    def db(self) -> Database:
+        if not Database.instance:
+            return Database(self._connect, self._cursor, self._database, table=self._table)
 
-        for content in conlist:
-            head += f"| {content:<{maxlen - getWidth(title)}} |\n"
-        head += line + f"\n{Feedback.normal(len(conlist), spendtime=spendtime)}\n"
+        if self._table:
+            Database.instance.table = self._table
 
-        return head
+        if self._database:
+            Database.instance.database = self._database
 
-    @final
-    def _mutliForm(self, columlist: list[str], conlist: list[tuple], *, spendtime: float = None) -> str:
-        """
-        在数据库只返回多个列的值的情况下,将返回的列表数据转换为可以被打印的表格的形式.
+        return Database.instance
 
-        :param columlist: 展示的表头,你可以通过self.COLUM获取.
-        :type columlist: list
-        :param conlist: 内容列表.
-        :type conlist: list
-        :param spendtime: 运行耗时.
-        :type spendtime: float
-        :return: 返回什么.
-        :retype: str
-        """
-        from textTools import getWidth
-        conlist = [str(i).strip() for i in conlist]
+    @property
+    def tb(self) -> Table:
+        if not Table.instance:
+            return Table(self._connect, self._cursor, table=self._table)
 
-        if (conl := len(columlist)) != (cl := len(conlist[0])):
-            raise ValueError(  # List length error
-                f"列名列表长度必须与每行元素个数一致,{columlist}长为{conl},{conlist[0]}长为{cl}")
+        if self._table:
+            Table.instance.table = self._table
 
-        lenlist = [max([4 if (l := alist[i]) is None else getWidth(l) for alist in conlist]) for i in
-                   range(len(conlist[0]))]
+        return Table.instance
 
-        maxlen = [c if (c := getWidth(colum)) > wordlen else wordlen for colum, wordlen in zip(columlist, lenlist)]
+    @property
+    def database(self) -> str:
+        return self._database
 
-        head = (line := "+") + "\n"
+    @database.setter
+    def database(self, value: str) -> None:
+        self._database = value
 
-        for l in maxlen:
-            line += f"{(l + 2) * '-'}+"
+        if Database.instance:
+            Database.instance.database = value
 
-        for i, colum in enumerate(columlist):
-            head += f"| {colum:<{maxlen[i] - getWidth(colum)}} "
+        else:
+            warn(
+                "Database instance not found, please create a new instance.")
 
-        head += f"|\n{line}\n"
+    @property
+    def table(self) -> str:
+        return self._table
 
-        for content in conlist:
-            for i, word in enumerate(content):
-                head += f"| {word}{(maxlen[i] - (4 if word is None else getWidth(word))) * ' '} "
-            head += "|\n"
+    @table.setter
+    def table(self, value: str) -> None:
+        self._table = value
 
-        head += f"{line}\n{Feedback.normal(len(conlist), spendtime=spendtime)}\n"
+        if Database.instance:
+            Database.instance.tbName = value
 
-        return head
+        else:
+            warn(
+                "Database instance not found, please create a new instance.")
 
+
+if __name__ == '__main__':
+    # 1. tuple[tuple[], ...]
+    mysql = MySQL('root', '135246qq', 'mysql', table='db', autocommit=True)
+    mysql.db.show()
