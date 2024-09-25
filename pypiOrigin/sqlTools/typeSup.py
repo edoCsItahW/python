@@ -15,10 +15,10 @@
 # -------------------------<edocsitahw>----------------------------
 __all__ = [
     "Result",
-    "DBCreateCfg",
-    "DBDropCfg",
     "Type",
-    "CanBeStr"
+    "CanBeStr",
+    "ArgumentError",
+    "FlagOrStr"
 ]
 
 from typing import TypedDict, Protocol, Optional
@@ -32,21 +32,6 @@ class Result(TypedDict):
     spendtime: Optional[float]
 
 
-class DBCreateCfg(TypedDict):
-    exists: bool
-    charset: str | bool | None
-    collate: str | bool | None
-
-
-class CanBeStr(Protocol):
-    def __str__(self) -> str: ...
-    def __repr__(self) -> str: ...
-
-
-class DBDropCfg(TypedDict):
-    exists: bool
-
-
 class Type(Enum):
     VARCHAR = "varchar"
     INT = "int"
@@ -55,3 +40,17 @@ class Type(Enum):
     FLOAT = "float"
     TIME = "time"
     BOOLEAN = "boolean"
+
+
+FlagOrStr = Optional[bool | str | None]
+
+
+class CanBeStr(Protocol):
+    def __str__(self) -> str: ...
+
+    def __repr__(self) -> str: ...
+
+
+class ArgumentError(Exception):
+    def __init__(self, *args):
+        super().__init__(*args or ("Invalid arguments",))
