@@ -93,6 +93,8 @@ class Feedback:
         """
         输出表类型信息.
 
+	@warning xxx
+
         :param rowcount: 行数
         :keyword spendtime: 耗时
         :return: 表类型信息

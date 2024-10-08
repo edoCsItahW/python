@@ -1,0 +1,5 @@
+{
+	"devDependencies": {
+		"vite-plugin-mock": "^3.0.2"
+	}
+}

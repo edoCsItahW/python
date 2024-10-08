@@ -23,6 +23,11 @@ from ast import parse, FunctionDef, ClassDef, AST, Expr, Constant, dump, Module,
 from re import findall, sub, DOTALL
 from os import PathLike, path
 
+# TODO: 重构
+# TODO: pyi生成问题,一些导入模块被误删,property不允许,对newSQL.py生成以复现
+# TODO: 生成可执行文件异常
+# TODO: 修复"文件后缀必须为xxx"的错误
+
 
 class engine:
     def __init__(self, filePath: str | PathLike):
@@ -425,21 +430,22 @@ def argParser() -> Namespace:
 
 if __name__ == '__main__':
     # test = True
-    test = False
+    test = True
     # pyinstaller -F spawner.py -n spawnTools -i E:\codeSpace\codeSet\Python\pypiOrigin\uploadTools\upload_1.ico
 
     if test:
         warn(
             f"正在运行测试版!")
 
-        ins = docParser((eng := engine(filePath=r"E:\codeSpace\codeSet\Python\pypiOrigin\netTools\netTools.py")).comments)
+        ins = docParser((eng := engine(filePath=r"E:\codeSpace\codeSet\Python\pypiOrigin\sqlTools\newSQL.py")).comments)
         # ins.contents()
         # ins.detail()
         # with open(r"E:\codeSpace\codeSet\Python\test.md", "w", encoding="utf-8") as file:
         #     file.write(ins.markdown)
         # eng.pyi(filePath=r"E:\codeSpace\codeSet\Python\test.pyi")
-        toPath = handlePath(r"E:\codeSpace\codeSet\Python\README.md", default=r"E:\codeSpace\codeSet\Python\pypiOrigin\netTools\netTools.py", suffix='md')
-        ins.toMarkdown(toPath)
+        eng.pyi(filePath=r"E:\codeSpace\codeSet\Python\pypiOrigin\sqlTools\newSQL.pyi")
+        # toPath = handlePath(r"E:\codeSpace\codeSet\Python\pypiOrigin\sqlTools\newSQL.pyi", default=r"E:\codeSpace\codeSet\Python\pypiOrigin\sqlTools\newSQL.py", suffix='pyi')
+        # ins.toMarkdown(toPath)
     else:
         args = argParser()
         ins = docParser((eng := engine(filePath=args.file)).comments)
