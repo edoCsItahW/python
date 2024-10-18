@@ -327,7 +327,7 @@ class zhihu:
     def other(element):
         text = element.text
         if text:
-            from ANSIdefine import ansiManger
+            from ansiDefine import ansiManger
             print(ansiManger().f_green(text))
 
     def titledo(self, element: _Element | Tag):
@@ -417,7 +417,7 @@ class zhihu:
 
 class supFetch:
     def __init__(self, url: str | Literal["like https://www.baidu.com/page=REPLACE"], *, firstUrl: str = None, Range: int | tuple[Literal["like '' there is ok"] | str | int, int] = None, rooturl: str = None, test: bool = False):
-        from ptioTools import parallel
+        from pypiOrigin.ptioTools.PTIOtools import parallel
         self._url = url
         self._rooturl = rooturl
         self._ins = parallel(test=test)
@@ -474,4 +474,5 @@ class supFetch:
 
 
 if __name__ == '__main__':
-    pass
+    ins = zhihu(r"https://zhuanlan.zhihu.com/p/390327683", markdown(r"C:\Users\Lenovo\Desktop\test.md", rootpath=r"C:\Users\Lenovo\Desktop"))
+    ins.beginget()

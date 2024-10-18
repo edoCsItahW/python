@@ -16,11 +16,11 @@
 # -------------------------<edocsitahw>----------------------------
 from pymysql.cursors import Cursor
 from functools import wraps
-from functools import partial, singledispatch, cached_property
+from functools import partial, singledispatch, cached_property, cache
 from tabulate import tabulate
 from warnings import warn
-from pymysql import Error, connect, Connection
-from typing import Callable, final, Self, TypedDict, Protocol, Any, Optional, Literal, NoReturn, Final, overload
+from pymysql import Error, connect, Connection, NULL
+from typing import Callable, final, Self, TypedDict, Protocol, Any, Optional, Literal, NoReturn, Final, overload, Collection, Iterator
 from string import ascii_uppercase
 from random import choice, randint
 from types import FunctionType as function, TracebackType
@@ -30,10 +30,15 @@ from enum import Enum
 from re import findall
 from abc import ABC
 from subprocess import Popen, PIPE
+from pandas import Series, DataFrame
+from inspect import currentframe, signature
+from csv import reader, writer
 
 # TODO: 改善仿位掩码类引用方式过长问题.
+# TODO: 使仿位掩码类和SQL语句执行器尽量遵循开发封闭原则(针对新字段).
 
 SERVER_NAME = 'MySQL80'
+OUTPUT = True
 
 
 @lambda _: _()
@@ -57,8 +62,6 @@ def feasibleTest() -> None:
             raise EnvironmentError(  # 服务未启动
                 f"MySQL service not found: {t[1]}") from RuntimeError("Feasible test failed")
 
-    del _, r, e, t, _r
-
 
 del feasibleTest
 
@@ -76,7 +79,7 @@ def stdout(msg: str, *, allow: bool = True, **kwargs) -> None:
     :param allow: 是否允许输出
     :keyword kwargs: 其他print函数参数
     """
-    if allow:
+    if allow and OUTPUT:
         print(msg, **kwargs)
 
 
@@ -154,10 +157,10 @@ def result(res: Result, fbFn: Callable[..., str] | function = None) -> Callable[
                 res['spendtime'] = time() - start
 
                 if res['result'].__len__():
-                    print(tabulate(res["result"], headers=res["header"] or (), tablefmt="grid"))
+                    stdout(tabulate(res["result"], headers=res["header"] or (), tablefmt="grid"))
 
                 if fbFn:
-                    print(fbFn(
+                    stdout(fbFn(
                         *[r for i in fbFn.__code__.co_varnames[:fbFn.__code__.co_argcount] if (r := res.get(i)) or r == 0],
                         **{k: r for k in fbFn.__code__.co_varnames[fbFn.__code__.co_argcount:] if (r := res.get(k)) or r == 0}
                     ) + '\n')
@@ -216,6 +219,7 @@ class Field:
     字段类,通过仿位掩码类,实现自动处理.
 
     TODO: 实现嵌套Field功能,如: where(condition1 | and | condition2) | order(desc)
+    TODO: 修复0被误判为假的问题
 
     Example::
         >>> # Usage:
@@ -294,9 +298,9 @@ class Field:
         :return: 处理后的输入值
         :raise ValueError: 值为空且为必填字段
         """
-        res = self._value or self._default
+        res = v if (v := self._value) is not None else self._default
 
-        if not any((self._value, self._default)):
+        if not any((self._value is not None, self._default)):
             if self._err:
                 raise ValueError(  # 值为空且为必填字段
                     f"Field '{self._key}' is required!") from ArgumentError
@@ -351,7 +355,7 @@ class Field:
             raise ArgumentError(
                 f"Invalid value for field: 'value', must be one of: {', '.join(self._required)}")
 
-        if value and not isinstance(value, bool):
+        if value is not None and not isinstance(value, bool):
             self._value = value
 
         elif value is None:
@@ -438,6 +442,7 @@ class Database(Base):
 
         if autoUse:
             self.database = dbName
+            self.use()
 
     @result(Base._res, Feedback.query)
     def drop(self, dbName: str, *, cfg: Field | dict[str, str | bool | None | Type] = None):
@@ -495,6 +500,9 @@ def py2sql(data: Any) -> Any:
     elif isinstance(data, float):
         return str(data)
 
+    elif data is None:
+        return NULL
+
     raise NotImplementedError(  # 未实现类型
         f"Unsupported type: {type(data).__name__}")
 
@@ -541,6 +549,8 @@ class TB:
         ORDER = Field('order', None, handle=lambda x: f" ORDER BY {x}", err=True)
         LIMIT = Field('limit', 1, handle=lambda x: f" LIMIT {x}", err=True)
         INNER = Field('inner', None, handle=lambda x: f" INNER JOIN {x[0]} ON {x[1]}", err=True)
+        OFFSET = Field('offset', None, handle=lambda x: f" OFFSET {x}", err=True)
+        LEFT = Field('left', None, handle=lambda x: f" LEFT JOIN {x[0]} ON {x[1]}", err=True)
 
     @final
     class Update(ABC):
@@ -629,11 +639,100 @@ class Table(Base):
         def __call__(self, cfg: Field | dict[str, str | bool | None | Type] = None) -> None:
             self.end(cfg)
 
+    class _series:
+        _ins: 'Table'
+
+        def __new__(cls, *args, **kwargs):
+            cls._ins = kwargs.get('ins')
+            return super().__new__(cls)
+
+        def __init__(self, data: tuple[Any, ...], *, columns: list[str], **kwargs):
+            # TODO: 实现响应式数据
+            self.__dict__['_data'] = self._data = data
+            self.__dict__['_columns'] = self._columns = columns
+            self.__dict__['_map'] = self._map = {k: v for k, v in zip(columns, data)}
+
+        def __getitem__(self, item: str):
+            return self._map[item]
+
+        def __getattr__(self, item: str):
+            if item not in self.__dir__():
+                return self[item]
+
+            return super().__getattribute__(item)
+
+        def __iter__(self):
+            return iter(self._data)
+
+        def __setitem__(self, key: str, value: Any) -> None:
+            self._ins.update(**{key: value}, cfg=TB.Update.WHERE(" and ".join(f'{k}={py2sql(v)}' for k, v in self._map.items())))
+
+        def __setattr__(self, key: str, value: Any) -> None:
+            if key not in self.__dir__():
+                self[key] = value
+            else:
+                super().__setattr__(key, value)
+
+        def __del__(self):
+            self._ins.delete(cfg=TB.Delete.WHERE(" and ".join(f'{k}={py2sql(v)}' for k, v in self._map.items())))
+
+        def __repr__(self):
+            return f"<Series[{', '.join(f'{k}: {py2sql(v)}' for k, v in self._map.items())}]>"
+
     def __init__(self, conn: Connection, cur: Cursor, *, table: str = None) -> None:
         self._conn = conn
         self._cur = cur
         self._table = table
         self._execute: Callable[[str], None] = partial(execute, conn, cur, self._res)
+        self._idx = 0
+
+    @cached_property
+    def content(self) -> tuple[tuple[Any, ...], ...]:
+        if self._res['result'] is None:
+            self.select()
+        return self._res['result']
+
+    def __getitem__(self, item: str | int) -> tuple[Any, ...] | _series:
+        """
+        实现ORM功能,通过[]访问表字段.
+
+        :param item: 表字段名或行索引
+        :return: 表字段操作对象
+        """
+        if isinstance(item, str):
+            return self.select(item)
+        elif isinstance(item, int):
+            return self._series(self.content[item], columns=self._res['header'], ins=self)
+        raise TypeError(  # 类型错误
+            f"Unsupported type: {type(item).__name__}")
+
+    def __getattr__(self, item: str) -> tuple[Any, ...]:
+        """
+        实现ORM功能,通过属性访问表字段.
+
+        :param item: 表字段名
+        :return: 表字段操作对象
+        """
+        if item not in self.__dir__():
+            return self[item]
+
+        return super().__getattribute__(item)
+
+    def __delitem__(self, key: int) -> None:
+        self.delete(cfg=TB.Delete.WHERE(" and ".join(f'{k}={py2sql(v)}' for k, v in self.content)))
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> _series:
+        if self._idx >= len(self.content):
+            self._idx = 0
+            raise StopIteration
+
+        data = self._res['result'][self._idx]
+        self._idx += 1
+
+        return self._series(data, columns=self._res['header'], ins=self)
 
     @property
     def table(self) -> str:
@@ -650,6 +749,10 @@ class Table(Base):
     @result(Base._res, Feedback.query)
     def _exec(self, cmd: str) -> None:
         self._execute(cmd)
+
+    @result(Base._res, Feedback.query)
+    def show(self) -> None:
+        self._execute(f"SHOW TABLES")
 
     @result(Base._res, Feedback.normal)
     def describe(self) -> None:
@@ -691,11 +794,10 @@ class Table(Base):
         self._execute(f"INSERT INTO {self.table} ({', '.join(data.keys())}) VALUES ({', '.join(map(py2sql, data.values()))})")
 
     @result(Base._res, Feedback.query)
-    def select(self, *fields: str, cfg: Field | dict[str, str | bool | None | Type] = None) -> tuple[tuple[Any, ...], ...]:
+    def select(self, *fields: str, cfg: Field | dict[str, str | bool | None | Type] = None, tbName: str = None) -> tuple[tuple[Any, ...], ...]:
         fields = fields or '*'
 
-        self._execute(remap("SELECT {fields} FROM {table}{where}{order}{inner}{on}{limit}", cfg, fields=', '.join(fields), table=self._table))
-
+        self._execute(remap("SELECT {fields} FROM {table}{left}{where}{order}{inner}{on}{limit}{offset}", cfg, fields=', '.join(fields), table=tbName or self._table))
         return self._res['result']
 
     @result(Base._res, Feedback.query)
@@ -710,6 +812,20 @@ class Table(Base):
     @result(Base._res, Feedback.query)
     def delete(self, *, cfg: Field | dict[str, str | bool | None | Type] = None) -> None:
         self._execute(remap(f"DELETE FROM {self.table}{{where}}", cfg))
+
+    def toDataFrame(self) -> DataFrame:
+        return DataFrame(self.select(), columns=self._res['header'])
+
+    def toCSV(self, csvPath: str) -> None:
+        with open(csvPath, 'w', encoding='gbk', newline='') as file:
+            data = self.select()
+            (w := writer(file)).writerow(self._res['header'])
+            w.writerows(data)
+
+    def fromCSV(self, csvPath: str) -> None:
+        warn("Not implemented yet.", DeprecationWarning)
+        with open(csvPath, 'r', encoding='gbk') as file:
+            print(list(reader(file)))
 
 
 class MySQL(Base):
@@ -767,7 +883,7 @@ class MySQL(Base):
 
         if any((exc_type, exc_val, exc_tb)):
             warn(  # 退出上下文异常
-                f"Exception occurred: {exc_type}({exc_val}), line {exc_tb.tb_lineno}")
+                f"Exception occurred: {exc_type.__name__}({exc_val}), line {exc_tb.tb_lineno}")
 
     def __getattr__(self, item: str) -> Any:
         """
@@ -838,7 +954,39 @@ class MySQL(Base):
                 "Database instance not found, please create a new instance.")
 
 
-PASSWORD: str
+PASSWORD = '135246qq'
 if __name__ == '__main__':
     with MySQL('root', PASSWORD) as mysql:
-        ...
+        mysql.db.create('test', cfg=DB.Create.EXISTS, autoUse=True)
+
+        mysql.tb.create('users', autoUse=True).addField('id', cfg=TB.Create.TYPE | TB.Create.PRIMARY_KEY | TB.Create.AUTO_INCREMENT)  \
+            .addField('name', cfg=TB.Create.TYPE(Type.VARCHAR) | TB.Create.LENGHT(255) | TB.Create.NULL)                                      \
+            .addField('age', cfg=TB.Create.TYPE | TB.Create.NULL)                                                                             \
+            .addField('email', cfg=TB.Create.TYPE(Type.VARCHAR) | TB.Create.LENGHT(255) | TB.Create.NULL)                                     \
+            .end()
+
+        mysql.tb.create('orders').addField('id', cfg=TB.Create.TYPE | TB.Create.PRIMARY_KEY | TB.Create.AUTO_INCREMENT)                       \
+            .addField('user_id', cfg=TB.Create.TYPE | TB.Create.NULL)                                                                         \
+            .addField('sum', cfg=TB.Create.TYPE | TB.Create.NULL)                                                                             \
+            .addField('date', cfg=TB.Create.TYPE(Type.DATE) | TB.Create.NULL)                                                                 \
+            .config(TB.Create.FOREIGN_KEY('user_id') | TB.Create.REFERENCES('users(id)'))                                                           \
+            .end()
+
+        mysql.tb.table = 'users'
+
+        mysql.tb.insert(name='Bob', age=18, email='bob@example.com')
+
+        mysql.tb.select()
+
+        mysql.tb.table = 'orders'
+
+        mysql.tb.insert(user_id=1, sum=100, date='2022-01-01')
+
+        mysql.tb.table = 'users'
+
+        for user in mysql.tb:
+            print(f"name: {user.name}, orderCount: {len(mysql.tb.select(tbName='orders', cfg=TB.Select.WHERE(f'user_id={user.id}')))}")
+
+        mysql.tb.select(cfg=TB.Select.LEFT(('orders', 'orders.user_id=users.id')))
+
+

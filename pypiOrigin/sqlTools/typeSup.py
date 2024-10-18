@@ -21,12 +21,12 @@ __all__ = [
     "FlagOrStr"
 ]
 
-from typing import TypedDict, Protocol, Optional
+from typing import TypedDict, Protocol, Optional, Any
 from enum import Enum
 
 
 class Result(TypedDict):
-    result: tuple
+    result: tuple[tuple[Any, ...], ...]
     header: list[str] | tuple
     rowcount: int
     spendtime: Optional[float]
