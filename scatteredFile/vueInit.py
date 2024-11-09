@@ -100,8 +100,22 @@ import vueDevTools from "vite-plugin-vue-devtools";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+    esbuild: {
+        target: "es2020"
+    },
+    css: {
+        preprocessorOptions: {
+            sass: {
+                api: 'modern-compiler'
+            }
+        }
+    },
     plugins: [
-        vue(),
+        vue({
+            script: {
+                babelParserPlugins: ["decoratorAutoAccessors"]
+            }
+        }),
         vueDevTools(),
         viteMockServe({
             mockPath: "./src/mock",
@@ -493,30 +507,32 @@ async def main(_args: Namespace):
     context = Context(_args.projPath)
     async with Loop() as loop:
         executor("pnpm i --save-dev vite-plugin-mock@latest", cwd=context.projRoot)
-        loop.addTask(delete, await context.root(".vscode"))
-        loop.addTask(delete, await context.root("README.md"))
-        loop.addTask(delete, await context.root("src/views"))
-        loop.addTask(delete, await context.root("src/assets/base.css"))
-        loop.addTask(delete, await context.root("src/assets/main.css"))
-        loop.addTask(modify, await context.root("src/main.ts"), mainTs)
-        loop.addTask(modify, await context.root("src/App.vue"), appVue)
-        loop.addTask(rename, await context.root("src/router/index.ts"), "router.ts")
-        loop.addTask(modify, await context.root("src/router/router.ts"), routerTs)
-        loop.addTask(delete, await context.root("src/components"), pattern="*.vue")
-        loop.addTask(delete, await context.root("src/components/icons"))
-        loop.addTask(rename, await context.root("src/stores/counter.ts"), "stores.ts")
-        loop.addTask(modify, await context.root("src/stores/stores.ts"), storeTs)
-        loop.addTask(modify, await context.root("vite.config.ts"), viteConfigTs)
-        loop.addTask(create, await context.root("src/mock"))
+        executor("pnpm i --save-dev sass@latest", cwd=context.projRoot)
+
+        loop.addTask(delete, await context.root(".vscode"))  # 删除.vscode文件夹
+        loop.addTask(delete, await context.root("README.md"))  # 删除README.md文件
+        loop.addTask(delete, await context.root("src/views"))  # 删除src中的views文件夹
+        loop.addTask(delete, await context.root("src/assets/base.css"))  # 删除src/assets中的base.css文件
+        loop.addTask(delete, await context.root("src/assets/main.css"))  # 删除src/assets中的main.css文件
+        loop.addTask(modify, await context.root("src/main.ts"), mainTs)  # 修改src/main.ts
+        loop.addTask(modify, await context.root("src/App.vue"), appVue)  # 清除App.vue中的多余内容
+        loop.addTask(rename, await context.root("src/router/index.ts"), "router.ts")  # 更名router的index.ts为router.ts
+        loop.addTask(modify, await context.root("src/router/router.ts"), routerTs)  # 修改router/router.ts的内容
+        loop.addTask(delete, await context.root("src/components"), pattern="*.vue")  # 移除src/components的vue文件
+        loop.addTask(delete, await context.root("src/components/icons"))  # 移除src/components/icons文件夹
+        loop.addTask(rename, await context.root("src/stores/counter.ts"), "stores.ts")  # 更名stores中的counter.ts为stores.ts
+        loop.addTask(modify, await context.root("src/stores/stores.ts"), storeTs)  # 修改stores/stores.ts内容
+        loop.addTask(modify, await context.root("vite.config.ts"), viteConfigTs)  # 修改vite.config.ts内容
+        loop.addTask(create, await context.root("src/mock"))  # 新建文件夹src/mock
 
         async def mockCallback():
             await gather(
-                create(await context.root("src/mock/mock.ts"), mockTs),
-                create(await context.root("src/mock/api.ts"), apiTs)
+                create(await context.root("src/mock/mock.ts"), mockTs),   # 新建文件src/mock/mock.ts
+                create(await context.root("src/mock/api.ts"), apiTs)   # 新建文件src/mock/api.ts
             )
         await loop._loop.create_task(mockCallback())
-        loop.addTask(modify, await context.root("tsconfig.json"), tsconfigJson)
-        loop.addTask(modify, await context.root("index.html"), indexHtml(context.projName))
+        loop.addTask(modify, await context.root("tsconfig.json"), tsconfigJson)  # 修改tsconfig.json
+        loop.addTask(modify, await context.root("index.html"), indexHtml(context.projName))  # 修改index.html
 
 
 def parseArgs():
