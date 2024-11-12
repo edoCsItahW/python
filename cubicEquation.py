@@ -14,10 +14,10 @@
 # 注释: 
 # -------------------------<Lenovo>----------------------------
 from IPython.display import display, Math
-from functools import cached_property, singledispatchmethod
-from fractions import Fraction
+from functools import cached_property, singledispatchmethod, wraps
 from warnings import warn
-from typing import overload, Callable, Self, Any, Literal
+from typing import overload, Callable, Self, Any, Literal, TypeVar
+from fractions import Fraction as _Fraction
 from sympy import symbols, Rational, sqrt, acos, cos, log, pi, Integer, Eq, solve
 from re import match, search
 from inspect import isfunction, ismethod, getsource
@@ -352,108 +352,214 @@ from dis import dis
 #     opt.execute()
 #     opt.realValue()
 
-LATEX_OUTPUT: bool = False
+class Fraction: ...
+class Exponential: ...
+class Add: ...
+class Sub: ...
 
 
-class Formula:
-    _type: Literal['Lambda', 'Function', 'Method']
+Number = int | float | complex | Fraction | Exponential
 
-    def __init__(self, fn: Callable[[Any, ...], Any]):
-        self._fn = fn
-        if isinstance(fn, type(lambda: None)):
-            self._type = 'Lambda'
-        elif ismethod(fn) or (isfunction(fn) and hasattr(fn, '__self__')):
-            self._type = 'Method'
-        elif isfunction(fn):
-            self._type = 'Function'
-        else:
-            raise TypeError(f"Unsupported function type: {type(fn)}")
-
-    def __str__(self):
-        return f"{self._fn.__name__ if self._type != 'Lambda' else 'f'}({', '.join(self._fn.__code__.co_varnames)})"
-
-    def __call__(self, *args, **kwargs):
-        return self._fn(*args, **kwargs)
+LATEX_OUTPUT = False
 
 
-class Radical:
+def gcd(a: int, b: int) -> int:
+    return gcd(b, a % b) if b else a
+
+
+def floatToFrac(decimal: float) -> tuple[int, int]:
+    den = 1
+    while decimal != int(decimal):
+        decimal *= 10
+        den *= 10
+    return int((i := int(decimal)) / (div := gcd(i, den))), int(den / div)
+
+
+def binPow(_base: Number, _exp: int) -> Number:
+    if isinstance(_base, float):
+        _base = Fraction(_base)
+    if _exp == 0: return 1
+    res = binPow(_base, _exp // 2)
+    if _exp % 2 == 0: return res * res
+    return res * res * _base
+
+
+class Fraction:
     @property
-    def base(self):
+    def numerator(self) -> Number:
+        return self._numerator
+
+    @property
+    def denominator(self) -> Number:
+        return self._denominator
+
+    @property
+    def value(self) -> Number:
+        return self._numerator / self._denominator
+
+    def __new__(cls, *args: Number, **kwargs) -> Number:
+        match len(args):
+            case 1:
+                if isinstance(args[0], float):
+                    return super().__new__(cls)
+                return args[0]
+            case 2:
+                if args[1] == 0: raise ZeroDivisionError(
+                    "分母不能为0")
+                if args[0] == 0: return 0  # 0/d = 0
+                return super().__new__(cls)
+            case _:
+                raise TypeError(f"Fraction() takes 1 or 2 positional arguments but {len(args)} were given")
+
+    def __init__(self, *args: Number, **kwargs: Number) -> None:
+        """
+        :param _numerator: 分子
+        :param _denominator: 分母
+        """
+        if hasattr(self, 'AREADY_INITED'): return  # 避免重复初始化
+        self.AREADY_INITED = True
+        self.SIMPLEST = False
+
+        match len(args):
+            case 1:
+                if isinstance(args[0], float):
+                    args = floatToFrac(args[0])
+        self._numerator, self._denominator = args
+
+    def __str__(self) -> str:
+        return fr"\frac{{{self._numerator}}}{{{self._denominator}}}" if LATEX_OUTPUT else f"{self._numerator}/{self._denominator}"
+
+    def __add__(self, other: Number) -> Fraction | Exponential:
+        self.SIMPLEST = False
+        if isinstance(other, int):
+            return Fraction(self._numerator + other * self._denominator, self._denominator)
+        if isinstance(other, float):
+            return self + Fraction(other)
+        if isinstance(other, Fraction):
+            return Fraction(self._numerator * other.denominator + other.numerator * self._denominator, self._denominator * other.denominator)
+        if isinstance(other, Exponential):  # n/d + c * b^e = (n + d * c * b^e) / d
+            return Fraction(Add(self._numerator, Exponential(other.base, other.exponent, coefficent=other.coefficent * self._denominator)), self._denominator)
+        raise TypeError(f"unsupported operand type(s) for +: 'Fraction' and '{type(other).__name__}'")
+
+    def __radd__(self, other: Number) -> Fraction | Exponential:
+        self.SIMPLEST = False
+        if isinstance(other, Exponential):
+            return NotImplemented  # 交给Exponential的__add__处理
+        return self.__add__(other)
+
+    def __sub__(self, other: Number) -> Fraction | Exponential:
+        self.SIMPLEST = False
+        if isinstance(other, int):
+            return Fraction(self._numerator - other * self._denominator, self._denominator)
+        if isinstance(other, float):
+            return self - Fraction(other)
+        if isinstance(other, Fraction):
+            return Fraction(self._numerator * other.denominator - other.numerator * self._denominator, self._denominator * other.denominator)
+        if isinstance(other, Exponential):  # n/d - c * b^e = (n - d * c * b^e) / d
+            return Fraction(Sub(self._numerator, Exponential(other.base, other.exponent, coefficent=other.coefficent * self._denominator)), self._denominator)
+        raise TypeError(f"unsupported operand type(s) for -: 'Fraction' and '{type(other).__name__}'")
+
+    def __rsub__(self, other: Number) -> Fraction | Exponential:
+        self.SIMPLEST = False
+        if isinstance(other, Exponential):
+            return NotImplemented  # 交给Exponential的__sub__处理
+        return self.__sub__(other)
+
+    def __mul__(self, other: Number) -> Fraction | Exponential:
+        self.SIMPLEST = False
+        if isinstance(other, int):
+            return Fraction(self._numerator * other, self._denominator)
+        if isinstance(other, float):
+            return self * Fraction(other)
+        if isinstance(other, Fraction):
+            return Fraction(self._numerator * other.numerator, self._denominator * other.denominator)
+        if isinstance(other, Exponential):  # n/d * c * b^e = (n * c * b^e) / d or ((n * c) / d) * b^e
+            return Exponential(other.base, other.exponent, coefficent=self * other.coefficent)
+        raise TypeError(f"unsupported operand type(s) for *: 'Fraction' and '{type(other).__name__}'")
+
+    def __rmul__(self, other: Number) -> Fraction | Exponential:
+        self.SIMPLEST = False
+        if isinstance(other, Exponential):
+            return NotImplemented  # 交给Exponential的__mul__处理
+        return self.__mul__(other)
+
+    def __truediv__(self, other: Number) -> Fraction | Exponential:
+        self.SIMPLEST = False
+        if isinstance(other, int):
+            return Fraction(self._numerator, self._denominator * other)
+        if isinstance(other, float):
+            return self / Fraction(other)
+        if isinstance(other, Fraction):
+            return Fraction(self._numerator * other.denominator, self._denominator * other.numerator)
+        if isinstance(other, Exponential):  # n/d / (c * b^e) = n / (d * c * b^e) or (n / (c * d)) * b^(-e)
+            return Exponential(other.base, -other.exponent, coefficent=self / other.coefficent)
+        raise TypeError(f"unsupported operand type(s) for /: 'Fraction' and '{type(other).__name__}'")
+
+    def __rtruediv__(self, other: Number) -> Fraction | Exponential:
+        self.SIMPLEST = False
+        if isinstance(other, Exponential):
+            return NotImplemented  # 交给Exponential的__truediv__处理
+        return Fraction(other) / self
+
+    def __pow__(self, power: int, modulo=None):
+        self.SIMPLEST = False
+        return binPow(self, power)
+
+
+class Exponential:
+    _realArgs: tuple
+
+    @property
+    def base(self) -> Number:
         return self._base
 
     @property
-    def index(self):
-        return self._index
+    def exponent(self) -> Number:
+        return self._exponent
 
     @property
-    def coeff(self):
-        return self._coeff
+    def coefficent(self) -> Number:
+        return self._coefficent
 
-    @cached_property
-    def value(self):
-        return self.base ** (1 / self.index)
+    @property
+    def value(self) -> Number:
+        return self._coefficent * self._base ** self._exponent
 
-    def __init__(self, base: int | Fraction, index: int, *, coeff: int | Fraction = 1):
-        self._base = base
-        self._index = index
-        self._coeff = coeff
+    def __new__(cls, *args: Number, **kwargs: Number) -> Number:
+        coefficent = kwargs.get('coefficent', 1)
+        match len(args):
+            case 1:
+                if isinstance(args[0], float):
+                    return Fraction(args[0]) * coefficent
+                return args[0] * coefficent
+            case 2:
+                _base, _exponent = args
+                if _base == 0: return 0  # 0^e = 0
+                if _base == 1: return 1  # 1^e = 1
+                if isinstance(_base, Fraction) and _base.numerator == 1:  # (1/d)^e = d^-e
+                    _base = _base.denominator
+                    _exponent = -_exponent
+                elif isinstance(_base, Exponential):  # c_2 * (c_1 * b^e_1)^e_2 = c_2 * c_1^e_2 * b^(e_1 * e_2)
+                    coefficent = cls(_base.base, _exponent * _base.exponent, coefficent=coefficent * cls(_base.coefficent, _exponent, coefficent=coefficent))
+                if _exponent == 0: return 1  # a^0 = 1(已排除0^0)
+                if _exponent == 1: return _base  # a^1 = a
+                if coefficent == 0: return 0  # 0 * a^b = 0
+                if isinstance(coefficent, Fraction):  # (a / b) * c^d = (a * c^d) / b
+                    return Fraction(cls(_base, _exponent, coefficent=coefficent.numerator), coefficent.denominator)
+                return cls(_base, _exponent, coefficent=coefficent)
 
-    def __str__(self):
-        _coeff = '' if self._coeff == 1 else f'{self._coeff}'
-        return fr"\sqrt{'' if self.index == 2 else f'[{self.index}]'}{{{self.base}}}" if LATEX_OUTPUT else f"{self.base} ** (1 / {self.index})"
+    def __init__(self, _base: Number, _exponent: Number, *, coefficent: Number = 1):
+        if hasattr(self, 'AREADY_INITED'): return  # 避免重复初始化
+        self.AREADY_INITED = True
+        self._base = _base
+        self._exponent = _exponent
+        self._coefficent = coefficent
 
-    def __mul__(self, other: int | Fraction | Self):
-        if isinstance(other, (int, Fraction)):
-            self._coeff *= other
+    def __rtruediv__(self, other: Number) -> Number:
+        if isinstance(other, int):
+            self._exponent = -self._exponent
+            self._coefficent = other / self._coefficent
             return self
-        elif isinstance(other, Radical):
-            return Radical(self.base * other.base, self.index + other.index, coeff=self.coeff * other.coeff)
-        else:
-            return NotImplemented
 
 
-def parseLatex(latex: str) -> Fraction:
-    r"""
-    使用正则表达式简单解析latex字符串
 
-    包括:
-    1. \frac{分子}{分母} -> 分子/分母
-    2. \sqrt[n]{数} -> sqrt(数)^n
-    3. \sqrt{数} -> sqrt(数)
-
-    :param latex: latex字符串
-    :return:
-    """
-    if res := search(r"\\frac\{(.*?)}{(.*?)}", latex):
-        return f"{res.group(1)}/{res.group(2)}"
-    elif res := search(r"\\sqrt\[(.*?)]\{(.*?)} ", latex):
-        return f"sqrt({res.group(2)})^{int(res.group(1))}"
-    else:
-        return latex
-
-
-class Coefficent:
-    @property
-    def value(self):
-        return self._value
-
-    def __init__(self, value: str, *, handle: Callable[[str], str], signed: bool = True):
-        """
-        处理输入的系数
-
-        :param value: 输入的系数(可以为字符串, latex格式, 或者数字)
-        :keyword handle: 处理输入的函数
-        :keyword signed: 是否处理符号(True: 显示正号, False: 不显示正号)(默认: True)
-        """
-        self._value = value
-        self._handle = handle
-        self._signed = signed
-
-    def __str__(self):
-        return self._handle(self._value)
-
-
-if __name__ == '__main__':
-    def handle(value: str) -> str:
-        pass
-    print(Formula(handle))
