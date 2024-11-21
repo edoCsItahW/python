@@ -2,7 +2,7 @@
 
 ## executableDir
    * 用于存放二进制可执行文件
-   1. upload.exe - 用于自动化打包并上传python库至testpypi的工具
+   1. upload.exe - 用于自动化打包并上传python库至[testpypi](https://test.pypi.org/)的工具
       <mark>使用方法</mark>
       
       * 检查环境变量
@@ -16,12 +16,12 @@
       ```
       
       * 如果找到指令,你可以参考其中的参数,其中基本的操作指令
-         <mark>PS.使用前请确保安装了[pdoc](https://pypi.org/project/pdoc3/)和[pandoc](https://pandoc.org/installing.html),如果`-T`为`pyd`时需额外安装[Cython](https://pypi.org/project/Cython/),[pybind11](https://pypi.org/project/pybind11/)和[CMake](https://cmake.org/),并且确保它们已被添加在环境变量中</mark>
+         <mark>PS.如果`-T`参数为`pyd`时需额外安装[pybind11](https://pypi.org/project/pybind11/)和[CMake](https://cmake.org/),并且确保它们已被添加在环境变量中</mark>
       ```DOS
       upload C:\path\to\your\pyFile.py -D=True -I=True -T=normal
       ```
       
-      * 打包时如果目标py文件所在路径中存在名为`args.json`,则在打包好无需再编写project.toml文件,其内容应如
+      * 打包时如果目标py文件所在路径中存在名为`args.json`,则在打包好无需再编写project.toml文件,其内容应型如
       ```json
       {
           "increase": true,  // 是否在每次打包成功时自动提升版本
@@ -43,26 +43,30 @@
 
 ## privateProject
    * 存放一些py小项目
-   1. divination
-      * 一个趣味的测算项目
+   1. docSpawner --- 2024.5
+      通过AST实现的注释到文档生成工具,包括`.pyi`存根文件生成,markdown格式文档生成
    
-   2. englishApp
-      * 一个用来背单词的软件
+   2. englishApp  --- 2023.8
+      一个用来背单词的软件
+   
+   3. mcProtocol --- 2024.6
+      通过**Minecraft**特定的_TCP_规则解析和构造并发送包以完成服务器从握手至交互的过程
+      
+   4. p2p --- 2024.9
+      python实现**P2P**
 
-   3. pytorchLearn
-      * pytorch学习笔记
+   5. pytorchLearn --- 2023.8
+       pytorch学习笔记
+       
+   6. responsive --- 2024.8
+      python仿写**Vue3**的响应式原理及功能
 
-   4. taskSorter
-      * 定义任务基类
-
-   5. timeAllocation
-      * 时间管理器
 
 ## pypiOrigin
    * 存放一些提交到[testpypi](https://test.pypi.org/)上的库
 
    1. ansiDefine
-      * 简化使用ANSI转义符的代码编写过程
+      * 简化使用_ANSII_转义符的使用
 
    2. conFunc
       * '常用'方法合集

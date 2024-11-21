@@ -13,16 +13,9 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
-from IPython.display import display, Math
-from functools import cached_property, singledispatchmethod, wraps
-from fractions import Fraction as _Fraction
-from warnings import warn
-from inspect import isfunction, ismethod, getsource
-from typing import overload, Callable, Self, Any, Literal, TypeVar, final, Protocol
-from sympy import symbols, Rational, sqrt, acos, cos, log, pi, Integer, Eq, solve
-from dis import dis
-from re import match, search
+from typing import overload, Callable, Self, Any, Literal, TypeVar, final, Protocol, Annotated
 from abc import ABC, abstractmethod
+from ctypes import windll, create_string_buffer
 
 
 class Fraction: ...
@@ -122,6 +115,26 @@ def binPow(_base: Number, _exp: int) -> Number:
     res = binPow(_base, _exp // 2)
     if _exp % 2 == 0: return res * res
     return res * res * _base
+
+
+def scanf(_fmt: bytes, _len: int) -> tuple[str]:
+    windll.msvcrt.scanf(_fmt, *(args := [create_string_buffer(100) for _ in range(_len)]))
+    return tuple(arg.value.decode() for arg in args)
+
+
+def numExec(_expr: str):
+    if _expr.isdigit():
+        return int(_expr)
+    elif '.' in _expr:
+        return Fraction(eval(_expr))
+    elif '/' in _expr:
+        num, den = _expr.split('/')
+        return Fraction(int(num), int(den))
+    elif '^' in _expr:
+        num, den = _expr.split('^')
+        return Exponential(num, int(den))
+    else:
+        raise ValueError(f"无法解析表达式 {_expr}")
 
 
 class Fraction:
@@ -255,6 +268,9 @@ class Fraction:
         self.SIMPLEST = False
         return binPow(self, power)
 
+    def __neg__(self) -> Fraction:
+        return Fraction(-self._numerator, self._denominator)
+
     def _reduce(self):
         div = gcd(self._numerator, self._denominator)
         self._numerator //= div
@@ -295,7 +311,7 @@ class Exponential:
                 if _exponent == 0: return 1  # a^0 = 1(已排除0^0)
                 if _exponent == 1: return _base  # a^1 = a
                 if coefficent == 0: return 0  # 0 * a^b = 0
-                return cls(_base, _exponent, coefficent=coefficent)
+                return super().__new__(cls)
 
     @overload
     def __init__(self, _number: Number): ...
@@ -319,6 +335,11 @@ class Exponential:
         self._base = _base
         self._exponent = _exponent
         self._coefficent = coefficent
+
+    def __str__(self) -> str:
+        return f"{'' if self._coefficent == 1 else f'{self._coefficent} '}{self._base}^{{{self._exponent}}}" \
+            if LATEX_OUTPUT else\
+            f"{'' if self._coefficent == 1 else f'{self._coefficent} * '}{self._base}^{f'{self._exponent}' if isinstance(self._exponent, int) else f'({self._exponent})'}"
 
     def __add__(self, other: Number) -> Add | Exponential:
         self.SIMPLEST = False
@@ -404,6 +425,17 @@ class Exponential:
         self.SIMPLEST = False
         return binPow(self, power)
 
+    def __neg__(self) -> Exponential:
+        return Exponential(self.base, self.exponent, coefficent=-self._coefficent)
+
 
 if __name__ == '__main__':
-    
+    print("请输入四个数字，以空格分隔：")
+    a, b, c, d = map(numExec, scanf(b"%s %s %s %s", 4))
+    p, q, r = b / a, c / a, d / a
+    sigma1, sigma2, sigma3 = -p, q, -r
+
+    A = 2 * sigma1 ** 3 - 9 * sigma1 * sigma2 ** 2 + 27 * sigma3
+    B = (sigma1 ** 2 - 3 * sigma2) ** 3
+
+    print(A, B)

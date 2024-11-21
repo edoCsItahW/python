@@ -13,28 +13,49 @@
 # 编码模式: utf-8
 # 注释: 
 # -------------------------<Lenovo>----------------------------
-from typing import Literal, Callable
-from functools import wraps
-from warnings import warn
-from traceback import format_exc
-
-
 __all__ = [
-    'debuger'
+    'Dbg',
+    'DbgOpt'
 ]
 
 
-class debuger:
+from typing import Literal, Callable, Any, Optional
+from functools import wraps
+from warnings import warn
+from traceback import format_exc
+from enum import StrEnum
+
+
+class DbgOpt(StrEnum):
+    """
+    调试选项.
+
+    :ivar PRINT: 打印错误信息.
+    :ivar IGNORE: 忽略错误.
+    :ivar LOG: 记录错误.
+    :ivar WARN: 警告错误.
+    :ivar RAISE: 抛出错误.
+    :ivar STOP: 停止程序.
+    """
+    PRINT = 'print'
+    IGNORE = 'ignore'
+    LOG = 'log'
+    WARN = 'warn'
+    RAISE = 'raise'
+    STOP = 'stop'
+
+
+class Dbg:
     """
     调试器.
 
     Example::
 
-        >>> @debuger('log', group='test', info='test info', note='test note')
+        >>> @Dbg(DbgOpt.LOG, group='test', info='test info', note='test note')
         >>> def func():
         >>>     print(1 / 0)
         >>> func()
-        >>> debuger.raiseErrorGroup()
+        >>> Dbg.raiseErrorGroup()
         >>> #Error...
 
     Attributes:
@@ -52,15 +73,26 @@ class debuger:
         :meth:`_formatErrorGroup`: 将错误记录字典(dict)递归的组装成嵌套的ExceptionGroup字典.
         :meth:`raiseErrorGroup`: 引发错误组.
     """
-    _instance = None
+    _instance: 'Dbg' = None
 
-    errorLog = {}
+    errorLog: dict[str, list[Exception]] = {}
+
+    @property
+    def option(self) -> DbgOpt:
+        """
+        :return: 调试选项, 参见 DbgOption.
+        """
+        return self._option
+
+    @option.setter
+    def option(self, value: DbgOpt):
+        self._option = value
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super().__new__(cls)
 
-        cls._instance.option = 'log'
+        cls._instance.option = DbgOpt.LOG
         cls._instance.group = 'default'
         cls._instance.info = None
         cls._instance.note = None
@@ -68,20 +100,15 @@ class debuger:
 
         return cls._instance
 
-    def __init__(self, option: Literal['print', 'ignore', 'log', 'warn', 'raise', 'stop'] = 'log', *, group: str = 'default', info: str | None = None, note: str | None = None, fromError: Exception | type[Exception] | None = None):
+    def __init__(self, option: DbgOpt = DbgOpt.LOG, *, group: str = 'default', info: Optional[str] = None, note: Optional[str] = None, fromError: Optional[Exception | type[Exception]] = None):
         """
         初始化调试器.
 
-        :param option: 调试选项,可选值为'print','ignore','log','warn','raise','stop'.
-        :type option: str
+        :param option: 调试选项, 参见 DbgOption.
         :keyword group: 调试组.
-        :type group: str
         :keyword info: 调试信息.
-        :type info: str
         :keyword note: 调试备注.
-        :type note: str
         :keyword fromError: 引发错误的异常.
-        :type fromError: Exception | type[Exception]
         """
         self._option = option
         self.group = group
@@ -89,18 +116,7 @@ class debuger:
         self.note = note
         self.fromError = fromError
 
-    @property
-    def option(self) -> str:
-        """
-        :return: 调试选项,可选值为'print', 'ignore', 'log', 'warn', 'raise', 'stop'.
-        """
-        return self._option
-
-    @option.setter
-    def option(self, value: Literal['print', 'ignore', 'log', 'warn', 'raise']):
-        self._option = value
-
-    def __call__(self, func: Callable) -> Callable:
+    def __call__(self, _fn: Callable) -> Callable:
         """
         装饰器,用于装饰函数.
 
@@ -108,10 +124,10 @@ class debuger:
         :type func: Callable
         :return: 装饰后的函数.
         """
-        @wraps(func)
-        def wrapper(*args, **kwargs):
+        @wraps(_fn)
+        def wrapper(*args, **kwargs) -> Any:
             try:
-                return func(*args, **kwargs)
+                return _fn(*args, **kwargs)
 
             except Exception as e:
                 self._handleError(e, info=format_exc())
@@ -128,37 +144,32 @@ class debuger:
         :type info: str
         """
         if self.note: e.add_note(self.note)
-        info = self.info if self.info else info
+        info = self.info or info
 
         match self.option:
-            case 'print':
+            case DbgOpt.PRINT:
                 print(f"[{self.group}]: {info}")
 
-            case 'ignore':
+            case DbgOpt.IGNORE:
                 pass
 
-            case 'log':
-                if self.group in self.errorLog:
-                    self.errorLog[self.group].append(e)
-                else:
-                    self.errorLog[self.group] = [e]
+            case DbgOpt.LOG:
+                self.errorLog.setdefault(self.group, []).append(e)
 
-            case 'warn':
-                warn(
+            case DbgOpt.WARN:
+                warn(  # warning
                     f"[{self.group}]: {info}")
 
-            case 'raise':
+            case DbgOpt.RAISE:
                 if self.fromError:
                     raise e from self.fromError
+                raise e
 
-                else:
-                    raise e
-
-            case 'stop':
+            case DbgOpt.STOP:
                 exit(f"不可恢复的错误导致程序退出: \n{info}")
 
     @classmethod
-    def _formatErrorGroup(cls, *, _lastKey: list = None, _result: list = None) -> ExceptionGroup:
+    def _formatErrorGroup(cls, *, _lastKey: list[str] = None, _result: list = None) -> ExceptionGroup:
         """
         将错误记录字典(dict)递归的组装成嵌套的ExceptionGroup字典.
 
@@ -177,9 +188,7 @@ class debuger:
 
                 return cls._formatErrorGroup(_lastKey=_lastKey[1:], _result=_result)
 
-            else:
-
-                return ExceptionGroup(*_result)
+            return ExceptionGroup(*_result)
 
         else:
             if not isinstance(list(cls.errorLog.values())[0], list):
@@ -202,4 +211,20 @@ class debuger:
 
 
 if __name__ == '__main__':
-    pass
+    @Dbg(DbgOpt.LOG, group='普通函数组', info='调试信息', note='可能会抛除零错?')
+    def func():
+        print(1 / 0)
+
+    class Test:
+        def __init__(self, x: int):
+            self.x = x
+
+        @Dbg(DbgOpt.LOG, group='类方法组', info='调试信息', note='self.x可能为0?')
+        def func(self):
+            if not self.x:
+                raise ValueError("x不能为0")
+
+    func()
+    Test(0).func()
+    print(Dbg.errorLog)
+    Dbg.raiseErrorGroup()

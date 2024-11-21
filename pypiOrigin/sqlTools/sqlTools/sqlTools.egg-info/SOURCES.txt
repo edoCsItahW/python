@@ -1,0 +1,11 @@
+LICENSE.txt
+MANIFEST.in
+README.md
+pyproject.toml
+sqlTools/__init__.py
+sqlTools/sqlTools.pyd
+sqlTools/sqlTools.pyi
+sqlTools.egg-info/PKG-INFO
+sqlTools.egg-info/SOURCES.txt
+sqlTools.egg-info/dependency_links.txt
+sqlTools.egg-info/top_level.txt

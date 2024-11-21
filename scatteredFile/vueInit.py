@@ -18,7 +18,7 @@ from typing import overload, Callable, Awaitable, Literal
 from asyncio import run, get_running_loop, AbstractEventLoop, new_event_loop, gather, Task
 from aiofiles import open as aioopen
 from datetime import datetime
-from debuger import debuger
+from debuger import Dbg, DbgOpt
 from atexit import register
 from inspect import currentframe as cf
 from argparse import ArgumentParser, Namespace
@@ -64,6 +64,7 @@ export default defineComponent({{
 </script>
 
 <template>
+    <router-view></router-view>
 </template>
 
 <style lang="sass">
@@ -206,7 +207,7 @@ indexHtml = lambda title: f"""<!--
 <html lang="zh-Hans">
     <head>
         <meta charset="UTF-8" />
-        <link rel="icon" href="/logo.svg" />
+        <link rel="icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{title}</title>
     </head>
@@ -215,6 +216,31 @@ indexHtml = lambda title: f"""<!--
         <script type="module" src="./src/main.ts"></script>
     </body>
 </html>"""
+
+
+prettierCfg = """{
+  "$schema": "https://json.schemastore.org/prettierrc",
+  "experimentalTernaries": true,  
+  "printWidth": 200,  
+  "tabWidth": 4,  
+  "useTabs": false,  
+  "semi": true,  
+  "singleQuote": false,  
+  "quoteProps": "as-needed",  
+  "jsxSingleQuote": false,  
+  "trailingComma": "none",  
+  "bracketSpacing": true,  
+  "bracketSameLine": false,  
+  "arrowParens": "avoid",  
+  "rangeStart": 0,  
+  "proseWrap": "preserve",  
+  "htmlWhitespaceSensitivity": "ignore",
+  "vueIndentScriptAndStyle": false,  
+  "endOfLine": "lf",  
+  "embeddedLanguageFormatting": "auto",
+  "singleAttributePerLine": false,
+  "plugins": []
+}"""
 
 
 class CMDError(Exception):
@@ -379,7 +405,7 @@ class Context:
         return path.join(self.projRoot, _path)
 
 
-@debuger("raise", group="check")
+@Dbg(DbgOpt.RAISE, group="check")
 def existsCheck(_path: PathLike[str] | str) -> str:
     """
     检查路径是否存在,并且返回一个有效且绝对的路径
@@ -394,7 +420,7 @@ def existsCheck(_path: PathLike[str] | str) -> str:
     return _path
 
 
-@debuger(group="operate", note=f"Error occurre when delete line {cf().f_lineno} in <{cf().f_code.co_name}>")
+@Dbg(group="operate", note=f"Error occurre when delete line {cf().f_lineno} in <{cf().f_code.co_name}>")
 async def delete(_path: PathLike[str] | str, *, pattern: str = None):
     """
     对路径进行删除,无论其是文件还是目录
@@ -411,7 +437,7 @@ async def delete(_path: PathLike[str] | str, *, pattern: str = None):
         executor(f"rd /s /q {_path}" if path.isdir(_path) else f"del /f {_path}", cwd=path.dirname(_path))
 
 
-@debuger(group="operate", note=f"Error occurre when modify line {cf().f_lineno} in <{cf().f_code.co_name}>")
+@Dbg(group="operate", note=f"Error occurre when modify line {cf().f_lineno} in <{cf().f_code.co_name}>")
 async def modify(_path: PathLike[str] | str, content: str, *, handle: Callable[[str], str] = None, **kwargs):
     """
     对文件进行内容修改
@@ -430,7 +456,7 @@ async def modify(_path: PathLike[str] | str, content: str, *, handle: Callable[[
         await file.truncate()
 
 
-@debuger(group="operate", note=f"Error occurre when create line {cf().f_lineno} in <{cf().f_code.co_name}>")
+@Dbg(group="operate", note=f"Error occurre when create line {cf().f_lineno} in <{cf().f_code.co_name}>")
 async def create(_path: PathLike[str] | str, content: str = None, **kwargs):
     """
     对路径进行创建,无论其是文件还是目录
@@ -447,7 +473,7 @@ async def create(_path: PathLike[str] | str, content: str = None, **kwargs):
         executor(f"mkdir {path.basename(_path)}", cwd=path.dirname(_path))
 
 
-@debuger(group="operate", note=f"Error occurre when rename line {cf().f_lineno} in <{cf().f_code.co_name}>")
+@Dbg(group="operate", note=f"Error occurre when rename line {cf().f_lineno} in <{cf().f_code.co_name}>")
 async def rename(_path: PathLike[str] | str, newName: str, **kwargs):
     _path = existsCheck(_path)
     osrename(_path, path.join(path.dirname(_path), newName))
@@ -467,14 +493,16 @@ class Loop:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await gather(*self._tasks)
 
-    def addTask(self, task: Callable[..., Awaitable[None]], *args, **kwargs):
+    def addTask(self, task: Callable[..., Awaitable[None]], *args, condition: Callable[[], bool] = None, **kwargs):
+        if condition and not condition(): return
+
         self._tasks.append(self._loop.create_task(task(*args, **kwargs)))
 
 
 @register
 def exitHandler():
-    if debuger.errorLog:
-        debuger.raiseErrorGroup()
+    if Dbg.errorLog:
+        Dbg.raiseErrorGroup()
 
 
 async def main(_args: Namespace):
@@ -533,6 +561,11 @@ async def main(_args: Namespace):
         await loop._loop.create_task(mockCallback())
         loop.addTask(modify, await context.root("tsconfig.json"), tsconfigJson)  # 修改tsconfig.json
         loop.addTask(modify, await context.root("index.html"), indexHtml(context.projName))  # 修改index.html
+
+        def hasPrettier():
+            return path.exists(path.join(context.projRoot, ".prettierrc.json"))
+
+        loop.addTask(modify, await context.root(".prettierrc.json"), prettierCfg, condition=hasPrettier)
 
 
 def parseArgs():

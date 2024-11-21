@@ -220,7 +220,7 @@ def result(res: Result, fbFn: Callable[..., str] | function = None) -> Callable[
     return getfunc
 
 
-def remap(_format: str, mapping: dict[str, str], **kwargs: str) -> str:
+def remap(_format: str, mapping: Optional[dict[str, str] | 'Field'], **kwargs: str) -> str:
     """
     格式化字符串,生成sql语句.
 
@@ -839,11 +839,11 @@ class Table(Base):
         self._execute(f"INSERT INTO {self.table} ({', '.join(data.keys())}) VALUES ({', '.join(map(py2sql, data.values()))})")
 
     @result(Base._res, Feedback.query)
-    def select(self, *fields: str, cfg: Field | dict[str, str | bool | None | Type] = None, tbName: str = None) -> tuple[tuple[Any, ...], ...]:
+    def select(self, *fields: str, cfg: Field | dict[str, str | bool | None | Type] = None, tbName: str = None) -> list[dict[str, Any]]:
         fields = fields or '*'
 
         self._execute(remap("SELECT {fields} FROM {table}{left}{where}{order}{inner}{on}{limit}{offset}", cfg, fields=', '.join(fields), table=tbName or self._table))
-        return self._res['result']
+        return [dict(zip(self._res['header'], i)) for i in self._res['result']]
 
     @result(Base._res, Feedback.query)
     def update(self, *, cfg: Field | dict[str, str | bool | None | Type] = None, **data: Any) -> None:
