@@ -1,2 +1,0 @@
-recursive-include sqlTools *.pyi
-recursive-include sqlTools *.pyd
