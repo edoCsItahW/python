@@ -43,22 +43,22 @@
 
 ## privateProject
    * 存放一些py小项目
-   1. docSpawner --- 2024.5
+   1. docSpawner --- 2024.5  
       通过AST实现的注释到文档生成工具,包括`.pyi`存根文件生成,markdown格式文档生成
    
-   2. englishApp  --- 2023.8
+   2. englishApp  --- 2023.8  
       一个用来背单词的软件
    
-   3. mcProtocol --- 2024.6
+   3. mcProtocol --- 2024.6  
       通过**Minecraft**特定的_TCP_规则解析和构造并发送包以完成服务器从握手至交互的过程
       
-   4. p2p --- 2024.9
+   4. p2p --- 2024.9  
       python实现**P2P**
 
-   5. pytorchLearn --- 2023.8
+   5. pytorchLearn --- 2023.8  
        pytorch学习笔记
        
-   6. responsive --- 2024.8
+   6. responsive --- 2024.8  
       python仿写**Vue3**的响应式原理及功能
 
 
